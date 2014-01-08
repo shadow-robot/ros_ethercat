@@ -55,7 +55,7 @@ bool ros_ethercat::initXml(TiXmlElement* config)
   publish_period_mechanism_stats_ = Duration(1.0/fmax(0.000001, publish_rate_mechanism_stats));
   publish_period_joint_state_ = Duration(1.0/fmax(0.000001, publish_rate_joint_state));
 
-  return true;
+  return configure();
 }
 
 bool ros_ethercat::configure()

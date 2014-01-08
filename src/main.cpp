@@ -299,7 +299,8 @@ void *controlLoop(void *)
   // Initialize the hardware interface
   EthercatHardware ec(name);
   ec.init(g_options.interface_, g_options.allow_unprogrammed_);
-  ros_ethercat seth(ec.hw_, node);
+  ros::NodeHandle nh;
+  ros_ethercat seth(ec.hw_, nh);
 
   // Load robot description
   TiXmlDocument xml;
@@ -357,7 +358,7 @@ void *controlLoop(void *)
   }
 
   // Create controller manager
-  controller_manager::ControllerManager cm(&seth, node);
+  controller_manager::ControllerManager cm(&seth);
 
   // Publish one-time before entering real-time to pre-allocate message vectors
   publishDiagnostics(publisher);

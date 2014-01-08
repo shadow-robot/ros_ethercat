@@ -40,8 +40,7 @@ public:
   ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle nh) :
     model_(hw),
     state_(NULL),
-    controller_node_(nh),
-    cm_node_(nh, "controller_manager"),
+    cm_node_(nh, "ronex_controller_manager"),
     pub_joint_state_(nh, "joint_states", 1),
     pub_mech_stats_(nh, "mechanism_statistics", 1),
     last_published_joint_state_(ros::Time::now()),
@@ -61,7 +60,7 @@ public:
   pr2_mechanism_model::RobotState *state_;
 
 private:
-  ros::NodeHandle controller_node_, cm_node_;
+  ros::NodeHandle cm_node_;
 
   // for controller statistics
   Statistics pre_update_stats_;
