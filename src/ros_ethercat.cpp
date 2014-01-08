@@ -1,11 +1,11 @@
 /*
- * sr_ethercat.cpp
+ * ros_ethercat.cpp
  *
  *  Created on: 7 Jan 2014
  *      Author: manos
  */
 
-#include "sr_ethercat/sr_ethercat.hpp"
+#include "ros_ethercat/ros_ethercat.hpp"
 #include <algorithm>
 #include <sstream>
 #include "ros/console.h"
@@ -16,7 +16,7 @@ using namespace pr2_controller_interface;
 using namespace boost::accumulators;
 using namespace ros;
 
-bool sr_ethercat::initXml(TiXmlElement* config)
+bool ros_ethercat::initXml(TiXmlElement* config)
 {
   if (!model_.initXml(config))
   {
@@ -58,13 +58,13 @@ bool sr_ethercat::initXml(TiXmlElement* config)
   return true;
 }
 
-bool sr_ethercat::configure()
+bool ros_ethercat::configure()
 {
   this->registerInterface(state_);
   return true;
 }
 
-void sr_ethercat::publishJointState()
+void ros_ethercat::publishJointState()
 {
   ros::Time now = ros::Time::now();
   if (now > last_published_joint_state_ + publish_period_joint_state_)
@@ -100,7 +100,7 @@ void sr_ethercat::publishJointState()
 }
 
 
-void sr_ethercat::publishMechanismStatistics()
+void ros_ethercat::publishMechanismStatistics()
 {
   ros::Time now = ros::Time::now();
   if (now > last_published_mechanism_stats_ + publish_period_mechanism_stats_)

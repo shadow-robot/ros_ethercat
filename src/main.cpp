@@ -43,15 +43,13 @@
 #include <fcntl.h>
 #include <pthread.h>
 
-#include "sr_ethercat/sr_ethercat.hpp"
+#include "ros_ethercat/ros_ethercat.hpp"
 
 using namespace boost::accumulators;
 using std::string;
 using realtime_tools::RealtimePublisher;
 
-
-
-static const string name = "sr_ethercat";
+static const string name = "ros_ethercat";
 
 static struct
 {
@@ -301,7 +299,7 @@ void *controlLoop(void *)
   // Initialize the hardware interface
   EthercatHardware ec(name);
   ec.init(g_options.interface_, g_options.allow_unprogrammed_);
-  sr_ethercat seth(ec.hw_, node);
+  ros_ethercat seth(ec.hw_, node);
 
   // Load robot description
   TiXmlDocument xml;
@@ -368,7 +366,7 @@ void *controlLoop(void *)
   static pthread_t diagnosticThread;
   if ((rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &ec)) != 0)
   {
-    ROS_FATAL("Unable to create control thread: rv = %d", rv);
+    ROS_FATAL("Unable to create control thread: rv = %zu", rv);
     publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
   }
 

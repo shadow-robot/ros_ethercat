@@ -1,5 +1,5 @@
 <package>
-  <name>sr_ethercat</name>
+  <name>ros_ethercat</name>
   <version>0.0.1</version>
   <description>Main loop that runs shadow hardwarethe robot.</description>
   <maintainer email="manos@shadowrobot.com">Manos Nikolaidis</maintainer>

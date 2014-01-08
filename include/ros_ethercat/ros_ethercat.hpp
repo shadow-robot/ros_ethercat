@@ -13,7 +13,7 @@
 #include <ros/ros.h>
 #include <hardware_interface/robot_hw.h>
 #include <pr2_mechanism_model/robot.h>
-#include "sr_ethercat/controller_spec.h"
+#include "ros_ethercat/controller_spec.h"
 #include <pr2_mechanism_msgs/ListControllerTypes.h>
 #include <pr2_mechanism_msgs/ListControllers.h>
 #include <pr2_mechanism_msgs/ReloadControllerLibraries.h>
@@ -34,10 +34,10 @@
 #include <ethercat_hardware/ethercat_hardware.h>
 #include <std_srvs/Empty.h>
 
-class sr_ethercat : public hardware_interface::RobotHW
+class ros_ethercat : public hardware_interface::RobotHW
 {
 public:
-  sr_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle nh) :
+  ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle nh) :
     model_(hw),
     state_(NULL),
     controller_node_(nh),
@@ -48,7 +48,7 @@ public:
     last_published_mechanism_stats_(ros::Time::now())
   {}
 
-  virtual ~sr_ethercat()
+  virtual ~ros_ethercat()
   {
     if (state_)
       delete state_;
