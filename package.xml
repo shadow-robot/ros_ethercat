@@ -1,14 +1,14 @@
 <package>
   <name>ros_ethercat</name>
   <version>0.0.1</version>
-  <description>Main loop that runs shadow hardwarethe robot.</description>
-  <maintainer email="manos@shadowrobot.com">Manos Nikolaidis</maintainer>
+  <description>Main loop to run EtherCAT robot hardware.</description>
+  <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://www.shadowrobot.com/</url>
 
-  <author email="manos@shadowrobot.com">Manos Nikolaidis</author>
+  <author email="software@shadowrobot.com">Manos Nikolaidis</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

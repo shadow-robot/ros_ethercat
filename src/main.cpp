@@ -32,10 +32,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdarg>
 #include <getopt.h>
 #include <execinfo.h>
-#include <signal.h>
+#include <csignal>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -47,6 +48,7 @@
 
 using namespace boost::accumulators;
 using std::string;
+using std::vector;
 using realtime_tools::RealtimePublisher;
 
 static const string name = "ros_ethercat";
@@ -68,7 +70,7 @@ void Usage(string msg = "")
   fprintf(stderr, "Usage: %s [options]\n", g_options.program_);
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
-  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"pr2_ethercat/realtime\" in seconds\n");
+  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ethercat/realtime\" in seconds\n");
   fprintf(stderr, "    -x, --xml <file>            Load the robot description from this file\n");
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
   fprintf(stderr, "    -u, --allow_unprogrammed    Allow control loop to run with unprogrammed devices\n");
@@ -260,9 +262,20 @@ protected:
   double *history_;
 };
 
+static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArray> *publisher,
+                               RealtimePublisher<std_msgs::Float64> *rtpublisher,
+                               const char* message,
+                               const char* data)
+{
+  ROS_FATAL(message, data);
+  publisher->stop();
+  delete rtpublisher;
+  ros::shutdown();
+  return (void*) -1;
+}
+
 void *controlLoop(void *)
 {
-  size_t rv = 0;
   double last_published, last_loop_start;
   int period;
   int policy;
@@ -272,7 +285,7 @@ void *controlLoop(void *)
   ros::NodeHandle node(name);
 
   RealtimePublisher<diagnostic_msgs::DiagnosticArray> publisher(node, "/diagnostics", 2);
-  RealtimePublisher<std_msgs::Float64> *rtpublisher = 0;
+  RealtimePublisher<std_msgs::Float64> *rtpublisher = NULL;
 
   // Realtime loop should be running at least 750Hz
   // Calculate realtime loop frequency every 200mseec
@@ -292,9 +305,8 @@ void *controlLoop(void *)
   // Keep history of last 3 calculation intervals.
   RTLoopHistory rt_loop_history(3, 1000.0);
 
-  if (g_options.stats_){
+  if (g_options.stats_)
     rtpublisher = new RealtimePublisher<std_msgs::Float64>(node, "realtime", 2);
-  }
 
   // Initialize the hardware interface
   EthercatHardware ec(name);
@@ -312,11 +324,7 @@ void *controlLoop(void *)
       xml.Parse(g_robot_desc.c_str());
     }
     else
-    {
-      ROS_FATAL("Could not load the xml from parameter server: %s", g_options.rosparam_);
-      rv = -1;
-      publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
-    }
+      return terminate_control(&publisher, rtpublisher, "Could not load the xml from parameter server: %s", g_options.rosparam_);
   }
   else if (0 == stat(g_options.xml_, &st))
   {
@@ -333,29 +341,17 @@ void *controlLoop(void *)
       ROS_WARN("Using -x to load robot description from parameter server is depricated.  Use -r instead.");
     }
     else
-    {
-      ROS_FATAL("Could not load the xml from parameter server: %s", g_options.xml_);
-      rv = -1;
-      publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
-    }
+      return terminate_control(&publisher, rtpublisher, "Could not load the xml from parameter server: %s", g_options.xml_);
   }
 
   root_element = xml.RootElement();
   root = xml.FirstChildElement("robot");
   if (!root || !root_element)
-  {
-      ROS_FATAL("Could not parse the xml from %s", g_options.xml_);
-      rv = -1;
-      publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
-  }
+      return terminate_control(&publisher, rtpublisher, "Could not parse the xml from %s", g_options.xml_);
 
   // Initialize the controller manager from robot description
   if (!seth.initXml(root))
-  {
-      ROS_FATAL("Could not initialize the controller manager");
-      rv = -1;
-      publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
-  }
+      return terminate_control(&publisher, rtpublisher, "Could not initialize the controller manager", 0);
 
   // Create controller manager
   controller_manager::ControllerManager cm(&seth);
@@ -365,11 +361,9 @@ void *controlLoop(void *)
 
   //Start Non-realtime diagonostic thread
   static pthread_t diagnosticThread;
-  if ((rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &ec)) != 0)
-  {
-    ROS_FATAL("Unable to create control thread: rv = %zu", rv);
-    publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
-  }
+  int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &ec);
+  if (rv != 0)
+    return terminate_control(&publisher, rtpublisher, "Unable to create control thread: rv = %s", boost::lexical_cast<string>(rv).c_str());
 
   // Set to realtime scheduler for this thread
   struct sched_param thread_param;
@@ -383,7 +377,6 @@ void *controlLoop(void *)
   ros::Duration durp(period);
 
   // Snap to the nearest second
-  //tick.tv_sec = tick.tv_sec;
   tick.tv_nsec = (tick.tv_nsec / period + 1) * period;
   clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tick, NULL);
 
@@ -526,7 +519,10 @@ void *controlLoop(void *)
   }
   ec.update(false, true);
 
-  publisher.stop(); delete rtpublisher; ros::shutdown(); return (void *)rv;
+  publisher.stop();
+  delete rtpublisher;
+  ros::shutdown();
+  return NULL;
 }
 
 void quitRequested(int sig)
@@ -552,8 +548,7 @@ bool publishTraceService(std_srvs::Empty::Request &req, std_srvs::Empty::Respons
   return true;
 }
 
-static int
-lock_fd(int fd)
+static int lock_fd(int fd)
 {
   struct flock lock;
   int rv;
@@ -582,7 +577,7 @@ string generatePIDFilename(const char* interface)
   }
   else
   {
-    filename = string(PIDDIR) + string("pr2_etherCAT.pid");
+    filename = string(PIDDIR) + string("ros_etherCAT.pid");
   }
   return filename;
 }
@@ -630,7 +625,7 @@ static int setupPidFile(const char* interface)
         return rv;
       }
     } else {
-      ROS_FATAL("Another instance of pr2_ethercat is already running with pid: %d", pid);
+      ROS_FATAL("Another instance of ros_ethercat is already running with pid: %d", pid);
       return rv;
     }
   }
