@@ -175,8 +175,8 @@ static void publishDiagnostics(RealtimePublisher<diagnostic_msgs::DiagnosticArra
       status.message = "OK";
     }
     g_stats.recent_overruns = 0;
-    g_stats.last_overrun++;
-    g_stats.last_severe_overrun++;
+    ++g_stats.last_overrun;
+    ++g_stats.last_severe_overrun;
 
     if (g_stats.rt_loop_not_making_timing)
       status.mergeSummaryf(status.ERROR, "Halting, realtime loop only ran at %.4f Hz", g_stats.halt_rt_loop_frequency);
@@ -539,15 +539,13 @@ bool publishTraceService(std_srvs::Empty::Request &req, std_srvs::Empty::Respons
 static int lock_fd(int fd)
 {
   struct flock lock;
-  int rv;
 
   lock.l_type = F_WRLCK;
   lock.l_whence = SEEK_SET;
   lock.l_start = 0;
   lock.l_len = 0;
 
-  rv = fcntl(fd, F_SETLK, &lock);
-  return rv;
+  return fcntl(fd, F_SETLK, &lock);
 }
 
 
@@ -572,7 +570,6 @@ string generatePIDFilename(const char* interface)
 
 static int setupPidFile(const char* interface)
 {
-  int rv = -1;
   pid_t pid;
   int fd;
   FILE *fp = NULL;
@@ -587,19 +584,19 @@ static int setupPidFile(const char* interface)
     if (errno != EEXIST)
     {
       ROS_FATAL("Unable to create pid file '%s': %s", filename.c_str(), strerror(errno));
-      return rv;
+      return -1;
     }
 
     if ((fd = open(filename.c_str(), O_RDWR)) < 0)
     {
       ROS_FATAL("Unable to open pid file '%s': %s", filename.c_str(), strerror(errno));
-      return rv;
+      return -1;
     }
 
     if ((fp = fdopen(fd, "rw")) == NULL)
     {
       ROS_FATAL("Can't read from '%s': %s", filename.c_str(), strerror(errno));
-      return rv;
+      return -1;
     }
     pid = -1;
     if ((fscanf(fp, "%d", &pid) != 1) || (pid == getpid()) || (lock_fd(fileno(fp)) == 0))
@@ -609,13 +606,13 @@ static int setupPidFile(const char* interface)
       if ((rc = unlink(filename.c_str())) == -1)
       {
         ROS_FATAL("Can't remove stale pid file '%s': %s", filename.c_str(), strerror(errno));
-        return rv;
+        return -1;
       }
     }
     else
     {
       ROS_FATAL("Another instance of ros_ethercat is already running with pid: %d", pid);
-      return rv;
+      return -1;
     }
   }
 
@@ -625,19 +622,19 @@ static int setupPidFile(const char* interface)
   if (fd == -1)
   {
     ROS_FATAL("Unable to open pid file '%s': %s", filename.c_str(), strerror(errno));
-    return rv;
+    return -1;
   }
 
   if (lock_fd(fd) == -1)
   {
     ROS_FATAL("Unable to lock pid file '%s': %s", filename.c_str(), strerror(errno));
-    return rv;
+    return -1;
   }
 
   if ((fp = fdopen(fd, "w")) == NULL)
   {
     ROS_FATAL("fdopen failed: %s", strerror(errno));
-    return rv;
+    return -1;
   }
 
   fprintf(fp, "%d\n", getpid());
@@ -645,9 +642,8 @@ static int setupPidFile(const char* interface)
   /* We do NOT close fd, since we want to keep the lock. */
   fflush(fp);
   fcntl(fd, F_SETFD, (long) 1);
-  rv = 0;
 
-  return rv;
+  return 0;
 }
 
 static void cleanupPidFile(const char* interface)
