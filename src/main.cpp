@@ -87,10 +87,6 @@ void Usage(const string &msg = "")
 }
 
 static int g_quit = 0;
-static bool g_reset_motors = true;
-static bool g_halt_motors = false;
-static bool g_halt_requested = false;
-static volatile bool g_publish_trace_requested = false;
 static const int NSEC_PER_SECOND = 1e+9;
 static const int USEC_PER_SECOND = 1e6;
 
@@ -181,7 +177,7 @@ static void publishDiagnostics(RealtimePublisher<diagnostic_msgs::DiagnosticArra
     ++g_stats.last_severe_overrun;
 
     if (g_stats.rt_loop_not_making_timing)
-      status.mergeSummaryf(status.ERROR, "Halting, realtime loop only ran at %.4f Hz", g_stats.halt_rt_loop_frequency);
+      status.mergeSummaryf(status.ERROR, "realtime loop only ran at %.4f Hz", g_stats.halt_rt_loop_frequency);
 
     statuses.push_back(status);
     publisher.msg_.status = statuses;
@@ -287,7 +283,6 @@ void *controlLoop(void *)
 
   // Realtime loop should be running at least 750Hz
   // Calculate realtime loop frequency every 200mseec
-  // Halt motors if average frequency over last 600msec is less than 750Hz
   double min_acceptable_rt_loop_frequency;
   if (!node.getParam("min_acceptable_rt_loop_frequency", min_acceptable_rt_loop_frequency))
     min_acceptable_rt_loop_frequency = 750.0;
@@ -382,22 +377,8 @@ void *controlLoop(void *)
     last_loop_start = this_loop_start;
 
     double start = now();
-    if (g_reset_motors)
-    {
-      ec.update(true, g_halt_motors);
-      g_reset_motors = false;
-      // Also, clear error flags when motor reset is requested
-      g_stats.rt_loop_not_making_timing = false;
-    }
-    else
-      ec.update(false, g_halt_motors);
+    ec.update(false, false);
 
-    if (g_publish_trace_requested)
-    {
-      g_publish_trace_requested = false;
-      ec.publishTrace(-1,"",0,0);
-    }
-    g_halt_motors = false;
     double after_ec = now();
     ros::Time this_moment(tick.tv_sec, tick.tv_nsec);
     cm.update(this_moment, durp);
@@ -415,7 +396,6 @@ void *controlLoop(void *)
     // Realtime loop should run about 1000Hz.
     // Missing timing on a control cycles usually causes a controller glitch and actuators to jerk.
     // When realtime loop misses a lot of cycles controllers will perform poorly and may cause robot to shake.
-    // Halt motors if realtime loop does not run enough cycles over a given period.
     ++rt_cycle_count;
     if ((start - last_rt_monitor_time) > rt_loop_monitor_period)
     {
@@ -427,7 +407,6 @@ void *controlLoop(void *)
       double avg_rt_loop_frequency = rt_loop_history.average();
       if (avg_rt_loop_frequency < min_acceptable_rt_loop_frequency)
       {
-        g_halt_motors = true;
         if (!g_stats.rt_loop_not_making_timing)
         {
           // Only update this value if motors when this first occurs (used for diagnostics error message)
@@ -492,13 +471,6 @@ void *controlLoop(void *)
         rtpublisher->unlockAndPublish();
       }
     }
-
-    // Halt the motors, if requested by a service call
-    if (g_halt_requested)
-    {
-      g_halt_motors = true;
-      g_halt_requested = false;
-    }
   }
 
   /* Shutdown all of the motors on exit */
@@ -518,24 +490,6 @@ void *controlLoop(void *)
 void quitRequested(int sig)
 {
   g_quit = 1;
-}
-
-bool resetMotorsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp)
-{
-  g_reset_motors = true;
-  return true;
-}
-
-bool haltMotorsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp)
-{
-  g_halt_requested = true;
-  return true;
-}
-
-bool publishTraceService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp)
-{
-  g_publish_trace_requested = true;
-  return true;
 }
 
 static int lock_fd(int fd)
@@ -740,10 +694,6 @@ int main(int argc, char *argv[])
   signal(SIGTERM, quitRequested);
   signal(SIGINT, quitRequested);
   signal(SIGHUP, quitRequested);
-
-  ros::ServiceServer reset = node.advertiseService("reset_motors", resetMotorsService);
-  ros::ServiceServer halt = node.advertiseService("halt_motors", haltMotorsService);
-  ros::ServiceServer publishTrace = node.advertiseService("publish_trace", publishTraceService);
 
   //Start thread
   int rv = pthread_create(&controlThread, &controlThreadAttr, controlLoop, 0);

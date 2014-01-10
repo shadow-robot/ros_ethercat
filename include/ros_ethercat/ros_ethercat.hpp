@@ -48,7 +48,6 @@
 #include <tinyxml.h>
 #include <controller_manager/controller_manager.h>
 #include <ethercat_hardware/ethercat_hardware.h>
-#include <std_srvs/Empty.h>
 
 class ros_ethercat : public hardware_interface::RobotHW
 {
