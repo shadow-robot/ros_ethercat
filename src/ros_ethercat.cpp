@@ -75,54 +75,14 @@ bool ros_ethercat::initXml(TiXmlElement* config)
     ++joints_size;
   }
   pub_mech_stats_.msg_.joint_statistics.resize(joints_size);
-  pub_joint_state_.msg_.name.resize(joints_size);
-  pub_joint_state_.msg_.position.resize(joints_size);
-  pub_joint_state_.msg_.velocity.resize(joints_size);
-  pub_joint_state_.msg_.effort.resize(joints_size);
 
   // get the publish rate for mechanism state
   double publish_rate_joint_state, publish_rate_mechanism_stats;
   cm_node_.param("mechanism_statistics_publish_rate", publish_rate_mechanism_stats, 1.0);
-  cm_node_.param("joint_state_publish_rate", publish_rate_joint_state, 100.0);
   publish_period_mechanism_stats_ = Duration(1.0/fmax(0.000001, publish_rate_mechanism_stats));
-  publish_period_joint_state_ = Duration(1.0/fmax(0.000001, publish_rate_joint_state));
 
   this->registerInterface(state_);
   return true;
-}
-
-void ros_ethercat::publishJointState()
-{
-  ros::Time now = ros::Time::now();
-  if (now > last_published_joint_state_ + publish_period_joint_state_)
-  {
-    if (pub_joint_state_.trylock())
-    {
-      while (last_published_joint_state_ + publish_period_joint_state_ < now)
-        last_published_joint_state_ = last_published_joint_state_ + publish_period_joint_state_;
-
-      unsigned int j = 0;
-      for (unsigned int i = 0; i < state_->joint_states_.size(); ++i)
-      {
-        int type = state_->joint_states_[i].joint_->type;
-        if (type == urdf::Joint::REVOLUTE || type == urdf::Joint::CONTINUOUS || type == urdf::Joint::PRISMATIC)
-        {
-          assert(j < pub_joint_state_.msg_.name.size());
-          assert(j < pub_joint_state_.msg_.position.size());
-          assert(j < pub_joint_state_.msg_.velocity.size());
-          assert(j < pub_joint_state_.msg_.effort.size());
-          pr2_mechanism_model::JointState *in = &state_->joint_states_[i];
-          pub_joint_state_.msg_.name[j] = state_->joint_states_[i].joint_->name;
-          pub_joint_state_.msg_.position[j] = in->position_;
-          pub_joint_state_.msg_.velocity[j] = in->velocity_;
-          pub_joint_state_.msg_.effort[j] = in->measured_effort_;
-          ++j;
-        }
-      }
-      pub_joint_state_.msg_.header.stamp = ros::Time::now();
-      pub_joint_state_.unlockAndPublish();
-    }
-  }
 }
 
 void ros_ethercat::publishMechanismStatistics()

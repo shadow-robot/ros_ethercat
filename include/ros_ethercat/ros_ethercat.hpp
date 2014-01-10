@@ -63,9 +63,7 @@ public:
     model_(hw),
     state_(NULL),
     cm_node_(nh, "controller_manager"),
-    pub_joint_state_(nh, "joint_states", 1),
     pub_mech_stats_(nh, "mechanism_statistics", 1),
-    last_published_joint_state_(ros::Time::now()),
     last_published_mechanism_stats_(ros::Time::now())
   {}
 
@@ -88,12 +86,10 @@ private:
   Statistics post_update_stats_;
 
   // for publishing constroller state
-  void publishJointState();
   void publishMechanismStatistics();
-  realtime_tools::RealtimePublisher<sensor_msgs::JointState> pub_joint_state_;
   realtime_tools::RealtimePublisher<pr2_mechanism_msgs::MechanismStatistics> pub_mech_stats_;
-  ros::Duration publish_period_joint_state_, publish_period_mechanism_stats_;
-  ros::Time last_published_joint_state_, last_published_mechanism_stats_;
+  ros::Duration publish_period_mechanism_stats_;
+  ros::Time last_published_mechanism_stats_;
 
   int current_controllers_list_, used_by_realtime_;
   std::vector<ControllerSpec> controllers_lists_[2];
