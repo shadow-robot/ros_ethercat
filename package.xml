@@ -23,8 +23,6 @@
   <build_depend>pr2_hardware_interface</build_depend>
   <build_depend>pr2_mechanism_model</build_depend>
   <build_depend>pr2_mechanism_diagnostics</build_depend>
-  <build_depend>pr2_controller_interface</build_depend>
-  <build_depend>pr2_mechanism_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>pluginlib</build_depend>
   
@@ -41,8 +39,6 @@
   <run_depend>pr2_hardware_interface</run_depend>
   <run_depend>pr2_mechanism_model</run_depend>
   <run_depend>pr2_mechanism_diagnostics</run_depend>
-  <run_depend>pr2_controller_interface</run_depend>
-  <run_depend>pr2_mechanism_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>pluginlib</run_depend>
 </package>

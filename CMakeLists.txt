@@ -15,8 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
    pr2_hardware_interface
    pr2_mechanism_model
    pr2_mechanism_diagnostics
-   pr2_controller_interface
-   pr2_mechanism_msgs
    sensor_msgs
    pluginlib
 )
@@ -36,8 +34,6 @@ CATKIN_DEPENDS
    pr2_hardware_interface
    pr2_mechanism_model
    pr2_mechanism_diagnostics
-   pr2_controller_interface
-   pr2_mechanism_msgs
    diagnostic_msgs
    sensor_msgs
    pluginlib

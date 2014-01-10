@@ -45,13 +45,7 @@
 #include <ros/ros.h>
 #include <hardware_interface/robot_hw.h>
 #include <pr2_mechanism_model/robot.h>
-#include "ros_ethercat/controller_spec.h"
-#include <pr2_mechanism_msgs/MechanismStatistics.h>
-#include <sensor_msgs/JointState.h>
 #include <tinyxml.h>
-#include <realtime_tools/realtime_publisher.h>
-#include <std_msgs/Float64.h>
-#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 #include <controller_manager/controller_manager.h>
 #include <ethercat_hardware/ethercat_hardware.h>
 #include <std_srvs/Empty.h>
@@ -62,9 +56,7 @@ public:
   ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle nh) :
     model_(hw),
     state_(NULL),
-    cm_node_(nh, "controller_manager"),
-    pub_mech_stats_(nh, "mechanism_statistics", 1),
-    last_published_mechanism_stats_(ros::Time::now())
+    cm_node_(nh, "controller_manager")
   {}
 
   virtual ~ros_ethercat()
@@ -79,22 +71,6 @@ public:
 
 private:
   ros::NodeHandle cm_node_;
-
-  // for controller statistics
-  Statistics pre_update_stats_;
-  Statistics update_stats_;
-  Statistics post_update_stats_;
-
-  // for publishing constroller state
-  void publishMechanismStatistics();
-  realtime_tools::RealtimePublisher<pr2_mechanism_msgs::MechanismStatistics> pub_mech_stats_;
-  ros::Duration publish_period_mechanism_stats_;
-  ros::Time last_published_mechanism_stats_;
-
-  int current_controllers_list_, used_by_realtime_;
-  std::vector<ControllerSpec> controllers_lists_[2];
-
-  bool motors_previously_halted_;
 };
 
 #endif /* SR_ETHERCAT_INTERFACE_HPP_ */

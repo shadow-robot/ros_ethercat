@@ -45,6 +45,8 @@
 #include <pthread.h>
 
 #include "ros_ethercat/ros_ethercat.hpp"
+#include <std_msgs/Float64.h>
+#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
 using namespace boost::accumulators;
 using std::string;
