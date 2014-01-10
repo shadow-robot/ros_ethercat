@@ -71,11 +71,9 @@ public:
 
   virtual ~ros_ethercat()
   {
-    if (state_)
-      delete state_;
+    delete state_;
   }
 
-  bool configure();
   bool initXml(TiXmlElement* config);
 
   pr2_mechanism_model::Robot model_;

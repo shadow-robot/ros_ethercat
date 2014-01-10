@@ -87,11 +87,6 @@ bool ros_ethercat::initXml(TiXmlElement* config)
   publish_period_mechanism_stats_ = Duration(1.0/fmax(0.000001, publish_rate_mechanism_stats));
   publish_period_joint_state_ = Duration(1.0/fmax(0.000001, publish_rate_joint_state));
 
-  return configure();
-}
-
-bool ros_ethercat::configure()
-{
   this->registerInterface(state_);
   return true;
 }
@@ -121,8 +116,7 @@ void ros_ethercat::publishJointState()
           pub_joint_state_.msg_.position[j] = in->position_;
           pub_joint_state_.msg_.velocity[j] = in->velocity_;
           pub_joint_state_.msg_.effort[j] = in->measured_effort_;
-
-          j++;
+          ++j;
         }
       }
       pub_joint_state_.msg_.header.stamp = ros::Time::now();
@@ -130,7 +124,6 @@ void ros_ethercat::publishJointState()
     }
   }
 }
-
 
 void ros_ethercat::publishMechanismStatistics()
 {
@@ -217,7 +210,6 @@ void ros_ethercat::publishMechanismStatistics()
       }
 
       pub_mech_stats_.msg_.header.stamp = ros::Time::now();
-
       pub_mech_stats_.unlockAndPublish();
     }
   }

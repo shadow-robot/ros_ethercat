@@ -65,7 +65,7 @@ static struct
 
 string g_robot_desc;
 
-void Usage(string msg = "")
+void Usage(const string &msg = "")
 {
   fprintf(stderr, "Usage: %s [options]\n", g_options.program_);
   fprintf(stderr, "  Available options\n");
@@ -81,9 +81,7 @@ void Usage(string msg = "")
     exit(-1);
   }
   else
-  {
     exit(0);
-  }
 }
 
 static int g_quit = 0;
@@ -181,9 +179,7 @@ static void publishDiagnostics(RealtimePublisher<diagnostic_msgs::DiagnosticArra
     g_stats.last_severe_overrun++;
 
     if (g_stats.rt_loop_not_making_timing)
-    {
       status.mergeSummaryf(status.ERROR, "Halting, realtime loop only ran at %.4f Hz", g_stats.halt_rt_loop_frequency);
-    }
 
     statuses.push_back(status);
     publisher.msg_.status = statuses;
@@ -199,13 +195,13 @@ static inline double now()
   return double(n.tv_nsec) / NSEC_PER_SECOND + n.tv_sec;
 }
 
-
 void *diagnosticLoop(void *args)
 {
   EthercatHardware *ec((EthercatHardware *) args);
   struct timespec tick;
   clock_gettime(CLOCK_MONOTONIC, &tick);
-  while (!g_quit) {
+  while (!g_quit)
+  {
     ec->collectDiagnostics();
     tick.tv_sec += 1;
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tick, NULL);
@@ -265,7 +261,7 @@ protected:
 static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArray> *publisher,
                                RealtimePublisher<std_msgs::Float64> *rtpublisher,
                                const char* message,
-                               const char* data)
+                               const char* data = NULL)
 {
   ROS_FATAL(message, data);
   publisher->stop();
@@ -292,13 +288,10 @@ void *controlLoop(void *)
   // Halt motors if average frequency over last 600msec is less than 750Hz
   double min_acceptable_rt_loop_frequency;
   if (!node.getParam("min_acceptable_rt_loop_frequency", min_acceptable_rt_loop_frequency))
-  {
     min_acceptable_rt_loop_frequency = 750.0;
-  }
   else
-  {
     ROS_WARN("min_acceptable_rt_loop_frequency changed to %f", min_acceptable_rt_loop_frequency);
-  }
+
   unsigned rt_cycle_count = 0;
   double last_rt_monitor_time;
   double rt_loop_monitor_period = 0.6 / 3;
@@ -320,16 +313,12 @@ void *controlLoop(void *)
   if (g_options.rosparam_ != NULL)
   {
     if (ros::param::get(g_options.rosparam_, g_robot_desc))
-    {
       xml.Parse(g_robot_desc.c_str());
-    }
     else
       return terminate_control(&publisher, rtpublisher, "Could not load the xml from parameter server: %s", g_options.rosparam_);
   }
   else if (0 == stat(g_options.xml_, &st))
-  {
     xml.LoadFile(g_options.xml_);
-  }
   else
   {
     // In ROS Galapagos remove this fall-back to rosparam functionality
@@ -347,11 +336,11 @@ void *controlLoop(void *)
   root_element = xml.RootElement();
   root = xml.FirstChildElement("robot");
   if (!root || !root_element)
-      return terminate_control(&publisher, rtpublisher, "Could not parse the xml from %s", g_options.xml_);
+    return terminate_control(&publisher, rtpublisher, "Could not parse the xml from %s", g_options.xml_);
 
   // Initialize the controller manager from robot description
   if (!seth.initXml(root))
-      return terminate_control(&publisher, rtpublisher, "Could not initialize the controller manager", 0);
+    return terminate_control(&publisher, rtpublisher, "Could not initialize the controller manager");
 
   // Create controller manager
   controller_manager::ControllerManager cm(&seth);
@@ -399,9 +388,8 @@ void *controlLoop(void *)
       g_stats.rt_loop_not_making_timing = false;
     }
     else
-    {
       ec.update(false, g_halt_motors);
-    }
+
     if (g_publish_trace_requested)
     {
       g_publish_trace_requested = false;
@@ -576,9 +564,8 @@ string generatePIDFilename(const char* interface)
     filename = string(PIDDIR) + "EtherCAT_" +  string(interface) + ".pid";
   }
   else
-  {
     filename = string(PIDDIR) + string("ros_etherCAT.pid");
-  }
+
   return filename;
 }
 
@@ -624,7 +611,9 @@ static int setupPidFile(const char* interface)
         ROS_FATAL("Can't remove stale pid file '%s': %s", filename.c_str(), strerror(errno));
         return rv;
       }
-    } else {
+    }
+    else
+    {
       ROS_FATAL("Another instance of ros_ethercat is already running with pid: %d", pid);
       return rv;
     }
@@ -675,7 +664,8 @@ static pthread_attr_t controlThreadAttr;
 int main(int argc, char *argv[])
 {
   // Keep the kernel from swapping us out
-  if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0) {
+  if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
+  {
     perror("mlockall");
     return -1;
   }
@@ -699,7 +689,9 @@ int main(int argc, char *argv[])
     };
     int option_index = 0;
     int c = getopt_long(argc, argv, "hi:usx:r:", long_options, &option_index);
-    if (c == -1) break;
+    if (c == -1)
+      break;
+
     switch (c)
     {
       case 'h':
@@ -723,20 +715,14 @@ int main(int argc, char *argv[])
     }
   }
   if (optind < argc)
-  {
     Usage("Extra arguments");
-  }
 
   if (!g_options.interface_)
     Usage("You must specify a network interface");
   if (!g_options.xml_ && !g_options.rosparam_)
-  {
     Usage("You must specify either an XML file or rosparam for robot description");
-  }
   if (g_options.xml_ && g_options.rosparam_)
-  {
     Usage("You must not specify both a rosparm and XML file for robot description");
-  }
 
   // The previous EtherCAT software created a lock for any EtherCAT master.
   // This lock prevented two EtherCAT masters from running on the same computer.
@@ -747,7 +733,8 @@ int main(int argc, char *argv[])
   // masters from running on same Ethernet interface.  
   // Therefore in the Groovy Galapagos ROS release, the global EtherCAT lock has been removed 
   // and only the per-interface lock will remain.
-  if (setupPidFile(g_options.interface_) < 0) return -1;
+  if (setupPidFile(g_options.interface_) < 0)
+    return -1;
 
   ros::NodeHandle node(name);
 
@@ -761,8 +748,8 @@ int main(int argc, char *argv[])
   ros::ServiceServer publishTrace = node.advertiseService("publish_trace", publishTraceService);
 
   //Start thread
-  int rv;
-  if ((rv = pthread_create(&controlThread, &controlThreadAttr, controlLoop, 0)) != 0)
+  int rv = pthread_create(&controlThread, &controlThreadAttr, controlLoop, 0);
+  if (rv != 0)
   {
     ROS_FATAL("Unable to create control thread: rv = %d", rv);
     exit(EXIT_FAILURE);
