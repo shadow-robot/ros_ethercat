@@ -381,7 +381,9 @@ void *controlLoop(void *)
 
     double after_ec = now();
     ros::Time this_moment(tick.tv_sec, tick.tv_nsec);
+    seth.read();
     cm.update(this_moment, durp);
+    seth.write();
     double end = now();
 
     g_stats.ec_acc(after_ec - start);

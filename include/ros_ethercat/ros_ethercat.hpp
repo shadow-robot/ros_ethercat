@@ -44,6 +44,8 @@
 #include <vector>
 #include <ros/ros.h>
 #include <hardware_interface/robot_hw.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/joint_command_interface.h>
 #include <pr2_mechanism_model/robot.h>
 #include <tinyxml.h>
 #include <controller_manager/controller_manager.h>
@@ -64,12 +66,17 @@ public:
   }
 
   bool initXml(TiXmlElement* config);
+  void read();
+  void write();
+
+private:
+  ros::NodeHandle cm_node_;
 
   pr2_mechanism_model::Robot model_;
   pr2_mechanism_model::RobotState *state_;
 
-private:
-  ros::NodeHandle cm_node_;
+  hardware_interface::JointStateInterface joint_state_interface_;
+  hardware_interface::JointCommandInterface joint_command_interface_;
 };
 
 #endif /* SR_ETHERCAT_INTERFACE_HPP_ */

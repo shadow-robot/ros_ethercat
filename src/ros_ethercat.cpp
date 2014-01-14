@@ -40,6 +40,14 @@
 #include "ros_ethercat/ros_ethercat.hpp"
 #include "ros/console.h"
 
+using std::map;
+using std::vector;
+using std::string;
+using pr2_mechanism_model::JointState;
+using pr2_mechanism_model::RobotState;
+using hardware_interface::JointStateHandle;
+using hardware_interface::JointHandle;
+
 bool ros_ethercat::initXml(TiXmlElement* config)
 {
   if (!model_.initXml(config))
@@ -47,8 +55,31 @@ bool ros_ethercat::initXml(TiXmlElement* config)
     ROS_ERROR("Failed to initialize pr2 mechanism model");
     return false;
   }
-  state_ = new pr2_mechanism_model::RobotState(&model_);
+  state_ = new RobotState(&model_);
+
+  for (map<string, JointState*>::const_iterator it = state_->joint_states_map_.begin(); it != state_->joint_states_map_.end(); ++it)
+  {
+    JointStateHandle jsh(it->first, &it->second->position_, &it->second->velocity_, &it->second->measured_effort_);
+    joint_state_interface_.registerHandle(jsh);
+    JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second->commanded_effort_);
+    joint_command_interface_.registerHandle(jh);
+  }
 
   registerInterface(state_);
+  registerInterface(&joint_state_interface_);
+  registerInterface(&joint_command_interface_);
+
   return true;
+}
+
+void ros_ethercat::read()
+{
+  state_->propagateActuatorPositionToJointPosition();
+  state_->zeroCommands();
+}
+
+void ros_ethercat::write()
+{
+  state_->enforceSafety();
+  state_->propagateJointEffortToActuatorEffort();
 }
