@@ -41,7 +41,6 @@
 #include "ros/console.h"
 
 using std::map;
-using std::vector;
 using std::string;
 using pr2_mechanism_model::JointState;
 using pr2_mechanism_model::RobotState;
@@ -61,13 +60,16 @@ bool ros_ethercat::initXml(TiXmlElement* config)
   {
     JointStateHandle jsh(it->first, &it->second->position_, &it->second->velocity_, &it->second->measured_effort_);
     joint_state_interface_.registerHandle(jsh);
+
     JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second->commanded_effort_);
     joint_command_interface_.registerHandle(jh);
+    effort_joint_interface_.registerHandle(jh);
   }
 
   registerInterface(state_);
   registerInterface(&joint_state_interface_);
   registerInterface(&joint_command_interface_);
+  registerInterface(&effort_joint_interface_);
 
   return true;
 }

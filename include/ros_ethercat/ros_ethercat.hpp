@@ -40,33 +40,53 @@
 #ifndef SR_ETHERCAT_INTERFACE_HPP_
 #define SR_ETHERCAT_INTERFACE_HPP_
 
-#include <string>
-#include <vector>
 #include <ros/ros.h>
+#include <tinyxml.h>
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <pr2_mechanism_model/robot.h>
-#include <tinyxml.h>
 #include <controller_manager/controller_manager.h>
 #include <ethercat_hardware/ethercat_hardware.h>
+
+/** \brief Contains robot state information and init, read, write function.
+ *
+ * The robot state is contained in pr2_mechanism_model::RobotState object
+ * as used by pr2_controller object. Nevertheless, the main loop in main.cpp
+ * instantiates a ros_control controller_manager. So a pr2_controller with few modifications
+ * may be loaded with controller_manager with RobotState as a custom interface.
+ *
+ * ros_control interfaces are exposed alongside RobotState. So controllers from
+ * ros_controllers package may also be loaded. These new interfaces contain pointers
+ * to data in RobotState so there is no copying or data redundancy.
+ *
+ * The read and write functions will call the propagate functions of pr2_transmissions.
+ * Hardware read and write takes place in the EthercatHardware object in main.cpp
+ *
+ * initXml, read and write should be called inside main.cpp
+ */
 
 class ros_ethercat : public hardware_interface::RobotHW
 {
 public:
-  ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle nh) :
-    model_(hw),
-    state_(NULL),
-    cm_node_(nh, "controller_manager")
+  ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle &nh) :
+    model_(hw), state_(NULL), cm_node_(nh, "controller_manager")
   {}
 
-  virtual ~ros_ethercat()
-  {
-    delete state_;
-  }
+  virtual ~ros_ethercat() { delete state_; }
 
+/**
+ * Initialize Robot and RobotState objects from pointer to xml data and register interfaces.
+ * The pr2_transmissions whose propagate functions will be called are
+ * also initialized by this function
+ *
+ */
   bool initXml(TiXmlElement* config);
+
+/// propagate position actuator -> joint and set commands to zero
   void read();
+
+/// propagate effort joint -> actuator and enforce safety limits
   void write();
 
 private:
@@ -77,6 +97,7 @@ private:
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;
+  hardware_interface::EffortJointInterface effort_joint_interface_;
 };
 
 #endif /* SR_ETHERCAT_INTERFACE_HPP_ */
