@@ -40,4 +40,6 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
  2. Since pr2_controller_manager is no longer used it no longer publishes joint_states or mechanism_statistics. Joint states can be published with the join_state_controller in ros_controllers. Automatically starting this controller requires changes in launch files and the addition of a yaml file.
  3. `calibrate.py` file from pr2_bringup must be replicated in another package and modified to use controller_manager (from ros_control). Launch files that execute `calibrate.py` should be modified with the correct package name.
  
+*transmissions*
 
+ Objects of type pr2_mechanism_model::Transmission are allowed and actually needed to keep RobotState updated.
