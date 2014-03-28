@@ -8,7 +8,6 @@ ros_ethercat
  1. pr2_hardware_interface
  2. ethercat_hardware
  3. pr2_mechanism_model
- 4. pr2_msgs
   
 *Removed pr2 dependencies*
 
@@ -17,6 +16,7 @@ ros_ethercat
  3. pr2_bringup
  4. pr2_controller_interface
  5. pr2_controller_manager
+ 6. pr2_msgs
 
 
 **Compatibility**
