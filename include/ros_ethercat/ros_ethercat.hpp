@@ -40,65 +40,64 @@
 #ifndef SR_ETHERCAT_INTERFACE_HPP_
 #define SR_ETHERCAT_INTERFACE_HPP_
 
-#include <string>
-#include <vector>
 #include <ros/ros.h>
-#include <hardware_interface/robot_hw.h>
-#include <pr2_mechanism_model/robot.h>
-#include "ros_ethercat/controller_spec.h"
-#include <pr2_mechanism_msgs/MechanismStatistics.h>
-#include <sensor_msgs/JointState.h>
 #include <tinyxml.h>
-#include <realtime_tools/realtime_publisher.h>
-#include <std_msgs/Float64.h>
-#include <diagnostic_updater/DiagnosticStatusWrapper.h>
+#include <hardware_interface/robot_hw.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/joint_command_interface.h>
+#include <pr2_mechanism_model/robot.h>
 #include <controller_manager/controller_manager.h>
 #include <ethercat_hardware/ethercat_hardware.h>
-#include <std_srvs/Empty.h>
+
+/** \brief Contains robot state information and init, read, write function.
+ *
+ * The robot state is contained in pr2_mechanism_model::RobotState object
+ * as used by pr2_controller object. Nevertheless, the main loop in main.cpp
+ * instantiates a ros_control controller_manager. So a pr2_controller with few modifications
+ * may be loaded with controller_manager with RobotState as a custom interface.
+ *
+ * ros_control interfaces are exposed alongside RobotState. So controllers from
+ * ros_controllers package may also be loaded. These new interfaces contain pointers
+ * to data in RobotState so there is no copying or data redundancy.
+ *
+ * The read and write functions will call the propagate functions of pr2_transmissions.
+ * Hardware read and write takes place in the EthercatHardware object in main.cpp
+ *
+ * initXml, read and write should be called inside main.cpp
+ */
 
 class ros_ethercat : public hardware_interface::RobotHW
 {
 public:
-  ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle nh) :
-    model_(hw),
-    state_(NULL),
-    cm_node_(nh, "controller_manager"),
-    pub_joint_state_(nh, "joint_states", 1),
-    pub_mech_stats_(nh, "mechanism_statistics", 1),
-    last_published_joint_state_(ros::Time::now()),
-    last_published_mechanism_stats_(ros::Time::now())
+  ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle &nh) :
+    model_(hw), state_(NULL), cm_node_(nh, "controller_manager")
   {}
 
-  virtual ~ros_ethercat()
-  {
-    delete state_;
-  }
+  virtual ~ros_ethercat() { delete state_; }
 
+/**
+ * Initialize Robot and RobotState objects from pointer to xml data and register interfaces.
+ * The pr2_transmissions whose propagate functions will be called are
+ * also initialized by this function
+ *
+ */
   bool initXml(TiXmlElement* config);
 
-  pr2_mechanism_model::Robot model_;
-  pr2_mechanism_model::RobotState *state_;
+/// propagate position actuator -> joint and set commands to zero
+  void read();
+
+/// propagate effort joint -> actuator and enforce safety limits
+  void write();
 
 private:
   ros::NodeHandle cm_node_;
 
-  // for controller statistics
-  Statistics pre_update_stats_;
-  Statistics update_stats_;
-  Statistics post_update_stats_;
+  pr2_mechanism_model::Robot model_;
+  pr2_mechanism_model::RobotState *state_;
 
-  // for publishing constroller state
-  void publishJointState();
-  void publishMechanismStatistics();
-  realtime_tools::RealtimePublisher<sensor_msgs::JointState> pub_joint_state_;
-  realtime_tools::RealtimePublisher<pr2_mechanism_msgs::MechanismStatistics> pub_mech_stats_;
-  ros::Duration publish_period_joint_state_, publish_period_mechanism_stats_;
-  ros::Time last_published_joint_state_, last_published_mechanism_stats_;
-
-  int current_controllers_list_, used_by_realtime_;
-  std::vector<ControllerSpec> controllers_lists_[2];
-
-  bool motors_previously_halted_;
+  hardware_interface::JointStateInterface joint_state_interface_;
+  hardware_interface::JointCommandInterface joint_command_interface_;
+  hardware_interface::EffortJointInterface effort_joint_interface_;
 };
 
 #endif /* SR_ETHERCAT_INTERFACE_HPP_ */

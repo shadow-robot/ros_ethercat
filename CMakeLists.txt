@@ -4,19 +4,15 @@ project(ros_ethercat)
 
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS 
-   roscpp 
-   std_srvs 
+   roscpp
    std_msgs
    controller_manager 
-   ethercat_hardware 
-   realtime_tools 
+   ethercat_hardware
+   realtime_tools
    diagnostic_updater
    diagnostic_msgs
    pr2_hardware_interface
    pr2_mechanism_model
-   pr2_mechanism_diagnostics
-   pr2_controller_interface
-   pr2_mechanism_msgs
    sensor_msgs
    pluginlib
 )
@@ -26,18 +22,14 @@ include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 catkin_package(
 CATKIN_DEPENDS
-   roscpp 
-   std_srvs 
+   roscpp
    std_msgs
    controller_manager 
    ethercat_hardware 
-   realtime_tools 
+   realtime_tools
    diagnostic_updater
    pr2_hardware_interface
    pr2_mechanism_model
-   pr2_mechanism_diagnostics
-   pr2_controller_interface
-   pr2_mechanism_msgs
    diagnostic_msgs
    sensor_msgs
    pluginlib
