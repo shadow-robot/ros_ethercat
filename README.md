@@ -8,6 +8,7 @@ ros_ethercat
  1. pr2_hardware_interface
  2. ethercat_hardware
  3. pr2_mechanism_model
+ 4. pr2_mechanism_msgs
   
 *Removed pr2 dependencies*
 
