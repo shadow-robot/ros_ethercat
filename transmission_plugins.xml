@@ -1,0 +1,10 @@
+<library path="lib/libros_ethercat_mechanism_model">
+
+  <class name="ros_ethercat_mechanism_model/PR2GripperTransmission" type="ros_ethercat_mechanism_model::PR2GripperTransmission" base_class_type="ros_ethercat_mechanism_model::Transmission" />
+  <class name="ros_ethercat_mechanism_model/SimpleTransmission" type="ros_ethercat_mechanism_model::SimpleTransmission" base_class_type="ros_ethercat_mechanism_model::Transmission" />
+  <class name="ros_ethercat_mechanism_model/GripperTransmission" type="ros_ethercat_mechanism_model::GripperTransmission" base_class_type="ros_ethercat_mechanism_model::Transmission" />
+  <class name="ros_ethercat_mechanism_model/WristTransmission" type="ros_ethercat_mechanism_model::WristTransmission" base_class_type="ros_ethercat_mechanism_model::Transmission" />
+  <class name="ros_ethercat_mechanism_model/PR2BeltCompensatorTransmission" type="ros_ethercat_mechanism_model::PR2BeltCompensatorTransmission"
+         base_class_type="ros_ethercat_mechanism_model::Transmission" />
+
+</library>

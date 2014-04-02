@@ -42,8 +42,8 @@
 
 using std::map;
 using std::string;
-using pr2_mechanism_model::JointState;
-using pr2_mechanism_model::RobotState;
+using ros_ethercat_mechanism_model::JointState;
+using ros_ethercat_mechanism_model::RobotState;
 using hardware_interface::JointStateHandle;
 using hardware_interface::JointHandle;
 

@@ -476,7 +476,7 @@ void *controlLoop(void *)
   }
 
   /* Shutdown all of the motors on exit */
-  for (pr2_hardware_interface::ActuatorMap::const_iterator it = ec.hw_->actuators_.begin(); it != ec.hw_->actuators_.end(); ++it)
+  for (ros_ethercat_hardware_interface::ActuatorMap::const_iterator it = ec.hw_->actuators_.begin(); it != ec.hw_->actuators_.end(); ++it)
   {
     it->second->command_.enable_ = false;
     it->second->command_.effort_ = 0;

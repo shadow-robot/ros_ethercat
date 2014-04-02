@@ -45,13 +45,14 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
-#include <pr2_mechanism_model/robot.h>
+#include <ros_ethercat/robot.h>
 #include <controller_manager/controller_manager.h>
+#define pr2_hardware_interface ros_ethercat_hardware_interface
 #include <ethercat_hardware/ethercat_hardware.h>
 
 /** \brief Contains robot state information and init, read, write function.
  *
- * The robot state is contained in pr2_mechanism_model::RobotState object
+ * The robot state is contained in ros_ethercat_mechanism_model::RobotState object
  * as used by pr2_controller object. Nevertheless, the main loop in main.cpp
  * instantiates a ros_control controller_manager. So a pr2_controller with few modifications
  * may be loaded with controller_manager with RobotState as a custom interface.
@@ -69,7 +70,7 @@
 class ros_ethercat : public hardware_interface::RobotHW
 {
 public:
-  ros_ethercat(pr2_hardware_interface::HardwareInterface *hw, ros::NodeHandle &nh) :
+  ros_ethercat(ros_ethercat_hardware_interface::HardwareInterface *hw, ros::NodeHandle &nh) :
     model_(hw), state_(NULL), cm_node_(nh, "controller_manager")
   {}
 
@@ -92,8 +93,8 @@ public:
 private:
   ros::NodeHandle cm_node_;
 
-  pr2_mechanism_model::Robot model_;
-  pr2_mechanism_model::RobotState *state_;
+  ros_ethercat_mechanism_model::Robot model_;
+  ros_ethercat_mechanism_model::RobotState *state_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;
