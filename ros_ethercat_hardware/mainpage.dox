@@ -1,0 +1,13 @@
+/** \mainpage
+
+@htmlinclude manifest.html
+
+@section summary Summary
+This package provides a driver for Willow Garage's EtherCAT motor controller boards.
+
+@section usage Usage
+This package exposes a single class with a simple API to initialize all EtherCAT devices found on an interface (EthercatHardware::init), and a second call to update those devices on a periodic basis (EthercatHardware::update). An application wishing to control EtherCAT devices should create a single instance of the EthercatHardware driver.
+
+ - \ref EthercatHardware::EthercatHardware
+
+*/

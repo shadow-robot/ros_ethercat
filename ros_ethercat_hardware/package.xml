@@ -1,0 +1,35 @@
+<package>
+  <name>ros_ethercat_hardware</name>
+  <version>0.1.0</version>
+  <description>Package for creating a hardware interface to the robot using the EtherCAT motor controller/driver</description>
+  <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/ros_ethercat_hardware</url>
+  <url type="repository">https://github.com/shadow-robot/ros_ethercat</url>
+  <url type="bugtracker">https://github.com/shadow-robot/ros_ethercat/issues</url>
+
+  <author email="wheeler@willowgarage.com">Rob Wheeler</author>
+  <author email="dking@willowgarage.com">Derek King</author>
+  <author email="software@shadowrobot.com">Manos Nikolaidis</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>ros_ethercat_hardware_interface</build_depend>
+  <build_depend>eml</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>realtime_tools</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>diagnostic_updater</build_depend>
+  <build_depend>pluginlib</build_depend>
+
+  <run_depend>ros_ethercat_hardware_interface</run_depend>
+  <run_depend>eml</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>realtime_tools</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
+  <run_depend>pluginlib</run_depend>
+
+</package>
