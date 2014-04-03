@@ -89,7 +89,6 @@ public:
 /// propagate effort joint -> actuator and enforce safety limits
   void write();
 
-private:
   ros::NodeHandle cm_node_;
 
   ros_ethercat_mechanism_model::Robot model_;

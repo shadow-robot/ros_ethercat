@@ -37,6 +37,7 @@
 
 #include <ros_ethercat_hardware_interface/hardware_interface.hpp>
 
+#define BOOL NETIF_BOOL
 #include <al/ethercat_AL.h>
 #include <al/ethercat_master.h>
 #include <al/ethercat_slave_handler.h>
