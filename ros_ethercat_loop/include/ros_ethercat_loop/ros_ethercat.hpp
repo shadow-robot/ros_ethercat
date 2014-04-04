@@ -41,6 +41,7 @@
 #define SR_ETHERCAT_INTERFACE_HPP_
 
 #include <ros/ros.h>
+#include <ros/console.h>
 #include <tinyxml.h>
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
@@ -82,13 +83,58 @@ public:
    * also initialized by this function
    *
    */
-  bool initXml(TiXmlElement* config);
+  bool initXml(TiXmlElement* config)
+  {
+    using std::map;
+    using std::string;
+    using ros_ethercat_mechanism_model::JointState;
+    using ros_ethercat_mechanism_model::RobotState;
+    using hardware_interface::JointStateHandle;
+    using hardware_interface::JointHandle;
+
+    if (!model_.initXml(config))
+    {
+      ROS_ERROR("Failed to initialize pr2 mechanism model");
+      return false;
+    }
+    state_.reset(new RobotState(&model_));
+
+    map<string, JointState*>::const_iterator it = state_->joint_states_map_.begin();
+    while (it != state_->joint_states_map_.end())
+    {
+      JointStateHandle jsh(it->first,
+                           &it->second->position_,
+                           &it->second->velocity_,
+                           &it->second->measured_effort_);
+      joint_state_interface_.registerHandle(jsh);
+
+      JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second->commanded_effort_);
+      joint_command_interface_.registerHandle(jh);
+      effort_joint_interface_.registerHandle(jh);
+      ++it;
+    }
+
+    registerInterface(state_.get());
+    registerInterface(&joint_state_interface_);
+    registerInterface(&joint_command_interface_);
+    registerInterface(&effort_joint_interface_);
+
+    return true;
+  }
 
   /// propagate position actuator -> joint and set commands to zero
-  void read();
+  void read()
+  {
+    state_->propagateActuatorPositionToJointPosition();
+    state_->zeroCommands();
+  }
 
   /// propagate effort joint -> actuator and enforce safety limits
-  void write();
+  void write()
+  {
+    state_->enforceSafety();
+    state_->propagateJointEffortToActuatorEffort();
+  }
 
   ros::NodeHandle cm_node_;
 

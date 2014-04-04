@@ -38,8 +38,7 @@ INCLUDE_DIRS
 add_definitions(-O3)
 
 add_executable(${PROJECT_NAME}
-   src/main.cpp
-   src/ros_ethercat.cpp)
+   src/main.cpp)
 target_link_libraries(${PROJECT_NAME} rt ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
