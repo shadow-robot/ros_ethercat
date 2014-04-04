@@ -43,6 +43,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <algorithm>
 
 #include "ros_ethercat_loop/ros_ethercat.hpp"
 #include <std_msgs/Float64.h>
@@ -51,6 +52,7 @@
 using namespace boost::accumulators;
 using std::string;
 using std::vector;
+using std::accumulate;
 using realtime_tools::RealtimePublisher;
 
 static const string name = "ros_ethercat";
@@ -63,6 +65,7 @@ static struct
   char *rosparam_;
   bool allow_unprogrammed_;
   bool stats_;
+  int period;
 } g_options;
 
 string g_robot_desc;
@@ -72,6 +75,7 @@ void Usage(const string &msg = "")
   fprintf(stderr, "Usage: %s [options]\n", g_options.program_);
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
+  fprintf(stderr, "    -p, --period                RT loop period in nanoseconds\n");
   fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ethercat/realtime\" in seconds\n");
   fprintf(stderr, "    -x, --xml <file>            Load the robot description from this file\n");
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
@@ -87,8 +91,8 @@ void Usage(const string &msg = "")
 }
 
 static int g_quit = 0;
-static const int NSEC_PER_SECOND = 1e+9;
-static const int USEC_PER_SECOND = 1e6;
+static const int SEC_2_NSEC = 1e+9;
+static const int SEC_2_USEC = 1e6;
 
 static struct
 {
@@ -143,20 +147,20 @@ static void publishDiagnostics(RealtimePublisher<diagnostic_msgs::DiagnosticArra
       status.add("Robot Description", g_robot_desc);
     }
 
-    status.addf("Max EtherCAT roundtrip (us)", "%.2f", max_ec*USEC_PER_SECOND);
-    status.addf("Avg EtherCAT roundtrip (us)", "%.2f", avg_ec*USEC_PER_SECOND);
-    status.addf("Max Controller Manager roundtrip (us)", "%.2f", max_cm*USEC_PER_SECOND);
-    status.addf("Avg Controller Manager roundtrip (us)", "%.2f", avg_cm*USEC_PER_SECOND);
-    status.addf("Max Total Loop roundtrip (us)", "%.2f", max_loop*USEC_PER_SECOND);
-    status.addf("Avg Total Loop roundtrip (us)", "%.2f", avg_loop*USEC_PER_SECOND);
-    status.addf("Max Loop Jitter (us)", "%.2f", max_jitter * USEC_PER_SECOND);
-    status.addf("Avg Loop Jitter (us)", "%.2f", avg_jitter * USEC_PER_SECOND);
-    status.addf("Control Loop Overruns", "%d", g_stats.overruns);
-    status.addf("Recent Control Loop Overruns", "%d", g_stats.recent_overruns);
-    status.addf("Last Control Loop Overrun Cause", "ec: %.2fus, cm: %.2fus",
-                g_stats.overrun_ec*USEC_PER_SECOND, g_stats.overrun_cm*USEC_PER_SECOND);
-    status.addf("Last Overrun Loop Time (us)", "%.2f", g_stats.overrun_loop_sec * USEC_PER_SECOND);
-    status.addf("Realtime Loop Frequency", "%.4f", g_stats.rt_loop_frequency);
+    status.addf("Max EtherCAT roundtrip (us)",           "%.2f", max_ec * SEC_2_USEC);
+    status.addf("Avg EtherCAT roundtrip (us)",           "%.2f", avg_ec * SEC_2_USEC);
+    status.addf("Max Controller Manager roundtrip (us)", "%.2f", max_cm * SEC_2_USEC);
+    status.addf("Avg Controller Manager roundtrip (us)", "%.2f", avg_cm * SEC_2_USEC);
+    status.addf("Max Total Loop roundtrip (us)",         "%.2f", max_loop * SEC_2_USEC);
+    status.addf("Avg Total Loop roundtrip (us)",         "%.2f", avg_loop * SEC_2_USEC);
+    status.addf("Max Loop Jitter (us)",                  "%.2f", max_jitter * SEC_2_USEC);
+    status.addf("Avg Loop Jitter (us)",                  "%.2f", avg_jitter * SEC_2_USEC);
+    status.addf("Control Loop Overruns",                 "%d",   g_stats.overruns);
+    status.addf("Recent Control Loop Overruns",          "%d",   g_stats.recent_overruns);
+    status.addf("Last Control Loop Overrun Cause",       "ec: %.2fus, cm: %.2fus",
+                g_stats.overrun_ec*SEC_2_USEC, g_stats.overrun_cm * SEC_2_USEC);
+    status.addf("Last Overrun Loop Time (us)",           "%.2f", g_stats.overrun_loop_sec * SEC_2_USEC);
+    status.addf("Realtime Loop Frequency",               "%.4f", g_stats.rt_loop_frequency);
 
     status.name = "Realtime Control Loop";
     if (g_stats.overruns > 0 && g_stats.last_overrun < 30)
@@ -190,7 +194,7 @@ static inline double now()
 {
   struct timespec n;
   clock_gettime(CLOCK_MONOTONIC, &n);
-  return double(n.tv_nsec) / NSEC_PER_SECOND + n.tv_sec;
+  return double(n.tv_nsec) / SEC_2_NSEC + n.tv_sec;
 }
 
 void *diagnosticLoop(void *args)
@@ -201,7 +205,7 @@ void *diagnosticLoop(void *args)
   while (!g_quit)
   {
     ec->collectDiagnostics();
-    tick.tv_sec += 1;
+    ++tick.tv_sec;
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tick, NULL);
   }
   return NULL;
@@ -210,13 +214,12 @@ void *diagnosticLoop(void *args)
 static void timespecInc(struct timespec &tick, int nsec)
 {
   tick.tv_nsec += nsec;
-  while (tick.tv_nsec >= NSEC_PER_SECOND)
+  while (tick.tv_nsec >= SEC_2_NSEC)
   {
-    tick.tv_nsec -= NSEC_PER_SECOND;
-    tick.tv_sec++;
+    tick.tv_nsec -= SEC_2_NSEC;
+    ++tick.tv_sec;
   }
 }
-
 
 class RTLoopHistory
 {
@@ -224,16 +227,8 @@ public:
   RTLoopHistory(unsigned length, double default_value) :
     index_(0),
     length_(length),
-    history_(new double[length])
+    history_(length, default_value)
   {
-    for (unsigned i=0; i<length_; ++i)
-      history_[i] = default_value;
-  }
-
-  ~RTLoopHistory()
-  {
-    delete[] history_;
-    history_ = NULL;
   }
 
   void sample(double value)
@@ -244,16 +239,13 @@ public:
 
   double average() const
   {
-    double sum(0.0);
-    for (unsigned i=0; i<length_; ++i)
-      sum+=history_[i];
-    return sum / double(length_);
+    return accumulate(history_.begin(), history_.end(), 0.0) / (double) length_;
   }
 
 protected:
   unsigned index_;
   unsigned length_;
-  double *history_;
+  vector<double> history_;
 };
 
 static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArray> *publisher,
@@ -271,7 +263,6 @@ static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArra
 void *controlLoop(void *)
 {
   double last_published, last_loop_start;
-  int period;
   int policy;
   TiXmlElement *root;
   TiXmlElement *root_element;
@@ -312,7 +303,10 @@ void *controlLoop(void *)
     if (ros::param::get(g_options.rosparam_, g_robot_desc))
       xml.Parse(g_robot_desc.c_str());
     else
-      return terminate_control(&publisher, rtpublisher, "Could not load the xml from parameter server: %s", g_options.rosparam_);
+      return terminate_control(&publisher,
+                               rtpublisher,
+                               "Could not load the xml from parameter server: %s",
+                               g_options.rosparam_);
   }
   else if (0 == stat(g_options.xml_, &st))
     xml.LoadFile(g_options.xml_);
@@ -327,7 +321,10 @@ void *controlLoop(void *)
       ROS_WARN("Using -x to load robot description from parameter server is depricated.  Use -r instead.");
     }
     else
-      return terminate_control(&publisher, rtpublisher, "Could not load the xml from parameter server: %s", g_options.xml_);
+      return terminate_control(&publisher,
+                               rtpublisher,
+                               "Could not load the xml from parameter server: %s",
+                               g_options.xml_);
   }
 
   root_element = xml.RootElement();
@@ -349,7 +346,10 @@ void *controlLoop(void *)
   static pthread_t diagnosticThread;
   int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &ec);
   if (rv != 0)
-    return terminate_control(&publisher, rtpublisher, "Unable to create control thread: rv = %s", boost::lexical_cast<string>(rv).c_str());
+    return terminate_control(&publisher,
+                             rtpublisher,
+                             "Unable to create control thread: rv = %s",
+                             boost::lexical_cast<string>(rv).c_str());
 
   // Set to realtime scheduler for this thread
   struct sched_param thread_param;
@@ -359,11 +359,10 @@ void *controlLoop(void *)
 
   struct timespec tick;
   clock_gettime(CLOCK_REALTIME, &tick);
-  period = 1e+6; // 1 ms in nanoseconds
-  ros::Duration durp(period);
+  ros::Duration durp(g_options.period);
 
   // Snap to the nearest second
-  tick.tv_nsec = (tick.tv_nsec / period + 1) * period;
+  tick.tv_nsec = (tick.tv_nsec / g_options.period + 1) * g_options.period;
   clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tick, NULL);
 
   last_published = now();
@@ -421,21 +420,21 @@ void *controlLoop(void *)
       last_rt_monitor_time = start;
     }
 
-    // Compute end of next period
-    timespecInc(tick, period);
+    // Compute end of next g_options.period
+    timespecInc(tick, g_options.period);
 
     struct timespec before;
     clock_gettime(CLOCK_REALTIME, &before);
-    if ((before.tv_sec + double(before.tv_nsec)/NSEC_PER_SECOND) > (tick.tv_sec + double(tick.tv_nsec)/NSEC_PER_SECOND))
+    if ((before.tv_sec + double(before.tv_nsec)/SEC_2_NSEC) > (tick.tv_sec + double(tick.tv_nsec)/SEC_2_NSEC))
     {
       // Total amount of time the loop took to run
-      g_stats.overrun_loop_sec = (before.tv_sec + double(before.tv_nsec)/NSEC_PER_SECOND) -
-        (tick.tv_sec + double(tick.tv_nsec)/NSEC_PER_SECOND);
+      g_stats.overrun_loop_sec = (before.tv_sec + double(before.tv_nsec)/SEC_2_NSEC) -
+        (tick.tv_sec + double(tick.tv_nsec)/SEC_2_NSEC);
 
-      // We overran, snap to next "period"
+      // We overran, snap to next "g_options.period"
       tick.tv_sec = before.tv_sec;
-      tick.tv_nsec = (before.tv_nsec / period) * period;
-      timespecInc(tick, period);
+      tick.tv_nsec = (before.tv_nsec / g_options.period) * g_options.period;
+      timespecInc(tick, g_options.period);
 
       // initialize overruns
       if (g_stats.overruns == 0)
@@ -454,13 +453,13 @@ void *controlLoop(void *)
       g_stats.overrun_cm = end - after_ec;
     }
 
-    // Sleep until end of period
+    // Sleep until end of g_options.period
     clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tick, NULL);
 
     // Calculate RT loop jitter
     struct timespec after;
     clock_gettime(CLOCK_REALTIME, &after);
-    double jitter = (after.tv_sec - tick.tv_sec + double(after.tv_nsec-tick.tv_nsec)/NSEC_PER_SECOND);
+    double jitter = (after.tv_sec - tick.tv_sec + double(after.tv_nsec-tick.tv_nsec)/SEC_2_NSEC);
 
     g_stats.jitter_acc(jitter);
 
@@ -475,11 +474,13 @@ void *controlLoop(void *)
     }
   }
 
-  /* Shutdown all of the motors on exit */
-  for (ros_ethercat_hardware_interface::ActuatorMap::const_iterator it = ec.hw_->actuators_.begin(); it != ec.hw_->actuators_.end(); ++it)
+  // Shutdown all of the motors on exit
+  ros_ethercat_hardware_interface::ActuatorMap::const_iterator it = ec.hw_->actuators_.begin();
+  while (it != ec.hw_->actuators_.end())
   {
     it->second->command_.enable_ = false;
     it->second->command_.effort_ = 0;
+    ++it;
   }
   ec.update(false, true);
 
@@ -514,9 +515,9 @@ string generatePIDFilename(const char* interface)
   string filename;
   if (interface != NULL)
   {
-    // There should a lock file for each EtherCAT interface instead of for entire computer
-    // It is entirely possible to have different EtherCAT utilities operating indepedantly
-    //  on different interfaces
+    // There should be a lock file for each EtherCAT interface instead of for entire computer
+    // It is entirely possible to have different EtherCAT utilities operating independently
+    // on different interfaces
     filename = string(PIDDIR) + "EtherCAT_" +  string(interface) + ".pid";
   }
   else
@@ -524,7 +525,6 @@ string generatePIDFilename(const char* interface)
 
   return filename;
 }
-
 
 static int setupPidFile(const char* interface)
 {
@@ -536,7 +536,8 @@ static int setupPidFile(const char* interface)
 
   umask(0);
   mkdir(PIDDIR, 0777);
-  fd = open(filename.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH);
+  int PID_FLAGS = (O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH);
+  fd = open(filename.c_str(), PID_FLAGS);
   if (fd == -1)
   {
     if (errno != EEXIST)
@@ -575,7 +576,7 @@ static int setupPidFile(const char* interface)
   }
 
   unlink(filename.c_str());
-  fd = open(filename.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH);
+  fd = open(filename.c_str(), PID_FLAGS);
 
   if (fd == -1)
   {
@@ -615,13 +616,19 @@ static void cleanupPidFile(const char* interface)
 
 static pthread_t controlThread;
 static pthread_attr_t controlThreadAttr;
+
 int main(int argc, char *argv[])
 {
   // Keep the kernel from swapping us out
   if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
   {
-    perror("mlockall");
-    return -1;
+    if (errno == ENOMEM)
+      printf("mlockall: The process tried to exceed the maximum number of allowed locked pages");
+    else if (errno == EPERM)
+      printf("mlockall: The calling process does not have appropriate root privileges");
+    else
+      perror("mlockall");
+    exit(EXIT_FAILURE);
   }
 
   // Initialize ROS and parse command-line arguments
@@ -631,7 +638,8 @@ int main(int argc, char *argv[])
   g_options.program_ = argv[0];
   g_options.xml_ = NULL;
   g_options.rosparam_ = NULL;
-  while (1)
+  g_options.period = 1e+6; // 1 ms in nanoseconds
+  while (true)
   {
     static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
@@ -640,6 +648,7 @@ int main(int argc, char *argv[])
       {"interface", required_argument, 0, 'i'},
       {"xml", required_argument, 0, 'x'},
       {"rosparam", required_argument, 0, 'r'},
+      {"period", no_argument, 0, 'p'},
     };
     int option_index = 0;
     int c = getopt_long(argc, argv, "hi:usx:r:", long_options, &option_index);
@@ -666,6 +675,9 @@ int main(int argc, char *argv[])
       case 's':
         g_options.stats_ = 1;
         break;
+      case 'p':
+        g_options.period = abs(atoi(optarg));
+        break;
     }
   }
   if (optind < argc)
@@ -688,7 +700,7 @@ int main(int argc, char *argv[])
   // Therefore in the Groovy Galapagos ROS release, the global EtherCAT lock has been removed 
   // and only the per-interface lock will remain.
   if (setupPidFile(g_options.interface_) < 0)
-    return -1;
+    exit(EXIT_FAILURE);
 
   ros::NodeHandle node(name);
 

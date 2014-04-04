@@ -48,6 +48,7 @@
 #include <ros_ethercat_mechanism_model/robot.hpp>
 #include <controller_manager/controller_manager.h>
 #include <ros_ethercat_hardware/ethercat_hardware.h>
+#include <boost/scoped_ptr.hpp>
 
 /** \brief Contains robot state information and init, read, write function.
  *
@@ -73,26 +74,26 @@ public:
     model_(hw), state_(NULL), cm_node_(nh, "controller_manager")
   {}
 
-  virtual ~ros_ethercat() { delete state_; }
+  virtual ~ros_ethercat() {}
 
-/**
- * Initialize Robot and RobotState objects from pointer to xml data and register interfaces.
- * The pr2_transmissions whose propagate functions will be called are
- * also initialized by this function
- *
- */
+  /**
+   * Initialize Robot and RobotState objects from pointer to xml data and register interfaces.
+   * The pr2_transmissions whose propagate functions will be called are
+   * also initialized by this function
+   *
+   */
   bool initXml(TiXmlElement* config);
 
-/// propagate position actuator -> joint and set commands to zero
+  /// propagate position actuator -> joint and set commands to zero
   void read();
 
-/// propagate effort joint -> actuator and enforce safety limits
+  /// propagate effort joint -> actuator and enforce safety limits
   void write();
 
   ros::NodeHandle cm_node_;
 
   ros_ethercat_mechanism_model::Robot model_;
-  ros_ethercat_mechanism_model::RobotState *state_;
+  boost::scoped_ptr<ros_ethercat_mechanism_model::RobotState> state_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;

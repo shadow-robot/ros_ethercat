@@ -54,19 +54,24 @@ bool ros_ethercat::initXml(TiXmlElement* config)
     ROS_ERROR("Failed to initialize pr2 mechanism model");
     return false;
   }
-  state_ = new RobotState(&model_);
+  state_.reset(new RobotState(&model_));
 
-  for (map<string, JointState*>::const_iterator it = state_->joint_states_map_.begin(); it != state_->joint_states_map_.end(); ++it)
+  map<string, JointState*>::const_iterator it = state_->joint_states_map_.begin();
+  while (it != state_->joint_states_map_.end())
   {
-    JointStateHandle jsh(it->first, &it->second->position_, &it->second->velocity_, &it->second->measured_effort_);
+    JointStateHandle jsh(it->first,
+                         &it->second->position_,
+                         &it->second->velocity_,
+                         &it->second->measured_effort_);
     joint_state_interface_.registerHandle(jsh);
 
     JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second->commanded_effort_);
     joint_command_interface_.registerHandle(jh);
     effort_joint_interface_.registerHandle(jh);
+    ++it;
   }
 
-  registerInterface(state_);
+  registerInterface(state_.get());
   registerInterface(&joint_state_interface_);
   registerInterface(&joint_command_interface_);
   registerInterface(&effort_joint_interface_);
