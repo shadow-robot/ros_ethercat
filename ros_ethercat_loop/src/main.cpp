@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <algorithm>
+#include <numeric>
 
 #include "ros_ethercat_loop/ros_ethercat.hpp"
 #include <std_msgs/Float64.h>
@@ -619,15 +619,16 @@ static pthread_attr_t controlThreadAttr;
 
 int main(int argc, char *argv[])
 {
+  if (geteuid() != 0 && getuid() != 0)
+  {
+    printf("This program requires root privileges.\n Use the ros_grant script and try again\n");
+    exit(EXIT_FAILURE);
+  }
+
   // Keep the kernel from swapping us out
   if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
   {
-    if (errno == ENOMEM)
-      printf("mlockall: The process tried to exceed the maximum number of allowed locked pages");
-    else if (errno == EPERM)
-      printf("mlockall: The calling process does not have appropriate root privileges");
-    else
-      perror("mlockall");
+    perror("mlockall");
     exit(EXIT_FAILURE);
   }
 
