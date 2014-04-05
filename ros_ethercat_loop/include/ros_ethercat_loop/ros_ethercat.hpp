@@ -118,6 +118,7 @@ public:
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_command_interface_);
     registerInterface(&effort_joint_interface_);
+    registerInterface(&position_joint_interface_);
 
     return true;
   }
@@ -144,6 +145,7 @@ public:
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;
   hardware_interface::EffortJointInterface effort_joint_interface_;
+  hardware_interface::PositionJointInterface position_joint_interface_;
 };
 
 #endif /* SR_ETHERCAT_INTERFACE_HPP_ */
