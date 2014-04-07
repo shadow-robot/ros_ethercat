@@ -68,79 +68,85 @@
  * initXml, read and write should be called inside main.cpp
  */
 
+static const string name = "ros_ethercat";
+
+using boost::unordered_map;
+using ros_ethercat_mechanism_model::JointState;
+using hardware_interface::JointStateHandle;
+using hardware_interface::JointHandle;
+using ros_ethercat_mechanism_model::JointState;
+using ros_ethercat_mechanism_model::Robot;
+using ros::NodeHandle;
+
 class ros_ethercat : public hardware_interface::RobotHW
 {
 public:
-  ros_ethercat(ros_ethercat_hardware_interface::HardwareInterface *hw, ros::NodeHandle &nh) :
-    model_(hw), state_(NULL), cm_node_(nh, "controller_manager")
-  {}
-
-  virtual ~ros_ethercat() {}
-
-  /**
-   * Initialize Robot and RobotState objects from pointer to xml data and register interfaces.
-   * The pr2_transmissions whose propagate functions will be called are
-   * also initialized by this function
-   *
-   */
-  bool initXml(TiXmlElement* config)
+  ros_ethercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
+    cm_node_(nh, "controller_manager"),
+    model_(config),
+    ec_(name, &model_.hw_, eth, allow)
   {
-    using std::map;
-    using std::string;
-    using ros_ethercat_mechanism_model::JointState;
-    using ros_ethercat_mechanism_model::RobotState;
-    using hardware_interface::JointStateHandle;
-    using hardware_interface::JointHandle;
-
-    if (!model_.initXml(config))
-    {
-      ROS_ERROR("Failed to initialize pr2 mechanism model");
-      return false;
-    }
-    state_.reset(new RobotState(&model_));
-
-    map<string, JointState*>::const_iterator it = state_->joint_states_map_.begin();
-    while (it != state_->joint_states_map_.end())
+    unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+    while (it != model_.joint_states_.end())
     {
       JointStateHandle jsh(it->first,
-                           &it->second->position_,
-                           &it->second->velocity_,
-                           &it->second->measured_effort_);
+                           &it->second.position_,
+                           &it->second.velocity_,
+                           &it->second.measured_effort_);
       joint_state_interface_.registerHandle(jsh);
 
-      JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second->commanded_effort_);
+      JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second.commanded_effort_);
       joint_command_interface_.registerHandle(jh);
       effort_joint_interface_.registerHandle(jh);
       ++it;
     }
 
-    registerInterface(state_.get());
+    registerInterface(&model_);
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_command_interface_);
     registerInterface(&effort_joint_interface_);
     registerInterface(&position_joint_interface_);
-
-    return true;
   }
+
+  virtual ~ros_ethercat() {}
 
   /// propagate position actuator -> joint and set commands to zero
   void read()
   {
-    state_->propagateActuatorPositionToJointPosition();
-    state_->zeroCommands();
+    for (size_t i = 0; i < model_.transmissions_.size(); ++i)
+      model_.transmissions_[i]->propagatePosition(model_.transmissions_in_[i],
+                                                  model_.transmissions_out_[i]);
+
+    unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+    while (it != model_.joint_states_.end())
+    {
+      it->second.joint_statistics_.update(&it->second);
+      it->second.commanded_effort_ = 0;
+      ++it;
+    }
   }
 
   /// propagate effort joint -> actuator and enforce safety limits
   void write()
   {
-    state_->enforceSafety();
-    state_->propagateJointEffortToActuatorEffort();
+    /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
+    unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+    while (it != model_.joint_states_.end())
+    {
+      it->second.enforceLimits();
+      ++it;
+    }
+
+    for (size_t i = 0; i < model_.transmissions_.size(); ++i)
+      model_.transmissions_[i]->propagateEffort(model_.transmissions_out_[i],
+                                                model_.transmissions_in_[i]);
   }
 
-  ros::NodeHandle cm_node_;
+  NodeHandle cm_node_;
 
-  ros_ethercat_mechanism_model::Robot model_;
-  boost::scoped_ptr<ros_ethercat_mechanism_model::RobotState> state_;
+  Robot model_;
+
+  EthercatHardware ec_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;

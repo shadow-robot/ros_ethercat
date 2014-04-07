@@ -30,212 +30,112 @@
 /*
  * Author: Stuart Glaser, Wim Meeussen
  */
-
+#include <numeric>
 #include "ros_ethercat_mechanism_model/robot.hpp"
 #include "ros_ethercat_mechanism_model/transmission.hpp"
 #include <tinyxml.h>
 #include <urdf/model.h>
-#include <pluginlib/class_loader.h>
 #include "ros_ethercat_hardware_interface/hardware_interface.hpp"
 
 
 using namespace ros_ethercat_mechanism_model;
 using namespace ros_ethercat_hardware_interface;
+using std::vector;
+using std::string;
+using std::runtime_error;
+using boost::unordered_map;
+using boost::shared_ptr;
 
+using pluginlib::ClassLoader;
 
-Robot::Robot(HardwareInterface *hw)
-  :hw_(hw)
-{}
-
-
-bool Robot::initXml(TiXmlElement *root)
+Robot::Robot(TiXmlElement *root) :
+    transmission_loader_("ros_ethercat_mechanism_model", "ros_ethercat_mechanism_model::Transmission")
 {
-  // check if current time is valid
-  if (!hw_){
-    ROS_ERROR("Mechanism Model received an invalid hardware interface");
-    return false;
-  }
-
   // Parses the xml into a robot model
   if (!robot_model_.initXml(root)){
     ROS_ERROR("Mechanism Model failed to parse the URDF xml into a robot model");
-    return false;
+    return;
   }
-
-  // Creates the plugin loader for transmissions.
-  transmission_loader_.reset(new pluginlib::ClassLoader<ros_ethercat_mechanism_model::Transmission>(
-                               "ros_ethercat_mechanism_model", "ros_ethercat_mechanism_model::Transmission"));
 
   // Constructs the transmissions by parsing custom xml.
   TiXmlElement *xit = NULL;
-  for (xit = root->FirstChildElement("transmission"); xit;
+  size_t actuators_number = 0;
+  for (xit = root->FirstChildElement("transmission");
+       xit;
        xit = xit->NextSiblingElement("transmission"))
   {
-    std::string type(xit->Attribute("type"));
-    boost::shared_ptr<Transmission> t;
-    try {
-      // Backwards compatibility for using non-namespaced controller types
-      if (!transmission_loader_->isClassAvailable(type))
-      {
-        std::vector<std::string> classes = transmission_loader_->getDeclaredClasses();
-        for(unsigned int i = 0; i < classes.size(); ++i)
-        {
-          if(type == transmission_loader_->getName(classes[i]))
-          {
-            ROS_WARN("The deprecated transmission type %s was not found.  Using the namespaced version %s instead.  "
-                     "Please update your urdf file to use the namespaced version.",
-                     type.c_str(), classes[i].c_str());
-            type = classes[i];
-            break;
-          }
-        }
+    string type(xit->Attribute("type"));
+
+    try
+    {
+      shared_ptr<Transmission> t = transmission_loader_.createInstance(type);
+      if (!t)
+        ROS_ERROR("Unknown transmission type: %s", type.c_str());
+      else if (!t->initXml(xit, this)){
+        ROS_ERROR("Failed to initialize transmission");
       }
-      t = transmission_loader_->createInstance(type);
+      else // Success!
+      {
+        transmissions_.push_back(t);
+
+        // Creates a joint state for each transmission and
+        vector<Actuator*> acts;
+
+        for (vector<string>::iterator it = t->actuator_names_.begin(); it != t->actuator_names_.end(); ++it)
+        {
+          acts.push_back(getActuator(*it));
+          ++actuators_number;
+        }
+        transmissions_in_.push_back(acts);
+
+        // Wires up the transmissions to the joint state
+        vector<JointState*> stats;
+        for (vector<string>::iterator it = t->joint_names_.begin(); it != t->joint_names_.end(); ++it)
+        {
+          joint_states_[*it].joint_ = robot_model_.getJoint(*it);
+          stats.push_back(&joint_states_[*it]);
+        }
+        transmissions_out_.push_back(stats);
+      }
     }
-    catch (const std::runtime_error &ex)
+    catch (const runtime_error &ex)
     {
       ROS_ERROR("Could not load class %s: %s", type.c_str(), ex.what());
-    }
-
-    if (!t)
-      ROS_ERROR("Unknown transmission type: %s", type.c_str());
-    else if (!t->initXml(xit, this)){
-      ROS_ERROR("Failed to initialize transmission");
-    }
-    else // Success!
-      transmissions_.push_back(t);
-  }
-
-  return true;
-}
-
-ros::Time Robot::getTime()
-{
-  return hw_->current_time_;
-}
-
-template <class T>
-int findIndexByName(const std::vector<boost::shared_ptr<T> >& v, 
-      const std::string &name)
-{
-  for (unsigned int i = 0; i < v.size(); ++i)
-  {
-    if (v[i]->name_ == name)
-      return i;
-  }
-  return -1;
-}
-
-int Robot::getTransmissionIndex(const std::string &name) const
-{
-  return findIndexByName(transmissions_, name);
-}
-
-Actuator* Robot::getActuator(const std::string &name) const
-{
-  return hw_->getActuator(name);
-}
-
-boost::shared_ptr<Transmission> Robot::getTransmission(const std::string &name) const
-{
-  int i = getTransmissionIndex(name);
-  return i >= 0 ? transmissions_[i] : boost::shared_ptr<Transmission>();
-}
-
-
-
-
-
-RobotState::RobotState(Robot *model)
-  : model_(model)
-{
-  assert(model_);
-
-  transmissions_in_.resize(model->transmissions_.size());
-  transmissions_out_.resize(model->transmissions_.size());
-
-  // Creates a joint state for each transmission
-  unsigned int js_size = 0;
-  for (unsigned int i = 0; i < model_->transmissions_.size(); ++i)
-  {
-     boost::shared_ptr<Transmission> t = model_->transmissions_[i];
-    for (unsigned int j = 0; j < t->actuator_names_.size(); ++j)
-    {
-      Actuator *act = model_->getActuator(t->actuator_names_[j]);
-      assert(act != NULL);
-      transmissions_in_[i].push_back(act);
-    }
-    js_size += t->joint_names_.size();
-  }
-
-  // Wires up the transmissions to the joint state
-  joint_states_.resize(js_size);
-  unsigned int js_id = 0;
-  for (unsigned int i = 0; i < model_->transmissions_.size(); ++i)
-  {
-     boost::shared_ptr<Transmission> t = model_->transmissions_[i];
-    for (unsigned int j = 0; j < t->joint_names_.size(); ++j)
-    {
-      joint_states_[js_id].joint_ = model_->robot_model_.getJoint(t->joint_names_[j]);
-      joint_states_map_[t->joint_names_[j]] = &(joint_states_[js_id]);
-      transmissions_out_[i].push_back(&(joint_states_[js_id]));
-      js_id++;
     }
   }
 
   // warnings
-  if (model_->transmissions_.empty())
+  if (transmissions_.empty())
     ROS_WARN("No transmissions were specified in the robot description.");
-  if (js_size == 0)
+  if (actuators_number == 0)
     ROS_WARN("None of the joints in the robot desription matches up to a motor. The robot is uncontrollable.");
 }
 
-
-JointState *RobotState::getJointState(const std::string &name)
+shared_ptr<Transmission> Robot::getTransmission(const string &name) const
 {
-  std::map<std::string, JointState*>::iterator it = joint_states_map_.find(name);
-  if (it == joint_states_map_.end())
-    return NULL;
+  for (size_t j = 0; j < transmissions_.size(); ++j)
+  {
+    if (transmissions_[j]->name_ == name)
+      return transmissions_[j];
+  }
+
+  return shared_ptr<Transmission>();
+}
+
+JointState *Robot::getJointState(const string &name)
+{
+  if (joint_states_.count(name))
+    return &joint_states_[name];
   else
-    return it->second;
-}
-
-const JointState *RobotState::getJointState(const std::string &name) const
-{
-  std::map<std::string, JointState*>::const_iterator it = joint_states_map_.find(name);
-  if (it == joint_states_map_.end())
     return NULL;
-  else
-    return it->second;
 }
 
-void RobotState::propagateActuatorPositionToJointPosition()
+bool Robot::isHalted() const
 {
-  for (unsigned int i = 0; i < model_->transmissions_.size(); ++i)
+  for (size_t t = 0; t < transmissions_in_.size(); ++t)
   {
-    model_->transmissions_[i]->propagatePosition(transmissions_in_[i],
-                                                 transmissions_out_[i]);
-  }
-
-  for (unsigned int i = 0; i < joint_states_.size(); i++)
-  {
-    joint_states_[i].joint_statistics_.update(&(joint_states_[i]));
-  }
-}
-
-void RobotState::propagateJointEffortToActuatorEffort()
-{
-  for (unsigned int i = 0; i < model_->transmissions_.size(); ++i)
-  {
-    model_->transmissions_[i]->propagateEffort(transmissions_out_[i],
-                                               transmissions_in_[i]);
-  }
-}
-
-bool RobotState::isHalted()
-{
-  for (unsigned int t = 0; t < transmissions_in_.size(); ++t){
-    for (unsigned int a = 0; a < transmissions_in_[t].size(); a++){
+    for (size_t a = 0; a < transmissions_in_[t].size(); ++a)
+    {
       if (transmissions_in_[t][a]->state_.halted_)
         return true;
     }
@@ -244,36 +144,16 @@ bool RobotState::isHalted()
   return false;
 }
 
-void RobotState::enforceSafety()
+void Robot::propagateJointPositionToActuatorPosition()
 {
-  for (unsigned int i = 0; i < joint_states_.size(); ++i)
-  {
-    joint_states_[i].enforceLimits();
-  }
+  for (size_t i = 0; i < transmissions_.size(); ++i)
+    transmissions_[i]->propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
 }
 
-void RobotState::zeroCommands()
+void Robot::propagateActuatorEffortToJointEffort()
 {
-  for (unsigned int i = 0; i < joint_states_.size(); ++i)
-    joint_states_[i].commanded_effort_ = 0;
-}
-
-void RobotState::propagateJointPositionToActuatorPosition()
-{
-  for (unsigned int i = 0; i < model_->transmissions_.size(); ++i)
-  {
-    model_->transmissions_[i]->propagatePositionBackwards(transmissions_out_[i],
-                                                          transmissions_in_[i]);
-  }
-}
-
-void RobotState::propagateActuatorEffortToJointEffort()
-{
-  for (unsigned int i = 0; i < model_->transmissions_.size(); ++i)
-  {
-    model_->transmissions_[i]->propagateEffortBackwards(transmissions_in_[i],
-                                                        transmissions_out_[i]);
-  }
+  for (size_t i = 0; i < transmissions_.size(); ++i)
+    transmissions_[i]->propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
 }
 
 

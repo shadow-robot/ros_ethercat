@@ -53,7 +53,7 @@ public:
    * \param tip the name of the tip link of the chain
    *
    */
-  bool init(RobotState *robot_state, const std::string &root, const std::string &tip);
+  bool init(Robot *robot_state, const std::string &root, const std::string &tip);
 
   /// get the joint positions of the chain as a std vector
   void getPositions(std::vector<double>&);
@@ -120,7 +120,7 @@ public:
   int size() const { return joints_.size(); }
 
 private:
-  ros_ethercat_mechanism_model::RobotState *robot_state_;
+  ros_ethercat_mechanism_model::Robot *robot_state_;
   KDL::Chain kdl_chain_;
 
   std::vector< JointState* > joints_;  // ONLY joints that can be actuated (not fixed joints)

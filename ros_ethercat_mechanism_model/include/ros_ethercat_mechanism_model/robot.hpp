@@ -47,9 +47,10 @@
 #define ROBOT_H
 
 #include <vector>
-#include <map>
 #include <string>
 #include <urdf/model.h>
+#include <pluginlib/class_loader.h>
+#include <boost/unordered_map.hpp>
 #include <ros_ethercat_hardware_interface/hardware_interface.hpp>
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_mechanism_model/joint.hpp"
@@ -65,55 +66,6 @@ template <class T> class ClassLoader;
 namespace ros_ethercat_mechanism_model
 {
 
-
-/** \brief This class provides the controllers with an interface to the robot model.
- *
- * Most controllers that need the robot model should use the 'robot_model_', which is
- * a kinematic/dynamic model of the robot, represented by a KDL Tree structure.
- *
- * Some specialized controllers (such as the calibration controllers) can get access
- * to actuators, transmissions and special joint parameters.
- */
-
-class Robot
-{
-public:
-  /// Constructor
-  Robot(ros_ethercat_hardware_interface::HardwareInterface *hw);
-
-  /// Destructor
-  ~Robot() { }
-
-  /// Initialize the robot model form xml
-  bool initXml(TiXmlElement *root);
-
-  /// The kinematic/dynamic model of the robot
-  urdf::Model robot_model_;
-
-  /// The list of transmissions
-  std::vector<boost::shared_ptr<Transmission> > transmissions_;
-
-  /// get the transmission index based on the transmission name. Returns -1 on failure
-  int getTransmissionIndex(const std::string &name) const;
-
-  /// get an actuator pointer based on the actuator name. Returns NULL on failure
-  ros_ethercat_hardware_interface::Actuator* getActuator(const std::string &name) const;
-
-  /// get a transmission pointer based on the transmission name. Returns NULL on failure
-  boost::shared_ptr<ros_ethercat_mechanism_model::Transmission> getTransmission(const std::string &name) const;
-
-  /// Get the time when the current controller cycle was started
-  ros::Time getTime();
-
-  /// a pointer to the pr2 hardware interface. Only for advanced users
-  ros_ethercat_hardware_interface::HardwareInterface* hw_;
-
-private:
-  boost::shared_ptr<pluginlib::ClassLoader<ros_ethercat_mechanism_model::Transmission> > transmission_loader_;
-};
-
-
-
 /** \brief This class provides the controllers with an interface to the robot state
  *
  * Most controllers that need the robot state should use the joint states, to get
@@ -123,63 +75,67 @@ private:
  * Some specialized controllers (such as the calibration controllers) can get access
  * to actuator states, and transmission states.
  */
-class RobotState : public hardware_interface::HardwareInterface
+class Robot : public hardware_interface::HardwareInterface
 {
 public:
   /// constructor
-  RobotState(Robot *model);
-
-  /// The robot model containing the transmissions, urdf robot model, and hardware interface
-  Robot *model_;
-
-  /// The vector of joint states, in no particular order
-  std::vector<JointState> joint_states_;
+  Robot(TiXmlElement *root);
 
   /// Get a joint state by name
   JointState *getJointState(const std::string &name);
 
-  /// Get a const joint state by name
-  const JointState *getJointState(const std::string &name) const;
-
   /// Get the time when the current controller cycle was started
-  ros::Time getTime() {return model_->getTime();};
+  ros::Time getTime() const
+  {
+    return hw_.current_time_;
+  };
 
- /**
-  * Each transmission refers to the actuators and joints it connects by name.
-  * Since name lookup is slow, for each transmission in the robot model we
-  * cache pointers to the actuators and joints that it connects.
-  **/
-  std::vector<std::vector<ros_ethercat_hardware_interface::Actuator*> > transmissions_in_;
-
- /**
-  * Each transmission refers to the actuators and joints it connects by name.
-  * Since name lookup is slow, for each transmission in the robot model we
-  * cache pointers to the actuators and joints that it connects.
-  **/
-  std::vector<std::vector<ros_ethercat_mechanism_model::JointState*> > transmissions_out_;
-
-  /// Propagete the actuator positions, through the transmissions, to the joint positions
-  void propagateActuatorPositionToJointPosition();
   /// Propagete the joint positions, through the transmissions, to the actuator positions
   void propagateJointPositionToActuatorPosition();
 
-  /// Propagete the joint efforts, through the transmissions, to the actuator efforts
-  void propagateJointEffortToActuatorEffort();
   /// Propagete the actuator efforts, through the transmissions, to the joint efforts
   void propagateActuatorEffortToJointEffort();
 
-  /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
-  void enforceSafety();
-
   /// Checks if one (or more) of the motors are halted.
-  bool isHalted();
+  bool isHalted() const;
 
-  /// Set the commanded_effort_ of each joint state to zero
-  void zeroCommands();
+  /**
+   * Each transmission refers to the actuators and joints it connects by name.
+   * Since name lookup is slow, for each transmission in the robot model we
+   * cache pointers to the actuators and joints that it connects.
+   **/
+  std::vector<std::vector<ros_ethercat_hardware_interface::Actuator*> > transmissions_in_;
 
+  /**
+   * Each transmission refers to the actuators and joints it connects by name.
+   * Since name lookup is slow, for each transmission in the robot model we
+   * cache pointers to the actuators and joints that it connects.
+   **/
+  std::vector<std::vector<JointState*> > transmissions_out_;
 
-  std::map<std::string, JointState*> joint_states_map_;
+  /// The joint states mapped to the joint names
+  boost::unordered_map<std::string, JointState> joint_states_;
 
+  /// The kinematic/dynamic model of the robot
+  urdf::Model robot_model_;
+
+  /// The transmissions
+  std::vector<boost::shared_ptr<Transmission> > transmissions_;
+
+  /// get an actuator pointer based on the actuator name. Returns NULL on failure
+  ros_ethercat_hardware_interface::Actuator* getActuator(const std::string &name) const
+  {
+    return hw_.getActuator(name);
+  }
+
+  /// get a transmission pointer based on the transmission name. Returns NULL on failure
+  boost::shared_ptr<Transmission> getTransmission(const std::string &name) const;
+
+  /// a pointer to the hardware interface. Only for advanced users
+  ros_ethercat_hardware_interface::HardwareInterface hw_;
+
+private:
+  pluginlib::ClassLoader<Transmission> transmission_loader_;
 };
 
 }

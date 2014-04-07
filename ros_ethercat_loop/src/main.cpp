@@ -55,8 +55,6 @@ using std::vector;
 using std::accumulate;
 using realtime_tools::RealtimePublisher;
 
-static const string name = "ros_ethercat";
-
 static struct
 {
   char *program_;
@@ -289,12 +287,6 @@ void *controlLoop(void *)
   if (g_options.stats_)
     rtpublisher = new RealtimePublisher<std_msgs::Float64>(node, "realtime", 2);
 
-  // Initialize the hardware interface
-  EthercatHardware ec(name);
-  ec.init(g_options.interface_, g_options.allow_unprogrammed_);
-  ros::NodeHandle nh;
-  ros_ethercat seth(ec.hw_, nh);
-
   // Load robot description
   TiXmlDocument xml;
   struct stat st;
@@ -332,9 +324,9 @@ void *controlLoop(void *)
   if (!root || !root_element)
     return terminate_control(&publisher, rtpublisher, "Could not parse the xml from %s", g_options.xml_);
 
-  // Initialize the controller manager from robot description
-  if (!seth.initXml(root))
-    return terminate_control(&publisher, rtpublisher, "Could not initialize the controller manager");
+  // Initialize the hardware interface
+  ros::NodeHandle nh;
+  ros_ethercat seth(nh, g_options.interface_, g_options.allow_unprogrammed_, root);
 
   // Create controller manager
   controller_manager::ControllerManager cm(&seth);
@@ -344,7 +336,7 @@ void *controlLoop(void *)
 
   //Start Non-realtime diagonostic thread
   static pthread_t diagnosticThread;
-  int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &ec);
+  int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ec_);
   if (rv != 0)
     return terminate_control(&publisher,
                              rtpublisher,
@@ -376,7 +368,7 @@ void *controlLoop(void *)
     last_loop_start = this_loop_start;
 
     double start = now();
-    ec.update(false, false);
+    seth.ec_.update(false, false);
 
     double after_ec = now();
     ros::Time this_moment(tick.tv_sec, tick.tv_nsec);
@@ -475,14 +467,14 @@ void *controlLoop(void *)
   }
 
   // Shutdown all of the motors on exit
-  ros_ethercat_hardware_interface::ActuatorMap::const_iterator it = ec.hw_->actuators_.begin();
-  while (it != ec.hw_->actuators_.end())
+  ros_ethercat_hardware_interface::ActuatorMap::const_iterator it = seth.ec_.hw_->actuators_.begin();
+  while (it != seth.ec_.hw_->actuators_.end())
   {
     it->second->command_.enable_ = false;
     it->second->command_.effort_ = 0;
     ++it;
   }
-  ec.update(false, true);
+  seth.ec_.update(false, true);
 
   publisher.stop();
   delete rtpublisher;

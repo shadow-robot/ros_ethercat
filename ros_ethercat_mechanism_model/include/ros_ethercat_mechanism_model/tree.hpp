@@ -64,7 +64,7 @@ public:
    *
    * \param robot_state the robot state object containing the robot model and the state of each joint in the robot
    */
-  bool init(RobotState *robot_state);
+  bool init(Robot *robot_state);
 
   /// get the position of the joints of the tree as a KDL::JntArray
   void getPositions(KDL::JntArray&) const;

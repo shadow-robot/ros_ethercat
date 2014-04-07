@@ -37,14 +37,14 @@ namespace ros_ethercat_mechanism_model {
 
 using namespace std;
 
-bool Chain::init(RobotState *robot_state, const std::string &root, const std::string &tip)
+bool Chain::init(Robot *robot_state, const std::string &root, const std::string &tip)
 {
 
   robot_state_ = robot_state;
 
   // Constructs the kdl chain
   KDL::Tree kdl_tree;
-  if (!kdl_parser::treeFromUrdfModel(robot_state->model_->robot_model_, kdl_tree)){
+  if (!kdl_parser::treeFromUrdfModel(robot_state->robot_model_, kdl_tree)){
     ROS_ERROR("Could not convert urdf into kdl tree");
     return false;
   }

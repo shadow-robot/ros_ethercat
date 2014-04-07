@@ -68,15 +68,23 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
   max_publish_       = 0.0;
 }
 
-EthercatHardware::EthercatHardware(const std::string& name) :
-  hw_(0), node_(ros::NodeHandle(name)),
-  ni_(0), this_buffer_(0), prev_buffer_(0), buffer_size_(0), halt_motors_(true), reset_state_(0), 
+EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_hardware_interface::HardwareInterface *hw, const std::string& eth, bool allow_unprogrammed) :
+  hw_(hw),
+  node_(ros::NodeHandle(name)),
+  ni_(0),
+  this_buffer_(0),
+  prev_buffer_(0),
+  buffer_size_(0),
+  halt_motors_(true),
+  reset_state_(0),
   max_pd_retries_(10),
   diagnostics_publisher_(node_), 
   motor_publisher_(node_, "motors_halted", 1, true), 
-  device_loader_("ethercat_hardware", "EthercatDevice")
+  device_loader_("ethercat_hardware", "EthercatDevice"),
+  interface_(eth),
+  allow_unprogrammed_(allow_unprogrammed)
 {
-  
+  init();
 }
 
 EthercatHardware::~EthercatHardware()
@@ -93,7 +101,6 @@ EthercatHardware::~EthercatHardware()
     close_socket(ni_);
   }
   delete[] buffers_;
-  delete hw_;
   delete oob_com_;
   motor_publisher_.stop();
 }
@@ -116,7 +123,7 @@ void EthercatHardware::changeState(EtherCAT_SlaveHandler *sh, EC_State new_state
   }
 }
 
-void EthercatHardware::init(char *interface, bool allow_unprogrammed)
+void EthercatHardware::init()
 {
   // open temporary socket to use with ioctl
   int sock = socket(PF_INET, SOCK_DGRAM, 0);
@@ -128,10 +135,10 @@ void EthercatHardware::init(char *interface, bool allow_unprogrammed)
   }
   
   struct ifreq ifr;
-  strncpy(ifr.ifr_name, interface, IFNAMSIZ);
+  strncpy(ifr.ifr_name, interface_.c_str(), IFNAMSIZ);
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
     int error = errno;
-    ROS_FATAL("Cannot get interface flags for %s: %s", interface, strerror(error));
+    ROS_FATAL("Cannot get interface_.c_str() flags for %s: %s", interface_.c_str(), strerror(error));
     sleep(1);
     exit(EXIT_FAILURE);
   }
@@ -140,22 +147,20 @@ void EthercatHardware::init(char *interface, bool allow_unprogrammed)
   sock = -1;
 
   if (!(ifr.ifr_flags & IFF_UP)) {
-    ROS_FATAL("Interface %s is not UP. Try : ifup %s", interface, interface);
+    ROS_FATAL("Interface %s is not UP. Try : ifup %s", interface_.c_str(), interface_.c_str());
     sleep(1);
     exit(EXIT_FAILURE);
   }
   if (!(ifr.ifr_flags & IFF_RUNNING)) {
-    ROS_FATAL("Interface %s is not RUNNING. Is cable plugged in and device powered?", interface);
+    ROS_FATAL("Interface %s is not RUNNING. Is cable plugged in and device powered?", interface_.c_str());
     sleep(1);
     exit(EXIT_FAILURE);
   }
 
-
   // Initialize network interface
-  interface_ = interface;
-  if ((ni_ = init_ec(interface)) == NULL)
+  if ((ni_ = init_ec(interface_.c_str())) == NULL)
   {
-    ROS_FATAL("Unable to initialize interface: %s", interface);
+    ROS_FATAL("Unable to initialize interface_.c_str(): %s", interface_.c_str());
     sleep(1);
     exit(EXIT_FAILURE);
   }
@@ -258,7 +263,6 @@ void EthercatHardware::init(char *interface, bool allow_unprogrammed)
   memcpy(prev_buffer_, this_buffer_, buffer_size_);
 
   // Create ros_ethercat_hardware_interface::HardwareInterface
-  hw_ = new ros_ethercat_hardware_interface::HardwareInterface();
   hw_->current_time_ = ros::Time::now();
   last_published_ = hw_->current_time_;
 
@@ -266,7 +270,7 @@ void EthercatHardware::init(char *interface, bool allow_unprogrammed)
   //set<string> actuator_names;
   for (unsigned int slave = 0; slave < slaves_.size(); ++slave)
   {
-    if (slaves_[slave]->initialize(hw_, allow_unprogrammed) < 0)
+    if (slaves_[slave]->initialize(hw_, allow_unprogrammed_) < 0)
     {
       EtherCAT_SlaveHandler *sh = slaves_[slave]->sh_;
       if (sh != NULL)

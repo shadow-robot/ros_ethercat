@@ -207,7 +207,7 @@ public:
   /*!
    * \brief Constructor
    */
-  EthercatHardware(const std::string& name);
+  EthercatHardware(const std::string& name, ros_ethercat_hardware_interface::HardwareInterface *hw, const string &eth, bool allow_unprogrammed);
 
   /*!
    * \brief Destructor
@@ -223,10 +223,8 @@ public:
 
   /*!
    * \brief Initialize the EtherCAT Master Library.
-   * \param interface The socket interface that is connected to the EtherCAT devices (e.g., eth0)
-   * \param allow_unprogrammed A boolean indicating if the driver should treat the discovery of unprogrammed boards as a fatal error.  Set to 'true' during board configuration, and set to 'false' otherwise.
    */
-  void init(char *interface, bool allow_unprogrammed);
+  void init();
 
   /*!
    * \brief Collects diagnotics from all devices.
@@ -264,7 +262,8 @@ private:
   ros::NodeHandle node_;
 
   struct netif *ni_;
-  string interface_;
+
+  string interface_; //!< The socket interface that is connected to the EtherCAT devices (e.g., eth0)
 
   EtherCAT_AL *al_;
   EtherCAT_Master *em_;
@@ -296,6 +295,8 @@ private:
   EthercatOobCom *oob_com_;  
 
   pluginlib::ClassLoader<EthercatDevice> device_loader_;
+
+  bool allow_unprogrammed_; //!< if the driver should treat the discovery of unprogrammed boards as a fatal error. Set to 'true' during board configuration, and set to 'false' otherwise.
 };
 
 #endif /* ETHERCAT_HARDWARE_H */

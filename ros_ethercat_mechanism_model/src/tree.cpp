@@ -42,12 +42,12 @@
 namespace ros_ethercat_mechanism_model
 {
 
-bool Tree::init(RobotState *robot_state)
+bool Tree::init(Robot *robot_state)
 {
   KDL::SegmentMap segmentMap;
 
   // construct the kdl tree
-  if (!kdl_parser::treeFromUrdfModel(robot_state->model_->robot_model_, kdl_tree_))
+  if (!kdl_parser::treeFromUrdfModel(robot_state->robot_model_, kdl_tree_))
   {
      ROS_ERROR("Failed to construct KDL:Tree from robot_state's URDF model! Aborting ...");
   }
