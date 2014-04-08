@@ -39,7 +39,7 @@
 
 #include <tinyxml.h>
 #include "ros_ethercat_mechanism_model/joint.hpp"
-#include "ros_ethercat_hardware_interface/hardware_interface.hpp"
+#include "ros_ethercat_mechanism_model/hardware_interface.hpp"
 
 namespace ros_ethercat_mechanism_model {
 
@@ -58,20 +58,16 @@ public:
   virtual bool initXml(TiXmlElement *config, Robot *robot) = 0;
 
   /// Uses encoder data to fill out joint position and velocities
-  virtual void propagatePosition(std::vector<ros_ethercat_hardware_interface::Actuator*>&,
-                                 std::vector<ros_ethercat_mechanism_model::JointState*>&) = 0;
+  virtual void propagatePosition(std::vector<Actuator*>&, std::vector<JointState*>&) = 0;
 
   /// Uses the joint position to fill out the actuator's encoder.
-  virtual void propagatePositionBackwards(std::vector<ros_ethercat_mechanism_model::JointState*>&,
-                                          std::vector<ros_ethercat_hardware_interface::Actuator*>&) = 0;
+  virtual void propagatePositionBackwards(std::vector<JointState*>&, std::vector<Actuator*>&) = 0;
 
   /// Uses commanded joint efforts to fill out commanded motor currents
-  virtual void propagateEffort(std::vector<ros_ethercat_mechanism_model::JointState*>&,
-                               std::vector<ros_ethercat_hardware_interface::Actuator*>&) = 0;
+  virtual void propagateEffort(std::vector<JointState*>&, std::vector<Actuator*>&) = 0;
 
   /// Uses the actuator's commanded effort to fill out the torque on the joint.
-  virtual void propagateEffortBackwards(std::vector<ros_ethercat_hardware_interface::Actuator*>&,
-                                        std::vector<ros_ethercat_mechanism_model::JointState*>&) = 0;
+  virtual void propagateEffortBackwards(std::vector<Actuator*>&, std::vector<JointState*>&) = 0;
 
   /// the name of the transmission
   std::string name_;

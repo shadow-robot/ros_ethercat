@@ -75,6 +75,7 @@ using ros_ethercat_mechanism_model::JointState;
 using hardware_interface::JointStateHandle;
 using hardware_interface::JointHandle;
 using ros_ethercat_mechanism_model::JointState;
+using ros_ethercat_mechanism_model::Actuator;
 using ros_ethercat_mechanism_model::Robot;
 using ros::NodeHandle;
 
@@ -84,7 +85,7 @@ public:
   ros_ethercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "controller_manager"),
     model_(config),
-    ec_(name, &model_.hw_, eth, allow)
+    ec_(name, &model_, eth, allow)
   {
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
     while (it != model_.joint_states_.end())
@@ -114,7 +115,7 @@ public:
   void read()
   {
     for (size_t i = 0; i < model_.transmissions_.size(); ++i)
-      model_.transmissions_[i]->propagatePosition(model_.transmissions_in_[i],
+      model_.transmissions_[i].propagatePosition(model_.transmissions_in_[i],
                                                   model_.transmissions_out_[i]);
 
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -138,8 +139,19 @@ public:
     }
 
     for (size_t i = 0; i < model_.transmissions_.size(); ++i)
-      model_.transmissions_[i]->propagateEffort(model_.transmissions_out_[i],
+      model_.transmissions_[i].propagateEffort(model_.transmissions_out_[i],
                                                 model_.transmissions_in_[i]);
+  }
+
+  void shutdown()
+  {
+    unordered_map<string, Actuator*>::iterator it = model_.actuators_.begin();
+    while (it != model_.actuators_.end())
+    {
+      it->second->command_.enable_ = false;
+      it->second->command_.effort_ = 0;
+      ++it;
+    }
   }
 
   NodeHandle cm_node_;

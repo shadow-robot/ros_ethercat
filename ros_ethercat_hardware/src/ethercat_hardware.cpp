@@ -68,7 +68,7 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
   max_publish_       = 0.0;
 }
 
-EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_hardware_interface::HardwareInterface *hw, const std::string& eth, bool allow_unprogrammed) :
+EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_mechanism_model::Robot *hw, const std::string& eth, bool allow_unprogrammed) :
   hw_(hw),
   node_(ros::NodeHandle(name)),
   ni_(0),
@@ -84,7 +84,8 @@ EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_hardwar
   interface_(eth),
   allow_unprogrammed_(allow_unprogrammed)
 {
-  init();
+  if (!interface_.empty())
+    init();
 }
 
 EthercatHardware::~EthercatHardware()
@@ -262,7 +263,7 @@ void EthercatHardware::init()
   // prev_buffer should contain valid status data when update function is first used
   memcpy(prev_buffer_, this_buffer_, buffer_size_);
 
-  // Create ros_ethercat_hardware_interface::HardwareInterface
+  // Create ros_ethercat_mechanism_model::HardwareInterface
   hw_->current_time_ = ros::Time::now();
   last_published_ = hw_->current_time_;
 

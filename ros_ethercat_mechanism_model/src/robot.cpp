@@ -32,14 +32,11 @@
  */
 #include <numeric>
 #include "ros_ethercat_mechanism_model/robot.hpp"
-#include "ros_ethercat_mechanism_model/transmission.hpp"
 #include <tinyxml.h>
 #include <urdf/model.h>
-#include "ros_ethercat_hardware_interface/hardware_interface.hpp"
 
 
 using namespace ros_ethercat_mechanism_model;
-using namespace ros_ethercat_hardware_interface;
 using std::vector;
 using std::string;
 using std::runtime_error;
@@ -68,7 +65,7 @@ Robot::Robot(TiXmlElement *root) :
 
     try
     {
-      shared_ptr<Transmission> t = transmission_loader_.createInstance(type);
+      Transmission *t = transmission_loader_.createUnmanagedInstance(type);
       if (!t)
         ROS_ERROR("Unknown transmission type: %s", type.c_str());
       else if (!t->initXml(xit, this)){
@@ -76,7 +73,8 @@ Robot::Robot(TiXmlElement *root) :
       }
       else // Success!
       {
-        transmissions_.push_back(t);
+        transmissions_.push_back(*t);
+        delete t;
 
         // Creates a joint state for each transmission and
         vector<Actuator*> acts;
@@ -111,18 +109,18 @@ Robot::Robot(TiXmlElement *root) :
     ROS_WARN("None of the joints in the robot desription matches up to a motor. The robot is uncontrollable.");
 }
 
-shared_ptr<Transmission> Robot::getTransmission(const string &name) const
+Transmission *Robot::getTransmission(const string &name) const
 {
   for (size_t j = 0; j < transmissions_.size(); ++j)
   {
-    if (transmissions_[j]->name_ == name)
+    if (transmissions_[j].name_ == name)
       return transmissions_[j];
   }
 
-  return shared_ptr<Transmission>();
+  return NULL;
 }
 
-JointState *Robot::getJointState(const string &name)
+JointState *Robot::getJointState(const string &name) const
 {
   if (joint_states_.count(name))
     return &joint_states_[name];
@@ -130,30 +128,32 @@ JointState *Robot::getJointState(const string &name)
     return NULL;
 }
 
-bool Robot::isHalted() const
+Actuator* Robot::getActuator(const std::string &name) const
 {
-  for (size_t t = 0; t < transmissions_in_.size(); ++t)
-  {
-    for (size_t a = 0; a < transmissions_in_[t].size(); ++a)
-    {
-      if (transmissions_in_[t][a]->state_.halted_)
-        return true;
-    }
-  }
+  if (actuators_.count(name))
+    return actuators_[name];
+  else
+    return NULL;
+}
 
-  return false;
+CustomHW* Robot::getCustomHW(const std::string &name) const
+{
+  if (custom_hws_.count(name))
+    return custom_hws_[name];
+  else
+    return NULL;
 }
 
 void Robot::propagateJointPositionToActuatorPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i]->propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
+    transmissions_[i].propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
 }
 
 void Robot::propagateActuatorEffortToJointEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i]->propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
+    transmissions_[i].propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
 }
 
 

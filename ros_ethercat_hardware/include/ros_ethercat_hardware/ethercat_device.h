@@ -41,7 +41,7 @@
 #include <ethercat/ethercat_defs.h>
 #include <al/ethercat_slave_handler.h>
 
-#include <ros_ethercat_hardware_interface/hardware_interface.hpp>
+#include <ros_ethercat_mechanism_model/hardware_interface.hpp>
 
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
@@ -142,7 +142,7 @@ public:
   EthercatDevice();
   virtual ~EthercatDevice();
 
-  virtual int initialize(ros_ethercat_hardware_interface::HardwareInterface *, bool allow_unprogrammed=0) = 0;
+  virtual int initialize(ros_ethercat_mechanism_model::Robot *, bool allow_unprogrammed=0) = 0;
   
   /**
    * \param reset  when asserted this will clear diagnostic error conditions device safety disable

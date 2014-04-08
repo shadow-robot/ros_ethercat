@@ -35,7 +35,7 @@
 #ifndef ETHERCAT_HARDWARE_H
 #define ETHERCAT_HARDWARE_H
 
-#include <ros_ethercat_hardware_interface/hardware_interface.hpp>
+#include <ros_ethercat_mechanism_model/hardware_interface.hpp>
 
 #define BOOL NETIF_BOOL
 #include <al/ethercat_AL.h>
@@ -207,7 +207,7 @@ public:
   /*!
    * \brief Constructor
    */
-  EthercatHardware(const std::string& name, ros_ethercat_hardware_interface::HardwareInterface *hw, const string &eth, bool allow_unprogrammed);
+  EthercatHardware(const std::string& name, ros_ethercat_mechanism_model::Robot *hw, const string &eth, bool allow_unprogrammed);
 
   /*!
    * \brief Destructor
@@ -249,7 +249,7 @@ public:
    */
   bool publishTrace(int position, const string &reason, unsigned level, unsigned delay);
 
-  ros_ethercat_hardware_interface::HardwareInterface *hw_;
+  ros_ethercat_mechanism_model::Robot *hw_;
 
 private:
   static void changeState(EtherCAT_SlaveHandler *sh, EC_State new_state);

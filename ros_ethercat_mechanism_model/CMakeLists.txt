@@ -6,12 +6,10 @@ project(ros_ethercat_mechanism_model)
 find_package(catkin REQUIRED COMPONENTS 
     roscpp
     ros_ethercat_hardware
-    ros_ethercat_hardware_interface
+    hardware_interface
     pluginlib
     urdf
     kdl_parser
-    angles
-    hardware_interface
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -24,12 +22,10 @@ DEPENDS
 CATKIN_DEPENDS
     roscpp
     ros_ethercat_hardware
-    ros_ethercat_hardware_interface
+    hardware_interface
     pluginlib
     urdf
     kdl_parser
-    angles
-    hardware_interface
 INCLUDE_DIRS
     include
 LIBRARIES
@@ -40,7 +36,6 @@ add_definitions(-O3)
 
 add_library(${PROJECT_NAME}
     src/chain.cpp
-    src/joint_calibration_simulator.cpp
     src/joint.cpp
     src/robot.cpp
     src/tree.cpp

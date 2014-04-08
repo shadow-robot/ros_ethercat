@@ -467,13 +467,7 @@ void *controlLoop(void *)
   }
 
   // Shutdown all of the motors on exit
-  ros_ethercat_hardware_interface::ActuatorMap::const_iterator it = seth.ec_.hw_->actuators_.begin();
-  while (it != seth.ec_.hw_->actuators_.end())
-  {
-    it->second->command_.enable_ = false;
-    it->second->command_.effort_ = 0;
-    ++it;
-  }
+  seth.shutdown();
   seth.ec_.update(false, true);
 
   publisher.stop();
