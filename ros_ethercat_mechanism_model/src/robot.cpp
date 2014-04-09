@@ -67,22 +67,26 @@ Robot::Robot(TiXmlElement *root) :
     {
       Transmission *t = transmission_loader_.createUnmanagedInstance(type);
       if (!t)
-        ROS_ERROR("Unknown transmission type: %s", type.c_str());
-      else if (!t->initXml(xit, this)){
+        ROS_ERROR_STREAM("Unknown transmission type: " << type);
+      else if (!t->initXml(xit, this))
         ROS_ERROR("Failed to initialize transmission");
-      }
       else // Success!
       {
-        transmissions_.push_back(*t);
-        delete t;
+        transmissions_.push_back(t);
 
         // Creates a joint state for each transmission and
         vector<Actuator*> acts;
 
         for (vector<string>::iterator it = t->actuator_names_.begin(); it != t->actuator_names_.end(); ++it)
         {
-          acts.push_back(getActuator(*it));
-          ++actuators_number;
+          Actuator *act = getActuator(*it);
+          if (act)
+          {
+            acts.push_back(act);
+            ++actuators_number;
+          }
+          else
+            ROS_ERROR_STREAM("Transmission " << t->name_ << " contains actuator " << *it << " that is undefined");
         }
         transmissions_in_.push_back(acts);
 
@@ -98,7 +102,7 @@ Robot::Robot(TiXmlElement *root) :
     }
     catch (const runtime_error &ex)
     {
-      ROS_ERROR("Could not load class %s: %s", type.c_str(), ex.what());
+      ROS_ERROR_STREAM("Could not load class " << type << " : " << ex.what());
     }
   }
 
@@ -109,18 +113,18 @@ Robot::Robot(TiXmlElement *root) :
     ROS_WARN("None of the joints in the robot desription matches up to a motor. The robot is uncontrollable.");
 }
 
-Transmission *Robot::getTransmission(const string &name) const
+Transmission* Robot::getTransmission(const string &name)
 {
   for (size_t j = 0; j < transmissions_.size(); ++j)
   {
     if (transmissions_[j].name_ == name)
-      return transmissions_[j];
+      return &transmissions_[j];
   }
 
   return NULL;
 }
 
-JointState *Robot::getJointState(const string &name) const
+JointState* Robot::getJointState(const string &name)
 {
   if (joint_states_.count(name))
     return &joint_states_[name];
@@ -128,18 +132,18 @@ JointState *Robot::getJointState(const string &name) const
     return NULL;
 }
 
-Actuator* Robot::getActuator(const std::string &name) const
+Actuator* Robot::getActuator(const std::string &name)
 {
   if (actuators_.count(name))
-    return actuators_[name];
+    return &actuators_[name];
   else
     return NULL;
 }
 
-CustomHW* Robot::getCustomHW(const std::string &name) const
+CustomHW* Robot::getCustomHW(const std::string &name)
 {
   if (custom_hws_.count(name))
-    return custom_hws_[name];
+    return &custom_hws_[name];
   else
     return NULL;
 }
@@ -156,4 +160,14 @@ void Robot::propagateActuatorEffortToJointEffort()
     transmissions_[i].propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
 }
 
+void Robot::propagateActuatorPositionToJointPosition()
+{
+  for (size_t i = 0; i < transmissions_.size(); ++i)
+    transmissions_[i].propagatePosition(transmissions_in_[i], transmissions_out_[i]);
+}
 
+void Robot::propagateJointEffortToActuatorEffort()
+{
+  for (size_t i = 0; i < transmissions_.size(); ++i)
+    transmissions_[i].propagateEffort(transmissions_out_[i], transmissions_in_[i]);
+}

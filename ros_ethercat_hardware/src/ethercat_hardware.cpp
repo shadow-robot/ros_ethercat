@@ -72,16 +72,16 @@ EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_mechani
   hw_(hw),
   node_(ros::NodeHandle(name)),
   ni_(0),
+  interface_(eth),
   this_buffer_(0),
   prev_buffer_(0),
   buffer_size_(0),
   halt_motors_(true),
   reset_state_(0),
   max_pd_retries_(10),
-  diagnostics_publisher_(node_), 
-  motor_publisher_(node_, "motors_halted", 1, true), 
+  diagnostics_publisher_(node_),
+  motor_publisher_(node_, "motors_halted", 1, true),
   device_loader_("ethercat_hardware", "EthercatDevice"),
-  interface_(eth),
   allow_unprogrammed_(allow_unprogrammed)
 {
   if (!interface_.empty())

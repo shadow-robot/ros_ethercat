@@ -52,6 +52,7 @@
 #include <pluginlib/class_loader.h>
 #include <boost/unordered_map.hpp>
 #include <boost/ptr_container/ptr_unordered_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_mechanism_model/joint.hpp"
 #include "ros_ethercat_mechanism_model/transmission.hpp"
@@ -90,21 +91,27 @@ public:
   /// Propagete the actuator efforts, through the transmissions, to the joint efforts
   void propagateActuatorEffortToJointEffort();
 
+  /// Propagete the actuator positions, through the transmissions, to the joint positions
+  void propagateActuatorPositionToJointPosition();
+
+  /// Propagete the joint efforts, through the transmissions, to the actuator efforts
+  void propagateJointEffortToActuatorEffort();
+
   /// get an actuator pointer based on the actuator name. Returns NULL on failure
-  Actuator* getActuator(const std::string &name) const;
+  Actuator* getActuator(const std::string &name);
 
   /// get a transmission pointer based on the transmission name. Returns NULL on failure
-  Transmission* getTransmission(const std::string &name) const;
+  Transmission* getTransmission(const std::string &name);
 
   /*! \brief Get a pointer to the Custom Hardware device by name
    *
    *  \param name The name of the Custom Hardware device
    *  \return A pointer to a CustomHW.  Returns NULL if name is not valid.
    */
-  CustomHW* getCustomHW(const std::string &name) const;
+  CustomHW* getCustomHW(const std::string &name);
 
   /// Get a joint state by name
-  JointState* getJointState(const std::string &name) const;
+  JointState* getJointState(const std::string &name);
 
   pluginlib::ClassLoader<Transmission> transmission_loader_;
 
@@ -130,14 +137,14 @@ public:
   /// The actuators mapped to their names
   boost::ptr_unordered_map<std::string, Actuator> actuators_;
 
-  /// GeneralIO structures mapped to their names
+  /// Custom hardware structures mapped to their names
   boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;
 
   /// The kinematic/dynamic model of the robot
   urdf::Model robot_model_;
 
   /// The transmissions
-  std::vector<Transmission> transmissions_;
+  boost::ptr_vector<Transmission> transmissions_;
 };
 
 }

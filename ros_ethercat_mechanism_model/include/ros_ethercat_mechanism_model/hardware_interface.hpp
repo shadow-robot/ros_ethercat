@@ -56,6 +56,7 @@ public:
       last_measured_effort_(0),
       motor_voltage_(0)
   {}
+  virtual ~ActuatorState() {}
 
   int device_id_; //!< Position in EtherCAT chain
 
@@ -79,6 +80,8 @@ public:
   ActuatorCommand() :
     enable_(0), effort_(0)
   {}
+  virtual ~ActuatorCommand() {}
+
   bool enable_; //!< Enable this actuator
   double effort_; //!< Force to apply (in Nm)
 };
@@ -96,6 +99,7 @@ class Actuator
 {
 public:
   Actuator() {};
+  virtual ~Actuator() {}
   ActuatorState state_;
   ActuatorCommand command_;
 };
@@ -105,7 +109,11 @@ public:
  * The CustomHW class provides an easy way to add more hardware to the HardwareInterface.
  * Inherit from that class to add a new type of hardware, containing the data you want.
  */
-class CustomHW {};
+class CustomHW
+{
+public:
+  virtual ~CustomHW() {}
+};
 
 }
 

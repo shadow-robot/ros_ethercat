@@ -13,14 +13,12 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
-  <build_depend>ros_ethercat_hardware</build_depend>
   <build_depend>hardware_interface</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>kdl_parser</build_depend>
   
   <run_depend>roscpp</run_depend>
-  <run_depend>ros_ethercat_hardware</run_depend>
   <run_depend>hardware_interface</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>urdf</run_depend>

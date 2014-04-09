@@ -4,11 +4,11 @@ project(ros_ethercat_hardware)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
     roscpp
-    ros_ethercat_hardware_interface
     realtime_tools
     diagnostic_msgs
     diagnostic_updater
     pluginlib
+    ros_ethercat_mechanism_model
 )
 
 find_package(EML REQUIRED)
@@ -24,11 +24,11 @@ catkin_package(
     DEPENDS EML
     CATKIN_DEPENDS
         roscpp
-        ros_ethercat_hardware_interface
         realtime_tools
         diagnostic_msgs
         diagnostic_updater
         pluginlib
+        ros_ethercat_mechanism_model
     INCLUDE_DIRS include
     LIBRARIES ros_ethercat_hardware
 )

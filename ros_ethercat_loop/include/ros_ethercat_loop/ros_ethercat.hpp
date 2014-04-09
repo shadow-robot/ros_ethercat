@@ -50,6 +50,7 @@
 #include <controller_manager/controller_manager.h>
 #include <ros_ethercat_hardware/ethercat_hardware.h>
 #include <boost/scoped_ptr.hpp>
+#include <boost/ptr_container/ptr_unordered_map.hpp>
 
 /** \brief Contains robot state information and init, read, write function.
  *
@@ -71,6 +72,7 @@
 static const string name = "ros_ethercat";
 
 using boost::unordered_map;
+using boost::ptr_unordered_map;
 using ros_ethercat_mechanism_model::JointState;
 using hardware_interface::JointStateHandle;
 using hardware_interface::JointHandle;
@@ -99,6 +101,7 @@ public:
       JointHandle jh(joint_state_interface_.getHandle(it->first), &it->second.commanded_effort_);
       joint_command_interface_.registerHandle(jh);
       effort_joint_interface_.registerHandle(jh);
+      position_joint_interface_.registerHandle(jh);
       ++it;
     }
 
@@ -114,9 +117,7 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read()
   {
-    for (size_t i = 0; i < model_.transmissions_.size(); ++i)
-      model_.transmissions_[i].propagatePosition(model_.transmissions_in_[i],
-                                                  model_.transmissions_out_[i]);
+    model_.propagateActuatorPositionToJointPosition();
 
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
     while (it != model_.joint_states_.end())
@@ -137,15 +138,12 @@ public:
       it->second.enforceLimits();
       ++it;
     }
-
-    for (size_t i = 0; i < model_.transmissions_.size(); ++i)
-      model_.transmissions_[i].propagateEffort(model_.transmissions_out_[i],
-                                                model_.transmissions_in_[i]);
+    model_.propagateJointEffortToActuatorEffort();
   }
 
   void shutdown()
   {
-    unordered_map<string, Actuator*>::iterator it = model_.actuators_.begin();
+    ptr_unordered_map<string, Actuator>::iterator it = model_.actuators_.begin();
     while (it != model_.actuators_.end())
     {
       it->second->command_.enable_ = false;

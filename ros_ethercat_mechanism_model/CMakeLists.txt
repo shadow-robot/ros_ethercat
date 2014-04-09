@@ -5,7 +5,6 @@ project(ros_ethercat_mechanism_model)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS 
     roscpp
-    ros_ethercat_hardware
     hardware_interface
     pluginlib
     urdf
@@ -21,7 +20,6 @@ DEPENDS
     urdfdom
 CATKIN_DEPENDS
     roscpp
-    ros_ethercat_hardware
     hardware_interface
     pluginlib
     urdf
