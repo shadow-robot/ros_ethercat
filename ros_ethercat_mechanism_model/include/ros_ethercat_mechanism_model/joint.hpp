@@ -37,25 +37,47 @@
 #ifndef JOINT_H
 #define JOINT_H
 
+#include <map>
+#include <string>
+#include <vector>
+#include <cfloat>
 #include <tinyxml.h>
 #include <urdf_model/joint.h>
 
-
 namespace ros_ethercat_mechanism_model {
+
+enum
+{
+  JOINT_NONE,
+  JOINT_ROTARY,
+  JOINT_CONTINUOUS,
+  JOINT_PRISMATIC,
+  JOINT_FIXED,
+  JOINT_PLANAR,
+  JOINT_TYPES_MAX
+};
 
 class JointState;
 
 class JointStatistics
 {
  public:
-  JointStatistics():odometer_(0.0), min_position_(0), max_position_(0),
+  JointStatistics():min_position_(0), max_position_(0),
                     max_abs_velocity_(0.0), max_abs_effort_(0.0),
                     violated_limits_(false), initialized_(false){}
 
-  void update(JointState* s);
-  void reset();
+  void update(JointState *jnt);
 
-  double odometer_;
+  void reset()
+  {
+    double tmp = min_position_;
+    min_position_ = max_position_;
+    max_position_ = tmp;
+    max_abs_velocity_ = 0.0;
+    max_abs_effort_ = 0.0;
+    violated_limits_ = false;
+  }
+
   double min_position_, max_position_;
   double max_abs_velocity_;
   double max_abs_effort_;
@@ -66,16 +88,57 @@ class JointStatistics
   double old_position_;
 };
 
-
-
 class JointState
 {
 public:
   /// Modify the commanded_effort_ of the joint state so that the joint limits are satisfied
-  void enforceLimits();
+  void enforceLimits()
+  {
+    double effort_high, effort_low;
+
+    getLimits(effort_low, effort_high);
+
+    // limit the commanded effort based on position, velocity and effort limits
+    commanded_effort_ =
+      std::min( std::max(commanded_effort_, effort_low), effort_high);
+  }
 
   /// Returns the safety effort limits given the current position and velocity.
-  void getLimits(double &effort_low, double &effort_high);
+  void getLimits(double &effort_low, double &effort_high)
+  {
+    // only enforce joints that specify joint limits and safety code
+    if (!joint_->safety || !joint_->limits) {
+      effort_low = -std::numeric_limits<double>::max();
+      effort_high = std::numeric_limits<double>::max();
+      return;
+    }
+
+    double vel_high = joint_->limits->velocity;
+    double vel_low = -joint_->limits->velocity;
+    effort_high = joint_->limits->effort;
+    effort_low = -joint_->limits->effort;
+
+    // enforce position bounds on rotary and prismatic joints that are calibrated
+    if (calibrated_ && (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC))
+    {
+      // Computes the velocity bounds based on the absolute limit and the
+      // proximity to the joint limit.
+      vel_high = std::max(-joint_->limits->velocity,
+                     std::min(joint_->limits->velocity,
+                         -joint_->safety->k_position * (position_ - joint_->safety->soft_upper_limit)));
+      vel_low = std::min(joint_->limits->velocity,
+                    std::max(-joint_->limits->velocity,
+                        -joint_->safety->k_position * (position_ - joint_->safety->soft_lower_limit)));
+    }
+
+    // Computes the effort bounds based on the velocity and effort bounds.
+    effort_high = std::max(-joint_->limits->effort,
+                           std::min(joint_->limits->effort,
+                          -joint_->safety->k_velocity * (velocity_ - vel_high)));
+    effort_low = std::min(joint_->limits->effort,
+                     std::max(-joint_->limits->effort,
+                         -joint_->safety->k_velocity * (velocity_ - vel_low)));
+  }
 
   /// A pointer to the corresponding urdf::Joint from the urdf::Model
   boost::shared_ptr<const urdf::Joint> joint_;
@@ -106,17 +169,25 @@ public:
     commanded_effort_(0.0), calibrated_(false), reference_position_(0.0){}
 };
 
-enum
+inline void JointStatistics::update(JointState *jnt)
 {
-  JOINT_NONE,
-  JOINT_ROTARY,
-  JOINT_CONTINUOUS,
-  JOINT_PRISMATIC,
-  JOINT_FIXED,
-  JOINT_PLANAR,
-  JOINT_TYPES_MAX
-};
-
+  if (initialized_)
+  {
+    if (jnt->joint_->safety && jnt->joint_->limits && (fabs(jnt->commanded_effort_) > fabs(jnt->measured_effort_)))
+      violated_limits_ = true;
+    min_position_ = fmin(jnt->position_, min_position_);
+    max_position_ = fmax(jnt->position_, max_position_);
+    max_abs_velocity_ = fmax(fabs(jnt->velocity_), max_abs_velocity_);
+    max_abs_effort_ = fmax(fabs(jnt->measured_effort_), max_abs_effort_);
+  }
+  else
+  {
+    min_position_ = jnt->position_;
+    max_position_ = jnt->position_;
+    initialized_ = true;
+  }
+  old_position_ = jnt->position_;
+}
 
 }
 

@@ -87,9 +87,6 @@ public:
    * joint_names_.
    */
   std::vector<std::string> joint_names_;
-
-  /// Initializes the transmission from XML data
-  virtual bool initXml(TiXmlElement *config) { abort(); }  // In future versions, this method is mandatory in subclasses
 };
 
 } // namespace ros_ethercat_mechanism_model

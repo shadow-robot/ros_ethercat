@@ -37,6 +37,8 @@
 #include <kdl/jntarray.hpp>
 #include <kdl/jntarrayvel.hpp>
 #include <kdl/jntarrayacc.hpp>
+#include <kdl/tree.hpp>
+#include <kdl_parser/kdl_parser.hpp>
 
 namespace ros_ethercat_mechanism_model {
 
@@ -53,15 +55,66 @@ public:
    * \param tip the name of the tip link of the chain
    *
    */
-  bool init(Robot *robot_state, const std::string &root, const std::string &tip);
+  bool init(Robot *robot_state, const std::string &root, const std::string &tip)
+  {
+    robot_state_ = robot_state;
+    // Constructs the kdl chain
+    KDL::Tree kdl_tree;
+    if (!kdl_parser::treeFromUrdfModel(robot_state->robot_model_, kdl_tree))
+    {
+      ROS_ERROR("Could not convert urdf into kdl tree");
+      return false;
+    }
+    bool res;
+    try
+    {
+      res = kdl_tree.getChain(root, tip, kdl_chain_);
+    }
+    catch(...)
+    {
+      res = false;
+    }
+    if (!res)
+    {
+      ROS_ERROR("Could not extract chain between %s and %s from kdl tree",
+                root.c_str(), tip.c_str());
+      return false;
+    }
+    // Pulls out all the joint indices
+    joints_.clear();
+    for (size_t i=0; i<kdl_chain_.getNrOfSegments(); i++)
+    {
+      if (kdl_chain_.getSegment(i).getJoint().getType() != KDL::Joint::None)
+      {
+        JointState* jnt = robot_state->getJointState(kdl_chain_.getSegment(i).getJoint().getName());
+        if (!jnt)
+        {
+          ROS_ERROR("Joint '%s' is not found in joint state vector", kdl_chain_.getSegment(i).getJoint().getName().c_str());
+          return false;
+        }
+        joints_.push_back(jnt);
+      }
+    }
+    ROS_DEBUG("Added %i joints", int(joints_.size()));
+    return true;
+  }
 
-  /// get the joint positions of the chain as a std vector
-  void getPositions(std::vector<double>&);
-  /// get the joint positions of the chain as a kdl jnt array
-  void getPositions(KDL::JntArray&);
+  void getPositions(std::vector<double> &positions)
+  {
+    positions.clear();
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      positions.push_back(joints_[i]->position_);
+  }
+
+  void getPositions(KDL::JntArray &a)
+  {
+    assert(a.rows() == joints_.size());
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      a(i) = joints_[i]->position_;
+  }
+
   /// gets the joint positions of the chain as any type with size() and []
-  template <class Vec>
-  void getPositions(Vec &v)
+  template <class Vec> void getPositions(Vec &v)
   {
     assert((int)v.size() == (int)joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
@@ -69,34 +122,65 @@ public:
   }
 
   /// get the joint velocities of the chain as a std vector
-  void getVelocities(std::vector<double>&);
+  void getVelocities(std::vector<double> &velocities)
+  {
+    velocities.clear();
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      velocities.push_back(joints_[i]->velocity_);
+  }
   /// get the joint velocities and positoin of the chain as a kdl jnt array vel.  Fills in the positions too.
-  void getVelocities(KDL::JntArrayVel&);
+  void getVelocities(KDL::JntArrayVel &a)
+  {
+    assert(a.q.rows() == joints_.size());
+    assert(a.qdot.rows() == joints_.size());
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+    {
+      a.q(i) = joints_[i]->position_;
+      a.qdot(i) = joints_[i]->velocity_;
+    }
+  }
+
   /// gets the joint velocities of the chain as any type with size() and []
-  template <class Vec>
-  void getVelocities(Vec &v)
+  template <class Vec> void getVelocities(Vec &v)
   {
     assert((int)v.size() == (int)joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       v[i] = joints_[i]->velocity_;
   }
 
+  void getEfforts(std::vector<double> &efforts)
+  {
+    efforts.clear();
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      efforts.push_back(joints_[i]->measured_effort_);
+  }
 
-  /// get the measured joint efforts of the chain as a std vector
-  void getEfforts(std::vector<double>&);
   /// get the measured joint efforts of the chain as a kdl jnt array
-  void getEfforts(KDL::JntArray&);
+  void getEfforts(KDL::JntArray &a)
+  {
+    assert(a.rows() == joints_.size());
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      a(i) = joints_[i]->measured_effort_;
+  }
 
   /// set the commanded joint efforts of the chain as a std vector
-  void setEfforts(KDL::JntArray&);
-  /// set the commanded joint efforts of the chain as a kdl jnt array
-  void addEfforts(KDL::JntArray&);
+  void setEfforts(KDL::JntArray &a)
+  {
+    assert(a.rows() == joints_.size());
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      joints_[i]->commanded_effort_ = a(i);
+  }
 
-  /*!
-   * \brief Adds efforts from any type that implements size() and [] lookup.
-   */
-  template <class Vec>
-  void addEfforts(const Vec& v)
+  /// set the commanded joint efforts of the chain as a kdl jnt array
+  void addEfforts(KDL::JntArray &a)
+  {
+    assert(a.rows() == joints_.size());
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      joints_[i]->commanded_effort_ += a(i);
+  }
+
+  /// Adds efforts from any type that implements size() and [] lookup.
+  template <class Vec> void addEfforts(const Vec& v)
   {
     assert((int)v.size() == (int)joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
@@ -104,23 +188,38 @@ public:
   }
 
   /// returns true if all the joints in the chain are calibrated
-  bool allCalibrated();
+  bool allCalibrated()
+  {
+    for (unsigned int i = 0; i < joints_.size(); ++i)
+      if (!joints_[i]->calibrated_)
+        return false;
+    return true;
+  }
 
   /// get a kdl chain object that respresents the chain from root to tip
-  void toKDL(KDL::Chain &chain);
+  void toKDL(KDL::Chain &chain) { chain = kdl_chain_; }
 
   /** \brief get a joint state of an actuated joint of the chain.
    *
    * the actuated_joint_i index starts at zero
    * fixed joints are ignored in the list of actuated joints
    */
-  JointState* getJoint(unsigned int actuated_joint_i);
+  JointState* getJoint(unsigned int actuated_joint_i)
+  {
+    if (actuated_joint_i >= joints_.size())
+      return NULL;
+    else
+      return joints_[actuated_joint_i];
+  }
 
   /// Returns the number of actuated joints in the chain
-  int size() const { return joints_.size(); }
+  int size() const
+  {
+    return joints_.size();
+  }
 
 private:
-  ros_ethercat_mechanism_model::Robot *robot_state_;
+  Robot *robot_state_;
   KDL::Chain kdl_chain_;
 
   std::vector< JointState* > joints_;  // ONLY joints that can be actuated (not fixed joints)

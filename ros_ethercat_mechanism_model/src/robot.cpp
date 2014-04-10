@@ -48,29 +48,25 @@ using pluginlib::ClassLoader;
 Robot::Robot(TiXmlElement *root) :
     transmission_loader_("ros_ethercat_mechanism_model", "ros_ethercat_mechanism_model::Transmission")
 {
-  // Parses the xml into a robot model
-  if (!robot_model_.initXml(root)){
-    ROS_ERROR("Mechanism Model failed to parse the URDF xml into a robot model");
-    return;
-  }
-
-  // Constructs the transmissions by parsing custom xml.
-  TiXmlElement *xit = NULL;
-  size_t actuators_number = 0;
-  for (xit = root->FirstChildElement("transmission");
-       xit;
-       xit = xit->NextSiblingElement("transmission"))
+  try
   {
-    string type(xit->Attribute("type"));
+    // Parses the xml into a robot model
+    if (!robot_model_.initXml(root))
+      throw runtime_error("");
 
-    try
+    // Constructs the transmissions by parsing custom xml.
+    TiXmlElement *xit = NULL;
+    for (xit = root->FirstChildElement("transmission");
+         xit;
+         xit = xit->NextSiblingElement("transmission"))
     {
+      string type(xit->Attribute("type"));
+
       Transmission *t = transmission_loader_.createUnmanagedInstance(type);
       if (!t)
-        ROS_ERROR_STREAM("Unknown transmission type: " << type);
-      else if (!t->initXml(xit, this))
-        ROS_ERROR("Failed to initialize transmission");
-      else // Success!
+        throw runtime_error("Unknown transmission type: " + type);
+
+      if (t->initXml(xit, this))
       {
         transmissions_.push_back(t);
 
@@ -81,10 +77,7 @@ Robot::Robot(TiXmlElement *root) :
         {
           Actuator *act = getActuator(*it);
           if (act)
-          {
             acts.push_back(act);
-            ++actuators_number;
-          }
           else
             ROS_ERROR_STREAM("Transmission " << t->name_ << " contains actuator " << *it << " that is undefined");
         }
@@ -99,29 +92,18 @@ Robot::Robot(TiXmlElement *root) :
         }
         transmissions_out_.push_back(stats);
       }
+      else
+        ROS_FATAL_STREAM("Failed to initialize transmission type: " + type);
     }
-    catch (const runtime_error &ex)
-    {
-      ROS_ERROR_STREAM("Could not load class " << type << " : " << ex.what());
-    }
+
+    // warnings
+    if (transmissions_.empty())
+      ROS_WARN("No transmissions were specified in the robot description.");
   }
-
-  // warnings
-  if (transmissions_.empty())
-    ROS_WARN("No transmissions were specified in the robot description.");
-  if (actuators_number == 0)
-    ROS_WARN("None of the joints in the robot desription matches up to a motor. The robot is uncontrollable.");
-}
-
-Transmission* Robot::getTransmission(const string &name)
-{
-  for (size_t j = 0; j < transmissions_.size(); ++j)
+  catch (const runtime_error &ex)
   {
-    if (transmissions_[j].name_ == name)
-      return &transmissions_[j];
+    ROS_FATAL_STREAM("Mechanism Model failed to parse the URDF xml into a robot model\n" << ex.what());
   }
-
-  return NULL;
 }
 
 JointState* Robot::getJointState(const string &name)
@@ -151,23 +133,23 @@ CustomHW* Robot::getCustomHW(const std::string &name)
 void Robot::propagateJointPositionToActuatorPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i].propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
+    transmissions_[i]->propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
 }
 
 void Robot::propagateActuatorEffortToJointEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i].propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
+    transmissions_[i]->propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
 }
 
 void Robot::propagateActuatorPositionToJointPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i].propagatePosition(transmissions_in_[i], transmissions_out_[i]);
+    transmissions_[i]->propagatePosition(transmissions_in_[i], transmissions_out_[i]);
 }
 
 void Robot::propagateJointEffortToActuatorEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i].propagateEffort(transmissions_out_[i], transmissions_in_[i]);
+    transmissions_[i]->propagateEffort(transmissions_out_[i], transmissions_in_[i]);
 }

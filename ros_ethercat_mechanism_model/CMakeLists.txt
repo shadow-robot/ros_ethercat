@@ -33,10 +33,7 @@ LIBRARIES
 add_definitions(-O3)
 
 add_library(${PROJECT_NAME}
-    src/chain.cpp
-    src/joint.cpp
     src/robot.cpp
-    src/tree.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
