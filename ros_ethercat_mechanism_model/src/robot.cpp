@@ -52,7 +52,6 @@ Robot::Robot(TiXmlElement *root) :
     // Parses the xml into a robot model
     if (!robot_model_.initXml(root))
       throw runtime_error("Failed to load robot_model_");
-    cout << "Loaded robot model\n";
 
     // Constructs the transmissions by parsing custom xml.
     TiXmlElement *xit = NULL;
@@ -65,7 +64,6 @@ Robot::Robot(TiXmlElement *root) :
       Transmission *t = transmission_loader_.createUnmanagedInstance(type);
       if (!t)
         throw runtime_error(string("Unknown transmission type: ") + type);
-      cout << "Loading transmission type " << type << '\n';
       if (t->initXml(xit, this))
       {
         transmissions_.push_back(t);
@@ -77,10 +75,7 @@ Robot::Robot(TiXmlElement *root) :
         {
           Actuator *act = getActuator(*it);
           if (act)
-          {
             acts.push_back(act);
-            cout << "Found actuator " << *it << " for transmission " << t->name_ << '\n';
-          }
           else
             ROS_ERROR_STREAM("Transmission " << t->name_ << " contains actuator " << *it << " that is undefined");
         }
@@ -92,7 +87,6 @@ Robot::Robot(TiXmlElement *root) :
         {
           joint_states_[*it].joint_ = robot_model_.getJoint(*it);
           stats.push_back(&joint_states_[*it]);
-          cout << "Wired joint " << *it << " to transmission " << t->name_ << '\n';
         }
         transmissions_out_.push_back(stats);
       }
@@ -112,9 +106,6 @@ Robot::Robot(TiXmlElement *root) :
   {
     ROS_FATAL("unknown error");
   }
-  cout << "Number of transmissions found in robot = " << transmissions_.size() << '\n';
-  cout << "Number of actuators found in robot = " << actuators_.size() << '\n';
-  cout << "Number of joint states found in robot = " << joint_states_.size() << '\n';
 }
 
 JointState* Robot::getJointState(const string &name)
