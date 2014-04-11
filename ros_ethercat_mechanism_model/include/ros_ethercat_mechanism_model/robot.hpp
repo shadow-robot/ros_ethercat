@@ -51,6 +51,9 @@
 #include <urdf/model.h>
 #include <pluginlib/class_loader.h>
 #include <boost/unordered_map.hpp>
+#include <boost/ptr_container/ptr_unordered_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/unordered_map.hpp>
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_mechanism_model/joint.hpp"
 #include "ros_ethercat_mechanism_model/transmission.hpp"
@@ -132,16 +135,16 @@ public:
   boost::unordered_map<std::string, JointState> joint_states_;
 
   /// The actuators mapped to their names
-  boost::unordered_map<std::string, Actuator> actuators_;
+  boost::ptr_unordered_map<std::string, Actuator> actuators_;
 
   /// Custom hardware structures mapped to their names
-  boost::unordered_map<std::string, CustomHW> custom_hws_;
+  boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;
 
   /// The kinematic/dynamic model of the robot
   urdf::Model robot_model_;
 
   /// The transmissions
-  std::vector<Transmission*> transmissions_;
+  boost::ptr_vector<Transmission> transmissions_;
 };
 
 }

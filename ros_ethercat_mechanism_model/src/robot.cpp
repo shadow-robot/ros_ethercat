@@ -40,8 +40,7 @@ using namespace ros_ethercat_mechanism_model;
 using std::vector;
 using std::string;
 using std::runtime_error;
-using boost::unordered_map;
-using boost::shared_ptr;
+using std::cout;
 
 using pluginlib::ClassLoader;
 
@@ -52,7 +51,8 @@ Robot::Robot(TiXmlElement *root) :
   {
     // Parses the xml into a robot model
     if (!robot_model_.initXml(root))
-      throw runtime_error("");
+      throw runtime_error("Failed to load robot_model_");
+    cout << "Loaded robot model\n";
 
     // Constructs the transmissions by parsing custom xml.
     TiXmlElement *xit = NULL;
@@ -64,20 +64,23 @@ Robot::Robot(TiXmlElement *root) :
 
       Transmission *t = transmission_loader_.createUnmanagedInstance(type);
       if (!t)
-        throw runtime_error("Unknown transmission type: " + type);
-
+        throw runtime_error(string("Unknown transmission type: ") + type);
+      cout << "Loading transmission type " << type << '\n';
       if (t->initXml(xit, this))
       {
         transmissions_.push_back(t);
 
-        // Creates a joint state for each transmission and
+        // Add actuator names to transmission
         vector<Actuator*> acts;
 
         for (vector<string>::iterator it = t->actuator_names_.begin(); it != t->actuator_names_.end(); ++it)
         {
           Actuator *act = getActuator(*it);
           if (act)
+          {
             acts.push_back(act);
+            cout << "Found actuator " << *it << " for transmission " << t->name_ << '\n';
+          }
           else
             ROS_ERROR_STREAM("Transmission " << t->name_ << " contains actuator " << *it << " that is undefined");
         }
@@ -89,6 +92,7 @@ Robot::Robot(TiXmlElement *root) :
         {
           joint_states_[*it].joint_ = robot_model_.getJoint(*it);
           stats.push_back(&joint_states_[*it]);
+          cout << "Wired joint " << *it << " to transmission " << t->name_ << '\n';
         }
         transmissions_out_.push_back(stats);
       }
@@ -104,6 +108,13 @@ Robot::Robot(TiXmlElement *root) :
   {
     ROS_FATAL_STREAM("Mechanism Model failed to parse the URDF xml into a robot model\n" << ex.what());
   }
+  catch (...)
+  {
+    ROS_FATAL("unknown error");
+  }
+  cout << "Number of transmissions found in robot = " << transmissions_.size() << '\n';
+  cout << "Number of actuators found in robot = " << actuators_.size() << '\n';
+  cout << "Number of joint states found in robot = " << joint_states_.size() << '\n';
 }
 
 JointState* Robot::getJointState(const string &name)
@@ -133,23 +144,23 @@ CustomHW* Robot::getCustomHW(const std::string &name)
 void Robot::propagateJointPositionToActuatorPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i]->propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
+    transmissions_[i].propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
 }
 
 void Robot::propagateActuatorEffortToJointEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i]->propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
+    transmissions_[i].propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
 }
 
 void Robot::propagateActuatorPositionToJointPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i]->propagatePosition(transmissions_in_[i], transmissions_out_[i]);
+    transmissions_[i].propagatePosition(transmissions_in_[i], transmissions_out_[i]);
 }
 
 void Robot::propagateJointEffortToActuatorEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i]->propagateEffort(transmissions_out_[i], transmissions_in_[i]);
+    transmissions_[i].propagateEffort(transmissions_out_[i], transmissions_in_[i]);
 }

@@ -34,8 +34,8 @@
 /*
  * Author: Stuart Glaser
  */
-#ifndef TRANSMISSION_H
-#define TRANSMISSION_H
+#ifndef ROS_ETHERCAT_MODEL_TRANSMISSION_H
+#define ROS_ETHERCAT_MODEL_TRANSMISSION_H
 
 #include <tinyxml.h>
 #include "ros_ethercat_mechanism_model/joint.hpp"

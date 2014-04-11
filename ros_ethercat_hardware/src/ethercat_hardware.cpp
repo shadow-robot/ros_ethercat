@@ -86,6 +86,8 @@ EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_mechani
 {
   if (!interface_.empty())
     init();
+  else
+    ROS_DEBUG("No ethercat interface given. EthercatHardware will not be initialized");
 }
 
 EthercatHardware::~EthercatHardware()

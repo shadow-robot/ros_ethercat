@@ -29,8 +29,8 @@
 
 // Author: Stuart Glaser
 
-#ifndef MECHANISM_MODEL_CHAIN_H
-#define MECHANISM_MODEL_CHAIN_H
+#ifndef ROS_ETHERCAT_MODEL_CHAIN_H
+#define ROS_ETHERCAT_MODEL_CHAIN_H
 
 #include "ros_ethercat_mechanism_model/robot.hpp"
 #include <kdl/chain.hpp>

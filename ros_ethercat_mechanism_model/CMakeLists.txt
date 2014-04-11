@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
     urdf
     kdl_parser
+    transmission_interface
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -24,6 +25,7 @@ CATKIN_DEPENDS
     pluginlib
     urdf
     kdl_parser
+    transmission_interface
 INCLUDE_DIRS
     include
 LIBRARIES

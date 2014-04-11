@@ -36,8 +36,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ros_ethercat_mechanism_model_TREE_H
-#define ros_ethercat_mechanism_model_TREE_H
+#ifndef ROS_ETHERCAT_MODEL_TREE_H
+#define ROS_ETHERCAT_MODEL_TREE_H
 
 #include <ros/ros.h>
 #include <kdl/chain.hpp>

@@ -32,8 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ROS_ETHERCAT_HARDWARE_INTERFACE_H
-#define ROS_ETHERCAT_HARDWARE_INTERFACE_H
+#ifndef ROS_ETHERCAT_MODEL_INTERFACE_H
+#define ROS_ETHERCAT_MODEL_INTERFACE_H
 
 #include <string>
 #include <vector>

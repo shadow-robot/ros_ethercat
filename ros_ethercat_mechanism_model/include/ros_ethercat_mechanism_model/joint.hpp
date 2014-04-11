@@ -34,8 +34,8 @@
 /*
  *
  */
-#ifndef JOINT_H
-#define JOINT_H
+#ifndef ROS_ETHERCAT_MODEL_JOINT_H
+#define ROS_ETHERCAT_MODEL_JOINT_H
 
 #include <map>
 #include <string>

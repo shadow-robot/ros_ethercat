@@ -25,8 +25,6 @@
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>controller_manager</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>controller_manager</run_depend>
   <run_depend>ros_ethercat_hardware</run_depend>
   <run_depend>ros_ethercat_mechanism_model</run_depend>
   <run_depend>realtime_tools</run_depend>
