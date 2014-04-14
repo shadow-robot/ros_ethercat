@@ -45,7 +45,7 @@
 #include <pthread.h>
 #include <numeric>
 
-#include "ros_ethercat_mechanism_model/ros_ethercat.hpp"
+#include "ros_ethercat_model/ros_ethercat.hpp"
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
@@ -63,7 +63,7 @@ static struct
   char *rosparam_;
   bool allow_unprogrammed_;
   bool stats_;
-  int period;
+  double period;
 } g_options;
 
 string g_robot_desc;
@@ -73,7 +73,7 @@ void Usage(const string &msg = "")
   fprintf(stderr, "Usage: %s [options]\n", g_options.program_);
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
-  fprintf(stderr, "    -p, --period                RT loop period in nanoseconds\n");
+  fprintf(stderr, "    -p, --period                RT loop period in miliseconds\n");
   fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ethercat/realtime\" in seconds\n");
   fprintf(stderr, "    -x, --xml <file>            Load the robot description from this file\n");
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
@@ -351,7 +351,7 @@ void *controlLoop(void *)
 
   struct timespec tick;
   clock_gettime(CLOCK_REALTIME, &tick);
-  ros::Duration durp(g_options.period);
+  ros::Duration durp(g_options.period/1e+9);
 
   // Snap to the nearest second
   tick.tv_nsec = (tick.tv_nsec / g_options.period + 1) * g_options.period;
@@ -522,8 +522,9 @@ static int setupPidFile(const char* interface)
 
   umask(0);
   mkdir(PIDDIR, 0777);
-  int PID_FLAGS = (O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH);
-  fd = open(filename.c_str(), PID_FLAGS);
+  int PID_FLAGS = O_RDWR | O_CREAT | O_EXCL;
+  int PID_MODE = S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH;
+  fd = open(filename.c_str(), PID_FLAGS, PID_MODE);
   if (fd == -1)
   {
     if (errno != EEXIST)
@@ -562,7 +563,7 @@ static int setupPidFile(const char* interface)
   }
 
   unlink(filename.c_str());
-  fd = open(filename.c_str(), PID_FLAGS);
+  fd = open(filename.c_str(), PID_FLAGS, PID_MODE);
 
   if (fd == -1)
   {
@@ -605,12 +606,6 @@ static pthread_attr_t controlThreadAttr;
 
 int main(int argc, char *argv[])
 {
-  if (geteuid() != 0 && getuid() != 0)
-  {
-    printf("This program requires root privileges.\n Use the ros_grant script and try again\n");
-    exit(EXIT_FAILURE);
-  }
-
   // Keep the kernel from swapping us out
   if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
   {
@@ -663,7 +658,7 @@ int main(int argc, char *argv[])
         g_options.stats_ = 1;
         break;
       case 'p':
-        g_options.period = abs(atoi(optarg));
+        g_options.period = fabs(atof(optarg))*1e+6; // msec -> nsec
         break;
     }
   }

@@ -68,7 +68,7 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
   max_publish_       = 0.0;
 }
 
-EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_mechanism_model::Robot *hw, const std::string& eth, bool allow_unprogrammed) :
+EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_model::Robot *hw, const std::string& eth, bool allow_unprogrammed) :
   hw_(hw),
   node_(ros::NodeHandle(name)),
   ni_(0),
@@ -265,7 +265,7 @@ void EthercatHardware::init()
   // prev_buffer should contain valid status data when update function is first used
   memcpy(prev_buffer_, this_buffer_, buffer_size_);
 
-  // Create ros_ethercat_mechanism_model::HardwareInterface
+  // Create ros_ethercat_model::HardwareInterface
   hw_->current_time_ = ros::Time::now();
   last_published_ = hw_->current_time_;
 
@@ -780,9 +780,9 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   if (matching_class_name.size() != 0)
   {
-    //ROS_WARN("Using driver class '%s' for device with product code %d", 
-    //         matching_class_name.c_str(), product_code);
-    try {      
+    ROS_WARN("Using driver class '%s' for device with product code %d",
+             matching_class_name.c_str(), product_code);
+    try {
       p = device_loader_.createInstance(matching_class_name);
     }
     catch (pluginlib::LibraryLoadException &e)

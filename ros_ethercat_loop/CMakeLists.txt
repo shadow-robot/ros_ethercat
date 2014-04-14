@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     controller_manager 
     ros_ethercat_hardware
-    ros_ethercat_mechanism_model
+    ros_ethercat_model
     realtime_tools
     diagnostic_updater
     diagnostic_msgs
@@ -26,7 +26,7 @@ CATKIN_DEPENDS
     std_msgs
     controller_manager
     ros_ethercat_hardware
-    ros_ethercat_mechanism_model
+    ros_ethercat_model
     realtime_tools
     diagnostic_updater
     diagnostic_msgs

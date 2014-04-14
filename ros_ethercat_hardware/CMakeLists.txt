@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
     diagnostic_msgs
     diagnostic_updater
     pluginlib
-    ros_ethercat_mechanism_model
+    ros_ethercat_model
 )
 
 find_package(EML REQUIRED)
@@ -28,7 +28,7 @@ catkin_package(
         diagnostic_msgs
         diagnostic_updater
         pluginlib
-        ros_ethercat_mechanism_model
+        ros_ethercat_model
     INCLUDE_DIRS include
     LIBRARIES ros_ethercat_hardware
 )

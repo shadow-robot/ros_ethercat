@@ -19,7 +19,7 @@
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>ros_ethercat_hardware</run_depend>
   <run_depend>ros_ethercat_loop</run_depend>
-  <run_depend>ros_ethercat_mechanism_model</run_depend>
+  <run_depend>ros_ethercat_model</run_depend>
   
   <export>
     <metapackage/>
