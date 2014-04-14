@@ -81,7 +81,7 @@ EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_model::
   max_pd_retries_(10),
   diagnostics_publisher_(node_),
   motor_publisher_(node_, "motors_halted", 1, true),
-  device_loader_("ethercat_hardware", "EthercatDevice"),
+  device_loader_("ros_ethercat_hardware", "EthercatDevice"),
   allow_unprogrammed_(allow_unprogrammed)
 {
   if (!interface_.empty())

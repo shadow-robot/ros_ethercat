@@ -37,7 +37,6 @@
 
 #include <string>
 #include <vector>
-#include <boost/unordered_map.hpp>
 
 #include <ros/ros.h>
 

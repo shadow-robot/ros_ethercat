@@ -52,8 +52,6 @@ Robot::Robot(TiXmlElement *root) :
     // Parses the xml into a robot model
     if (!robot_model_.initXml(root))
       throw runtime_error("Failed to load robot_model_");
-    else
-      cout << "robot model init " << robot_model_.getName() << '\n';
 
     // Constructs the transmissions by parsing custom xml.
     TiXmlElement *xit = NULL;
@@ -62,7 +60,6 @@ Robot::Robot(TiXmlElement *root) :
          xit = xit->NextSiblingElement("transmission"))
     {
       string type(xit->Attribute("type"));
-      cout << "trans type " << type << '\n';
 
       Transmission *t = transmission_loader_.createUnmanagedInstance(type);
       if (!t)
