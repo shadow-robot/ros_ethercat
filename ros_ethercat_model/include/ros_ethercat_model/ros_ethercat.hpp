@@ -80,10 +80,10 @@ using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Robot;
 using ros::NodeHandle;
 
-class ros_ethercat : public hardware_interface::RobotHW
+class RosEthercat : public hardware_interface::RobotHW
 {
 public:
-  ros_ethercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
+  RosEthercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "ethercat_controller_manager"),
     model_(config),
     ec_(name, &model_, eth, allow)
@@ -111,7 +111,7 @@ public:
     registerInterface(&position_joint_interface_);
   }
 
-  virtual ~ros_ethercat() {}
+  virtual ~RosEthercat() {}
 
   /// propagate position actuator -> joint and set commands to zero
   void read()

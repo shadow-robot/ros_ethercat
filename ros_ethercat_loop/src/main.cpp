@@ -326,7 +326,7 @@ void *controlLoop(void *)
 
   // Initialize the hardware interface
   ros::NodeHandle nh;
-  ros_ethercat seth(nh, g_options.interface_, g_options.allow_unprogrammed_, root);
+  RosEthercat seth(nh, g_options.interface_, g_options.allow_unprogrammed_, root);
 
   // Create controller manager
   controller_manager::ControllerManager cm(&seth);
