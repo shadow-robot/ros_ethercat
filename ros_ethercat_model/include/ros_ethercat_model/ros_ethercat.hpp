@@ -53,7 +53,7 @@
 
 /** \brief Contains robot state information and init, read, write function.
  *
- * The robot state is contained in ros_ethercat_model::RobotState object
+ * The robot state is contained in ros_ethercat_model::RobotStateState object
  * as used by pr2_controller object. Nevertheless, the main loop in main.cpp
  * instantiates a ros_control controller_manager. So a pr2_controller with few modifications
  * may be loaded with controller_manager with RobotState as a custom interface.
@@ -77,7 +77,7 @@ using hardware_interface::JointStateHandle;
 using hardware_interface::JointHandle;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
-using ros_ethercat_model::Robot;
+using ros_ethercat_model::RobotState;
 using ros::NodeHandle;
 
 class RosEthercat : public hardware_interface::RobotHW
@@ -153,7 +153,7 @@ public:
 
   NodeHandle cm_node_;
 
-  Robot model_;
+  RobotState model_;
 
   EthercatHardware ec_;
 

@@ -207,7 +207,7 @@ public:
   /*!
    * \brief Constructor
    */
-  EthercatHardware(const std::string& name, ros_ethercat_model::Robot *hw, const string &eth, bool allow_unprogrammed);
+  EthercatHardware(const std::string& name, ros_ethercat_model::RobotState *hw, const string &eth, bool allow_unprogrammed);
 
   /*!
    * \brief Destructor
@@ -249,7 +249,7 @@ public:
    */
   bool publishTrace(int position, const string &reason, unsigned level, unsigned delay);
 
-  ros_ethercat_model::Robot *hw_;
+  ros_ethercat_model::RobotState *hw_;
 
 private:
   static void changeState(EtherCAT_SlaveHandler *sh, EC_State new_state);

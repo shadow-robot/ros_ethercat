@@ -44,7 +44,7 @@ using std::cout;
 
 using pluginlib::ClassLoader;
 
-Robot::Robot(TiXmlElement *root) :
+RobotState::RobotState(TiXmlElement *root) :
     transmission_loader_("ros_ethercat_model", "ros_ethercat_model::Transmission")
 {
   try
@@ -108,7 +108,7 @@ Robot::Robot(TiXmlElement *root) :
   }
 }
 
-JointState* Robot::getJointState(const string &name)
+JointState* RobotState::getJointState(const string &name)
 {
   if (joint_states_.count(name))
     return &joint_states_[name];
@@ -116,7 +116,7 @@ JointState* Robot::getJointState(const string &name)
     return NULL;
 }
 
-Actuator* Robot::getActuator(const std::string &name)
+Actuator* RobotState::getActuator(const std::string &name)
 {
   if (actuators_.count(name))
     return &actuators_[name];
@@ -124,7 +124,7 @@ Actuator* Robot::getActuator(const std::string &name)
     return NULL;
 }
 
-CustomHW* Robot::getCustomHW(const std::string &name)
+CustomHW* RobotState::getCustomHW(const std::string &name)
 {
   if (custom_hws_.count(name))
     return &custom_hws_[name];
@@ -132,25 +132,25 @@ CustomHW* Robot::getCustomHW(const std::string &name)
     return NULL;
 }
 
-void Robot::propagateJointPositionToActuatorPosition()
+void RobotState::propagateJointPositionToActuatorPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
     transmissions_[i].propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
 }
 
-void Robot::propagateActuatorEffortToJointEffort()
+void RobotState::propagateActuatorEffortToJointEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
     transmissions_[i].propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
 }
 
-void Robot::propagateActuatorPositionToJointPosition()
+void RobotState::propagateActuatorPositionToJointPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
     transmissions_[i].propagatePosition(transmissions_in_[i], transmissions_out_[i]);
 }
 
-void Robot::propagateJointEffortToActuatorEffort()
+void RobotState::propagateJointEffortToActuatorEffort()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
     transmissions_[i].propagateEffort(transmissions_out_[i], transmissions_in_[i]);

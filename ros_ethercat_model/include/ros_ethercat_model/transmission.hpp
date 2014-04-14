@@ -43,7 +43,7 @@
 
 namespace ros_ethercat_model {
 
-class Robot;
+class RobotState;
 
 class Transmission
 {
@@ -55,7 +55,7 @@ public:
   virtual ~Transmission() {}
 
   /// Initializes the transmission from XML data
-  virtual bool initXml(TiXmlElement *config, Robot *robot) = 0;
+  virtual bool initXml(TiXmlElement *config, RobotState *robot) = 0;
 
   /// Uses encoder data to fill out joint position and velocities
   virtual void propagatePosition(std::vector<Actuator*>&, std::vector<JointState*>&) = 0;

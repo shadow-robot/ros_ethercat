@@ -142,7 +142,7 @@ public:
   EthercatDevice();
   virtual ~EthercatDevice();
 
-  virtual int initialize(ros_ethercat_model::Robot *hw, bool allow_unprogrammed=true) = 0;
+  virtual int initialize(ros_ethercat_model::RobotState *hw, bool allow_unprogrammed=true) = 0;
   
   /**
    * \param reset  when asserted this will clear diagnostic error conditions device safety disable

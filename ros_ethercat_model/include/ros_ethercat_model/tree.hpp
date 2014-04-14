@@ -65,7 +65,7 @@ public:
    *
    * \param robot_state the robot state object containing the robot model and the state of each joint in the robot
    */
-  bool init(Robot *robot_state)
+  bool init(RobotState *robot_state)
   {
     KDL::SegmentMap segmentMap;
 

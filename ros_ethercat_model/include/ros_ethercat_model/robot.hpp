@@ -80,11 +80,11 @@ namespace ros_ethercat_model
  *
  * Devices with Digital, Analogue and PWM I/O can use the GeneralIOs
  */
-class Robot : public hardware_interface::HardwareInterface
+class RobotState : public hardware_interface::HardwareInterface
 {
 public:
   /// constructor
-  Robot(TiXmlElement *root);
+  RobotState(TiXmlElement *root);
 
   /// Propagete the joint positions, through the transmissions, to the actuator positions
   void propagateJointPositionToActuatorPosition();

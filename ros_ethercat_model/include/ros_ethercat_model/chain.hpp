@@ -55,7 +55,7 @@ public:
    * \param tip the name of the tip link of the chain
    *
    */
-  bool init(Robot *robot_state, const std::string &root, const std::string &tip)
+  bool init(RobotState *robot_state, const std::string &root, const std::string &tip)
   {
     robot_state_ = robot_state;
     // Constructs the kdl chain
@@ -219,7 +219,7 @@ public:
   }
 
 private:
-  Robot *robot_state_;
+  RobotState *robot_state_;
   KDL::Chain kdl_chain_;
 
   std::vector< JointState* > joints_;  // ONLY joints that can be actuated (not fixed joints)

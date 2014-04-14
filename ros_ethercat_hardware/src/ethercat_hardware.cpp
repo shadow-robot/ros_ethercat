@@ -68,7 +68,7 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
   max_publish_       = 0.0;
 }
 
-EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_model::Robot *hw, const std::string& eth, bool allow_unprogrammed) :
+EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_model::RobotState *hw, const std::string& eth, bool allow_unprogrammed) :
   hw_(hw),
   node_(ros::NodeHandle(name)),
   ni_(0),
