@@ -4,6 +4,8 @@
  *  Copyright (c) 2008, Willow Garage, Inc.
  *  All rights reserved.
  *
+ *  Modified 2014, by Shadow Robot Company Ltd.
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -368,11 +370,10 @@ void *controlLoop(void *)
     last_loop_start = this_loop_start;
 
     double start = now();
-    seth.ec_.update(false, false);
 
-    double after_ec = now();
     ros::Time this_moment(tick.tv_sec, tick.tv_nsec);
     seth.read();
+    double after_ec = now();
     cm.update(this_moment, durp);
     seth.write();
     double end = now();

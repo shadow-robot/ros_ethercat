@@ -1,7 +1,12 @@
-/*********************************************************************
+/*
+ * robot.hpp
+ *
+ *  Created on: 7 Jan 2014
+ *      Author: Manos Nikolaidis
+ *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2008, Willow Garage, Inc.
+ *  Copyright (c) 2014, Shadow Robot Company Ltd.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -31,17 +36,6 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-
-/*
- * The robot model tracks the state of the robot.
- *
- * State path:
- *               +---------------+
- * Actuators --> | Transmissions | --> Joints
- *               +---------------+
- *
- * Author: Stuart Glaser
- */
 
 #ifndef ETHERCAT_ROBOT_H
 #define ETHERCAT_ROBOT_H
@@ -78,13 +72,18 @@ namespace ros_ethercat_model
  * Some specialized controllers (such as the calibration controllers) can get access
  * to actuator states, and transmission states.
  *
- * Devices with Digital, Analogue and PWM I/O can use the GeneralIOs
+ * A CustomHW class to add arbitrary hardware devices
  */
 class RobotState : public hardware_interface::HardwareInterface
 {
 public:
-  /// constructor
-  RobotState(TiXmlElement *root);
+  RobotState(TiXmlElement *root)
+    : transmission_loader_("ros_ethercat_model", "ros_ethercat_model::Transmission")
+  {
+    if (root)
+      initXml(root);
+  }
+  void initXml(TiXmlElement *root);
 
   /// Propagete the joint positions, through the transmissions, to the actuator positions
   void propagateJointPositionToActuatorPosition();

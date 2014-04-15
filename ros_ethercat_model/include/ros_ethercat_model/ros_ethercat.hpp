@@ -6,7 +6,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2013, Shadow Robot Company Ltd.
+ *  Copyright (c) 2014, Shadow Robot Company Ltd.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -46,10 +46,12 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
-#include <ros_ethercat_model/robot.hpp>
 #include <controller_manager/controller_manager.h>
-#include <ros_ethercat_hardware/ethercat_hardware.h>
-#include <boost/scoped_ptr.hpp>
+#include <pr2_mechanism_msgs/MechanismStatistics.h>
+#include "ros_ethercat_model/robot.hpp"
+#include "ros_ethercat_model/mech_stats_publisher.hpp"
+#include "ros_ethercat_hardware/ethercat_hardware.h"
+
 
 /** \brief Contains robot state information and init, read, write function.
  *
@@ -86,7 +88,8 @@ public:
   RosEthercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "ethercat_controller_manager"),
     model_(config),
-    ec_(name, &model_, eth, allow)
+    ec_(name, &model_, eth, allow),
+    mech_stats_publisher_(nh, model_)
   {
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
     while (it != model_.joint_states_.end())
@@ -116,6 +119,7 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read()
   {
+    ec_.update(false, false);
     model_.propagateActuatorPositionToJointPosition();
 
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -138,6 +142,7 @@ public:
       ++it;
     }
     model_.propagateJointEffortToActuatorEffort();
+    mech_stats_publisher_.publish();
   }
 
   void shutdown()
@@ -156,6 +161,8 @@ public:
   RobotState model_;
 
   EthercatHardware ec_;
+
+  MechStatsPublisher mech_stats_publisher_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;

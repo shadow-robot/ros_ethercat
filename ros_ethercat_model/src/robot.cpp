@@ -44,8 +44,7 @@ using std::cout;
 
 using pluginlib::ClassLoader;
 
-RobotState::RobotState(TiXmlElement *root) :
-    transmission_loader_("ros_ethercat_model", "ros_ethercat_model::Transmission")
+void RobotState::initXml(TiXmlElement *root)
 {
   try
   {

@@ -55,7 +55,6 @@ public:
       last_measured_effort_(0),
       motor_voltage_(0)
   {}
-  virtual ~ActuatorState() {}
 
   int device_id_; //!< Position in EtherCAT chain
 
@@ -79,7 +78,6 @@ public:
   ActuatorCommand() :
     enable_(0), effort_(0)
   {}
-  virtual ~ActuatorCommand() {}
 
   bool enable_; //!< Enable this actuator
   double effort_; //!< Force to apply (in Nm)
@@ -97,8 +95,6 @@ public:
 class Actuator
 {
 public:
-  Actuator() {};
-  virtual ~Actuator() {}
   ActuatorState state_;
   ActuatorCommand command_;
 };
@@ -110,8 +106,6 @@ public:
  */
 class CustomHW
 {
-public:
-  virtual ~CustomHW() {}
 };
 
 }

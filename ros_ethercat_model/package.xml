@@ -17,13 +17,13 @@
   <build_depend>pluginlib</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>kdl_parser</build_depend>
-  <build_depend>transmission_interface</build_depend>
+  <build_depend>pr2_mechanism_msgs</build_depend>
   
   <run_depend>roscpp</run_depend>
   <run_depend>hardware_interface</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>kdl_parser</run_depend>
-  <run_depend>transmission_interface</run_depend>
+  <run_depend>pr2_mechanism_msgs</run_depend>
 
 </package>
