@@ -110,10 +110,6 @@ public:
     {
       ROS_FATAL_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
     }
-    catch (...)
-    {
-      ROS_FATAL("ros_ethercat_model failed to parse the URDF xml into a robot model");
-    }
   }
 
   /// Propagete the actuator positions, through the transmissions, to the joint positions
