@@ -75,7 +75,7 @@ void Usage(const string &msg = "")
   fprintf(stderr, "Usage: %s [options]\n", g_options.program_);
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
-  fprintf(stderr, "    -p, --period                RT loop period in miliseconds\n");
+  fprintf(stderr, "    -p, --period                RT loop period in msec\n");
   fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ethercat/realtime\" in seconds\n");
   fprintf(stderr, "    -x, --xml <file>            Load the robot description from this file\n");
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
@@ -272,17 +272,19 @@ void *controlLoop(void *)
   RealtimePublisher<diagnostic_msgs::DiagnosticArray> publisher(node, "/diagnostics", 2);
   RealtimePublisher<std_msgs::Float64> *rtpublisher = NULL;
 
-  // Realtime loop should be running at least 750Hz
-  // Calculate realtime loop frequency every 200mseec
-  double min_acceptable_rt_loop_frequency;
-  if (!node.getParam("min_acceptable_rt_loop_frequency", min_acceptable_rt_loop_frequency))
-    min_acceptable_rt_loop_frequency = 750.0;
-  else
+  // Realtime loop should be running at least 3/4 of given frequency
+  // or at specified min acceptable frequency
+  double period_in_secs = 1e+9*g_options.period;
+  double given_frequency = 1/period_in_secs;
+  double min_acceptable_rt_loop_frequency = 0.75*given_frequency;
+  if (node.getParam("min_acceptable_rt_loop_frequency", min_acceptable_rt_loop_frequency))
     ROS_WARN("min_acceptable_rt_loop_frequency changed to %f", min_acceptable_rt_loop_frequency);
 
   unsigned rt_cycle_count = 0;
   double last_rt_monitor_time;
-  double rt_loop_monitor_period = 0.6 / 3;
+
+  // Calculate realtime loop frequency every 200mseec
+  double rt_loop_monitor_period = 0.2;
   // Keep history of last 3 calculation intervals.
   RTLoopHistory rt_loop_history(3, 1000.0);
 
@@ -387,8 +389,8 @@ void *controlLoop(void *)
       last_published = end;
     }
 
-    // Realtime loop should run about 1000Hz.
-    // Missing timing on a control cycles usually causes a controller glitch and actuators to jerk.
+    // Realtime loop should run about with the set frequency by default 1000Hz.
+    // Missing timing on control cycles usually causes a controller glitch and actuators to jerk.
     // When realtime loop misses a lot of cycles controllers will perform poorly and may cause robot to shake.
     ++rt_cycle_count;
     if ((start - last_rt_monitor_time) > rt_loop_monitor_period)
@@ -659,7 +661,8 @@ int main(int argc, char *argv[])
         g_options.stats_ = 1;
         break;
       case 'p':
-        g_options.period = fabs(atof(optarg))*1e+6; // msec -> nsec
+        // convert period given in msec to nsec
+        g_options.period = fabs(atof(optarg))*1e+6;
         break;
     }
   }
