@@ -70,9 +70,7 @@ public:
     pub_mech_stats_(nh, "mechanism_statistics", 1),
     last_published_mechanism_stats_(Time::now())
   {
-    pub_mech_stats_.msg_.joint_statistics.clear();
     pub_mech_stats_.msg_.joint_statistics.resize(state_.joint_states_.size());
-    pub_mech_stats_.msg_.actuator_statistics.clear();
     pub_mech_stats_.msg_.actuator_statistics.resize(state_.actuators_.size());
 
     double publish_rate_mechanism_stats;

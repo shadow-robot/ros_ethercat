@@ -42,7 +42,6 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
-#include <tinyxml.h>
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
@@ -157,11 +156,8 @@ public:
   }
 
   NodeHandle cm_node_;
-
   RobotState model_;
-
   EthercatHardware ec_;
-
   MechStatsPublisher mech_stats_publisher_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
