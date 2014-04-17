@@ -146,7 +146,7 @@ public:
   /// The joint position in radians or meters (read-only variable)
   double position_;
 
-  /// The joint velocity in randians/sec or meters/sec (read-only variable)
+  /// The joint velocity in radians/sec or meters/sec (read-only variable)
   double velocity_;
 
   /// The measured joint effort in Nm or N (read-only variable)

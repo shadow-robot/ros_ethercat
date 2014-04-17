@@ -131,18 +131,6 @@ CustomHW* RobotState::getCustomHW(const std::string &name)
     return NULL;
 }
 
-void RobotState::propagateJointPositionToActuatorPosition()
-{
-  for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i].propagatePositionBackwards(transmissions_out_[i], transmissions_in_[i]);
-}
-
-void RobotState::propagateActuatorEffortToJointEffort()
-{
-  for (size_t i = 0; i < transmissions_.size(); ++i)
-    transmissions_[i].propagateEffortBackwards(transmissions_in_[i], transmissions_out_[i]);
-}
-
 void RobotState::propagateActuatorPositionToJointPosition()
 {
   for (size_t i = 0; i < transmissions_.size(); ++i)
