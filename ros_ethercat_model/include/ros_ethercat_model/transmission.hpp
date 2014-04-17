@@ -55,7 +55,30 @@ public:
   virtual ~Transmission() {}
 
   /// Initializes the transmission from XML data
-  virtual bool initXml(TiXmlElement *config, RobotState *robot) = 0;
+  virtual bool initXml(TiXmlElement *config, RobotState *robot)
+  {
+    const char *name = config->Attribute("name");
+    name_ = name ? name : "";
+
+    //reading the joint name
+    TiXmlElement *jel = config->FirstChildElement("joint");
+    const char *joint_name = jel ? jel->Attribute("name") : NULL;
+    if (!joint_name)
+    {
+      ROS_ERROR("Transmission did not specify joint name");
+      return false;
+    }
+
+    const boost::shared_ptr<const urdf::Joint> joint = robot->robot_model_.getJoint(joint_name);
+    if (!joint)
+    {
+      ROS_ERROR("Transmission could not find joint named \"%s\"", joint_name);
+      return false;
+    }
+    joint_names_.push_back(joint_name);
+
+    return true;
+  }
 
   /// Uses encoder data to fill out joint position and velocities
   virtual void propagatePosition(std::vector<Actuator*>&, std::vector<JointState*>&) = 0;
