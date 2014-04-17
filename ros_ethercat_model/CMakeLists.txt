@@ -30,22 +30,9 @@ CATKIN_DEPENDS
     joint_state_controller
 INCLUDE_DIRS
     include
-LIBRARIES
-    ${PROJECT_NAME}
 )
 
-add_definitions(-O3)
-
-add_library(${PROJECT_NAME}
-    src/robot.cpp
-)
-
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
-add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
-
-install(TARGETS ${PROJECT_NAME}
-   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+install(DIRECTORY src
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 install(DIRECTORY include/${PROJECT_NAME}/
