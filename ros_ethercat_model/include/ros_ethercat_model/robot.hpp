@@ -130,28 +130,22 @@ public:
       transmissions_[i].propagateEffort(transmissions_out_[i], transmissions_in_[i]);
   }
 
-  /// get an actuator by actuator name orNULL on failure
+  /// get an actuator by actuator name or NULL on failure
   Actuator* getActuator(const std::string &name)
   {
-    if (actuators_.count(name))
-      return &actuators_[name];
-    return NULL;
+    return actuators_.count(name) ? &actuators_[name] : NULL;
   }
 
   /// Get Custom Hardware device by name or NULL on failure
   CustomHW* getCustomHW(const std::string &name)
   {
-    if (custom_hws_.count(name))
-      return &custom_hws_[name];
-    return NULL;
+    return custom_hws_.count(name) ? &custom_hws_[name] : NULL;
   }
 
   /// Get a joint state by name or NULL on failure
   JointState* getJointState(const std::string &name)
   {
-    if (joint_states_.count(name))
-      return &joint_states_[name];
-    return NULL;
+    return joint_states_.count(name) ? &joint_states_[name] : NULL;
   }
 
   ros::Time getTime()
