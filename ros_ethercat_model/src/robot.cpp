@@ -84,6 +84,12 @@ void RobotState::initXml(TiXmlElement *root)
         vector<JointState*> stats;
         for (vector<string>::iterator it = t->joint_names_.begin(); it != t->joint_names_.end(); ++it)
         {
+          if (!robot_model_.getJoint(*it))
+          {
+            ROS_ERROR_STREAM("Failed to find in robot model transmission's joint named " << *it);
+            throw runtime_error(string("Failed to load transmission type: ") + type);
+          }
+
           joint_states_[*it].joint_ = robot_model_.getJoint(*it);
           stats.push_back(&joint_states_[*it]);
         }

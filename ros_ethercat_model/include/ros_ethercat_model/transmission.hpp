@@ -69,12 +69,6 @@ public:
       return false;
     }
 
-    const boost::shared_ptr<const urdf::Joint> joint = robot->robot_model_.getJoint(joint_name);
-    if (!joint)
-    {
-      ROS_ERROR("Transmission could not find joint named \"%s\"", joint_name);
-      return false;
-    }
     joint_names_.push_back(joint_name);
 
     return true;
