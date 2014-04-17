@@ -69,8 +69,7 @@
  * initXml, read and write should be called inside main.cpp
  */
 
-static const string name = "ros_ethercat";
-
+using std::string;
 using boost::unordered_map;
 using boost::ptr_unordered_map;
 using ros_ethercat_model::JointState;
@@ -80,6 +79,8 @@ using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::RobotState;
 using ros::NodeHandle;
+
+static const string name = "ros_ethercat";
 
 class RosEthercat : public hardware_interface::RobotHW
 {
