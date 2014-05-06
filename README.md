@@ -42,7 +42,7 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
  Transmissions are still defined in urdf in the pr2 style and inherit from `ros_ethercat_model::Transmission`. This class will initialize the actuators associated with this transmission.
  
  **New features**
- 1. ros_ethercat accepts a new argument --period which is the period of main ethercat loop in msec. If not given the default value is 1ms.
- 2. There is a helper bash script called ros_grant. This will grant to the ros_ethercat_loop executable the ability to be ran from a normal (nonroot) user. E.g rosrun ros_ethercat_loop ros_grant
+ 1. ros_ethercat accepts a new argument `--period` which is the period of main ethercat loop in msec. If not given the default value is 1ms.
+ 2. There is a helper bash script called ros_grant. This will grant to the ros_ethercat_loop executable the ability to be ran from a normal (nonroot) user. E.g <br>`rosrun ros_ethercat_loop ros_grant`
  
  
