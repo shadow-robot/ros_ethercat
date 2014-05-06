@@ -34,7 +34,7 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
 *launch files*
 
  1. Replace `pr2_ethercat` with `ros_ethercat_loop` in launch files
- 2. Since pr2_controller_manager is no longer used, joint_states or mechanism_statistics are no longer published by it. Joint states are now  published with the join_state_controller from ros_controllers. To start this controller add this line in the main launch file <br> `<include file="$(find ros_ethercat_model)/launch/joint_state_publisher.launch"/>`
+ 2. Since pr2_controller_manager is no longer used, joint_states or mechanism_statistics are no longer published by it. Joint states are now  published with the join_state_controller from ros_controllers. To start this controller this line need to be added in the main launch file <br> `<include file="$(find ros_ethercat_model)/launch/joint_state_publisher.launch"/>`
  3. `calibrate.py` file from pr2_bringup is now included in ros_ethercat_model package. Launch files that execute `calibrate.py` should be modified to find it there.
  
 *transmissions*
