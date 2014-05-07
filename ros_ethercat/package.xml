@@ -1,7 +1,7 @@
 <package>
   <name>ros_ethercat</name>
   <version>0.1.0</version>
-  <description>T</description>
+  <description>A pr2 agnostic replacement for robots using EtherCAT</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>BSD</license>
