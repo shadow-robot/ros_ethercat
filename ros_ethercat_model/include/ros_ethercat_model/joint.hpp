@@ -31,9 +31,7 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-/*
- *
- */
+
 #ifndef ROS_ETHERCAT_MODEL_JOINT_H
 #define ROS_ETHERCAT_MODEL_JOINT_H
 

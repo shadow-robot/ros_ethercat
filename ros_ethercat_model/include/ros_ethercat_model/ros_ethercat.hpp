@@ -37,8 +37,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef SR_ETHERCAT_INTERFACE_HPP_
-#define SR_ETHERCAT_INTERFACE_HPP_
+#ifndef ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
+#define ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -167,4 +167,4 @@ public:
   hardware_interface::PositionJointInterface position_joint_interface_;
 };
 
-#endif /* SR_ETHERCAT_INTERFACE_HPP_ */
+#endif

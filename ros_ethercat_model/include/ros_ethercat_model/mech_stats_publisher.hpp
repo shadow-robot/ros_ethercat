@@ -37,8 +37,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef MECH_STATS_PUBLISHER_HPP_
-#define MECH_STATS_PUBLISHER_HPP_
+#ifndef ROS_ETHERCAT_MODEL_MECH_STATS_PUBLISHER_HPP_
+#define ROS_ETHERCAT_MODEL_MECH_STATS_PUBLISHER_HPP_
 
 #include <ros_ethercat_model/robot_state.hpp>
 #include <pr2_mechanism_msgs/MechanismStatistics.h>
