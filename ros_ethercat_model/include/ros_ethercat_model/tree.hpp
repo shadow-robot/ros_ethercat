@@ -44,7 +44,7 @@
 #include <kdl/tree.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/jntarrayvel.hpp>
-#include "ros_ethercat_model/robot.hpp"
+#include "ros_ethercat_model/robot_state.hpp"
 #include <kdl_parser/kdl_parser.hpp>
 
 namespace ros_ethercat_model

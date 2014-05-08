@@ -41,7 +41,7 @@
 #include <ethercat/ethercat_defs.h>
 #include <al/ethercat_slave_handler.h>
 
-#include <ros_ethercat_model/robot.hpp>
+#include <ros_ethercat_model/robot_state.hpp>
 
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 

@@ -35,7 +35,7 @@
 #ifndef ETHERCAT_HARDWARE_H
 #define ETHERCAT_HARDWARE_H
 
-#include <ros_ethercat_model/robot.hpp>
+#include <ros_ethercat_model/robot_state.hpp>
 
 #define BOOL NETIF_BOOL
 #include <al/ethercat_AL.h>

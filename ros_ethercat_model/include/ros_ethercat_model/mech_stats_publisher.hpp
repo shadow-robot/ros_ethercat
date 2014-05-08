@@ -40,7 +40,7 @@
 #ifndef MECH_STATS_PUBLISHER_HPP_
 #define MECH_STATS_PUBLISHER_HPP_
 
-#include <ros_ethercat_model/robot.hpp>
+#include <ros_ethercat_model/robot_state.hpp>
 #include <pr2_mechanism_msgs/MechanismStatistics.h>
 #include <pr2_mechanism_msgs/JointStatistics.h>
 #include <pr2_mechanism_msgs/ActuatorStatistics.h>
