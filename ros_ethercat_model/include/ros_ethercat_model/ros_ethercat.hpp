@@ -88,7 +88,7 @@ public:
   RosEthercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "ethercat_controller_manager"),
     model_(config),
-    ec_(name, &model_, eth, allow),
+    ec_(name, static_cast<hardware_interface::HardwareInterface*>(&model_), eth, allow),
     mech_stats_publisher_(nh, model_)
   {
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -120,6 +120,7 @@ public:
   void read()
   {
     ec_.update(false, false);
+    model_.current_time_ = ros::Time::now();
     model_.propagateActuatorPositionToJointPosition();
 
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();

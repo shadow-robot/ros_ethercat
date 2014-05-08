@@ -37,8 +37,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ROS_ETHERCAT_MODEL_ROBOTSTATE_H
-#define ROS_ETHERCAT_MODEL_ROBOTSTATE_H
+#ifndef ROS_ETHERCAT_MODEL_ROBOTSTATE_HPP
+#define ROS_ETHERCAT_MODEL_ROBOTSTATE_HPP
 
 #include <urdf/model.h>
 #include <pluginlib/class_loader.h>

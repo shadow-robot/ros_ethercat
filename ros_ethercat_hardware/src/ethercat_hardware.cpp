@@ -68,7 +68,7 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
   max_publish_       = 0.0;
 }
 
-EthercatHardware::EthercatHardware(const std::string& name, ros_ethercat_model::RobotState *hw, const std::string& eth, bool allow_unprogrammed) :
+EthercatHardware::EthercatHardware(const std::string& name, hardware_interface::HardwareInterface *hw, const std::string& eth, bool allow_unprogrammed) :
   hw_(hw),
   node_(ros::NodeHandle(name)),
   ni_(0),
@@ -265,9 +265,7 @@ void EthercatHardware::init()
   // prev_buffer should contain valid status data when update function is first used
   memcpy(prev_buffer_, this_buffer_, buffer_size_);
 
-  // Create ros_ethercat_model::HardwareInterface
-  hw_->current_time_ = ros::Time::now();
-  last_published_ = hw_->current_time_;
+  last_published_ = ros::Time::now();
 
   // Initialize slaves
   //set<string> actuator_names;
@@ -604,8 +602,6 @@ void EthercatHardware::update(bool reset, bool halt)
 
   ros::Time txandrx_end_time(ros::Time::now());  // Also begining of unpack_state 
   diagnostics_.txandrx_acc_((txandrx_end_time - txandrx_start_time).toSec());
-
-  hw_->current_time_ = txandrx_end_time;
 
   if (!success)
   {
