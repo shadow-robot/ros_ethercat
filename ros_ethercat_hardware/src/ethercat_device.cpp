@@ -363,7 +363,8 @@ EthercatDevice::EthercatDevice() : use_ros_(true)
 
 EthercatDevice::~EthercatDevice()
 {
-  //nothing
+  delete sh_->get_fmmu_config();
+  delete sh_->get_pd_config();
 }
 
 void EthercatDevice::collectDiagnostics(EthercatCom *com)

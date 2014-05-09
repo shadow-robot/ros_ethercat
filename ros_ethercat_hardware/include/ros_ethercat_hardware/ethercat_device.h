@@ -142,7 +142,7 @@ public:
   EthercatDevice();
   virtual ~EthercatDevice();
 
-  virtual int initialize(hardware_interface::HardwareInterface *hw, bool allow_unprogrammed=true) = 0;
+  virtual int initialize(hardware_interface::HardwareInterface *hw, bool allow_unprogrammed=true) { return 0; }
   
   /**
    * \param reset  when asserted this will clear diagnostic error conditions device safety disable
@@ -191,7 +191,7 @@ public:
   /*!
    * \brief Write data to device ESC.
    */
-  static int writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode);
+  static int writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode=FIXED_ADDR);
   inline int writeData(EthercatCom *com, uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode) {
     return writeData(com, sh_, address, buffer, length, addrMode);
   }
@@ -199,7 +199,7 @@ public:
   /*!
    * \brief Read data from device ESC.
    */
-  static int readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void *buffer, uint16_t length, AddrMode addrMode);
+  static int readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void *buffer, uint16_t length, AddrMode addrMode=FIXED_ADDR);
   inline int readData(EthercatCom *com, uint16_t address, void *buffer, uint16_t length, AddrMode addrMode) {
     return readData(com, sh_, address, buffer, length, addrMode);
   }  
@@ -207,7 +207,7 @@ public:
   /*!
    * \brief Read then write data to ESC.
    */  
-  static int readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void *buffer, uint16_t length, AddrMode addrMode);
+  static int readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void *buffer, uint16_t length, AddrMode addrMode=FIXED_ADDR);
   inline int readWriteData(EthercatCom *com, uint16_t address, void *buffer, uint16_t length, AddrMode addrMode) {
     return readWriteData(com, sh_, address, buffer, length, addrMode);
   }
