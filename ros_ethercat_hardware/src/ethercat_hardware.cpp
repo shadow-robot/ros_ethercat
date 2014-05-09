@@ -926,7 +926,7 @@ void EthercatHardware::collectDiagnostics()
   { // Count number of devices 
     EC_Logic *logic = EC_Logic::instance();
     unsigned char p[1];
-    EC_UINT length = sizeof(p);
+    uint16_t length = sizeof(p);
     
     // Build read telegram, use slave position
     APRD_Telegram status(logic->get_idx(), // Index
