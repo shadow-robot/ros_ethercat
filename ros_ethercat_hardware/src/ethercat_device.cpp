@@ -331,13 +331,9 @@ void EthercatDeviceDiagnostics::publish(diagnostic_updater::DiagnosticStatusWrap
 void EthercatDevice::construct(EtherCAT_SlaveHandler *sh, int &start_address)
 {
   sh_ = sh;
+  sh->set_fmmu_config( new EtherCAT_FMMU_Config(0) );
+  sh->set_pd_config( new EtherCAT_PD_Config(0) );
 }
-
-void EthercatDevice::construct(ros::NodeHandle &nh)
-{
-  // empty
-}
-
 
 EthercatDevice::EthercatDevice() : use_ros_(true)
 {
