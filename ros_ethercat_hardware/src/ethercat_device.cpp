@@ -181,7 +181,7 @@ void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler 
                                 (unsigned char*) &dl_status);
     // Use positional read to re-count number of devices on chain
     unsigned char buf[1];    
-    EC_UINT address = 0x0000;
+    uint16_t address = 0x0000;
     APRD_Telegram aprd_telegram(logic->get_idx(),  // Index
                                 0,                 // Slave position on ethercat chain (auto increment address) (
                                 address,           // ESC physical memory address (start address) 
@@ -331,13 +331,9 @@ void EthercatDeviceDiagnostics::publish(diagnostic_updater::DiagnosticStatusWrap
 void EthercatDevice::construct(EtherCAT_SlaveHandler *sh, int &start_address)
 {
   sh_ = sh;
+  sh->set_fmmu_config( new EtherCAT_FMMU_Config(0) );
+  sh->set_pd_config( new EtherCAT_PD_Config(0) );
 }
-
-void EthercatDevice::construct(ros::NodeHandle &nh)
-{
-  // empty
-}
-
 
 EthercatDevice::EthercatDevice() : use_ros_(true)
 {
@@ -363,7 +359,8 @@ EthercatDevice::EthercatDevice() : use_ros_(true)
 
 EthercatDevice::~EthercatDevice()
 {
-  //nothing
+  delete sh_->get_fmmu_config();
+  delete sh_->get_pd_config();
 }
 
 void EthercatDevice::collectDiagnostics(EthercatCom *com)
@@ -395,7 +392,7 @@ void EthercatDevice::collectDiagnostics(EthercatCom *com)
 }
 
 
-int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UINT address, void* buffer, EC_UINT length, AddrMode addrMode)
+int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *)buffer;
   EC_Logic *logic = EC_Logic::instance();
@@ -442,7 +439,7 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  
 }
 
 
-int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UINT address, void* buffer, EC_UINT length, AddrMode addrMode)
+int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *)buffer;
   EC_Logic *logic = EC_Logic::instance();
@@ -489,7 +486,7 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UI
 }
 
 
-int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UINT address, void const* buffer, EC_UINT length, AddrMode addrMode)
+int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char const *p = (unsigned char const*)buffer;
   EC_Logic *logic = EC_Logic::instance();

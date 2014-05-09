@@ -41,7 +41,7 @@
 #include <ethercat/ethercat_defs.h>
 #include <al/ethercat_slave_handler.h>
 
-#include <ros_ethercat_model/robot.hpp>
+#include <hardware_interface/hardware_interface.h>
 
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
@@ -64,7 +64,7 @@ struct et1x00_error_counters
   uint8_t pdi_error;
   uint8_t res[2];
   uint8_t lost_link[4];
-  static const EC_UINT BASE_ADDR=0x300;
+  static const uint16_t BASE_ADDR=0x300;
   bool isGreaterThan(unsigned value) const;
   bool isGreaterThan(const et1x00_error_counters &value) const;
   void zero();
@@ -76,7 +76,7 @@ struct et1x00_dl_status
   bool hasLink(unsigned port);
   bool isClosed(unsigned port);
   bool hasCommunication(unsigned port);
-  static const EC_UINT BASE_ADDR=0x110;
+  static const uint16_t BASE_ADDR=0x110;
 } __attribute__((__packed__));
 
 struct EthercatPortDiagnostics
@@ -137,12 +137,12 @@ public:
   virtual void construct(EtherCAT_SlaveHandler *sh, int &start_address);
 
   //!< Construct non-EtherCAT device
-  virtual void construct(ros::NodeHandle &nh);
+  virtual void construct(ros::NodeHandle &nh) {}
 
   EthercatDevice();
   virtual ~EthercatDevice();
 
-  virtual int initialize(ros_ethercat_model::RobotState *hw, bool allow_unprogrammed=true) = 0;
+  virtual int initialize(hardware_interface::HardwareInterface *hw, bool allow_unprogrammed=true) { return 0; }
   
   /**
    * \param reset  when asserted this will clear diagnostic error conditions device safety disable
@@ -191,24 +191,24 @@ public:
   /*!
    * \brief Write data to device ESC.
    */
-  static int writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UINT address, void const* buffer, EC_UINT length, AddrMode addrMode);
-  inline int writeData(EthercatCom *com, EC_UINT address, void const* buffer, EC_UINT length, AddrMode addrMode) {
+  static int writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode=FIXED_ADDR);
+  inline int writeData(EthercatCom *com, uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode) {
     return writeData(com, sh_, address, buffer, length, addrMode);
   }
   
   /*!
    * \brief Read data from device ESC.
    */
-  static int readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UINT address, void *buffer, EC_UINT length, AddrMode addrMode);
-  inline int readData(EthercatCom *com, EC_UINT address, void *buffer, EC_UINT length, AddrMode addrMode) {
+  static int readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void *buffer, uint16_t length, AddrMode addrMode=FIXED_ADDR);
+  inline int readData(EthercatCom *com, uint16_t address, void *buffer, uint16_t length, AddrMode addrMode) {
     return readData(com, sh_, address, buffer, length, addrMode);
   }  
 
   /*!
    * \brief Read then write data to ESC.
    */  
-  static int readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  EC_UINT address, void *buffer, EC_UINT length, AddrMode addrMode);
-  inline int readWriteData(EthercatCom *com, EC_UINT address, void *buffer, EC_UINT length, AddrMode addrMode) {
+  static int readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint16_t address, void *buffer, uint16_t length, AddrMode addrMode=FIXED_ADDR);
+  inline int readWriteData(EthercatCom *com, uint16_t address, void *buffer, uint16_t length, AddrMode addrMode) {
     return readWriteData(com, sh_, address, buffer, length, addrMode);
   }
 

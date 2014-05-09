@@ -32,7 +32,7 @@
 #ifndef ROS_ETHERCAT_MODEL_CHAIN_H
 #define ROS_ETHERCAT_MODEL_CHAIN_H
 
-#include "ros_ethercat_model/robot.hpp"
+#include "ros_ethercat_model/robot_state.hpp"
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/jntarrayvel.hpp>

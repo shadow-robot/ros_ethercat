@@ -1,5 +1,5 @@
 /*
- * robot.hpp
+ * robot_state.hpp
  *
  *  Created on: 7 Jan 2014
  *      Author: Manos Nikolaidis
@@ -37,8 +37,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ETHERCAT_ROBOT_H
-#define ETHERCAT_ROBOT_H
+#ifndef ROS_ETHERCAT_MODEL_ROBOTSTATE_HPP
+#define ROS_ETHERCAT_MODEL_ROBOTSTATE_HPP
 
 #include <urdf/model.h>
 #include <pluginlib/class_loader.h>

@@ -37,8 +37,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef SR_ETHERCAT_INTERFACE_HPP_
-#define SR_ETHERCAT_INTERFACE_HPP_
+#ifndef ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
+#define ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -47,7 +47,7 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <controller_manager/controller_manager.h>
 #include <pr2_mechanism_msgs/MechanismStatistics.h>
-#include "ros_ethercat_model/robot.hpp"
+#include "ros_ethercat_model/robot_state.hpp"
 #include "ros_ethercat_model/mech_stats_publisher.hpp"
 #include "ros_ethercat_hardware/ethercat_hardware.h"
 
@@ -88,7 +88,7 @@ public:
   RosEthercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "ethercat_controller_manager"),
     model_(config),
-    ec_(name, &model_, eth, allow),
+    ec_(name, static_cast<hardware_interface::HardwareInterface*>(&model_), eth, allow),
     mech_stats_publisher_(nh, model_)
   {
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -120,6 +120,7 @@ public:
   void read()
   {
     ec_.update(false, false);
+    model_.current_time_ = ros::Time::now();
     model_.propagateActuatorPositionToJointPosition();
 
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -167,4 +168,4 @@ public:
   hardware_interface::PositionJointInterface position_joint_interface_;
 };
 
-#endif /* SR_ETHERCAT_INTERFACE_HPP_ */
+#endif
