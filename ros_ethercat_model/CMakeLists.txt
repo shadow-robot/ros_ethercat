@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
     urdf
     kdl_parser
     pr2_mechanism_msgs
-    joint_state_controller
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -27,7 +26,6 @@ CATKIN_DEPENDS
     urdf
     kdl_parser
     pr2_mechanism_msgs
-    joint_state_controller
 INCLUDE_DIRS
     include
 )
