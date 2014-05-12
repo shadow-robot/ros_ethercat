@@ -725,7 +725,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   // The point of this code to find a class whose name matches the EtherCAT
   // product ID for a given device.  
-  // Thus device plugins would register themselves with PLUGIN_REGISTER_CLASS
+  // Thus device plugins would register themselves with PLUGINLIB_EXPORT_CLASS
   //
   //    PLUGINLIB_EXPORT_CLASS(class_type, base_class_type)
   //
@@ -776,8 +776,8 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   if (matching_class_name.size() != 0)
   {
-    ROS_WARN("Using driver class '%s' for device with product code %d",
-             matching_class_name.c_str(), product_code);
+    ROS_WARN("Using device '%s' with product code %d",
+             device_loader_.getClassDescription(matching_class_name).c_str(), product_code);
     try {
       p = device_loader_.createInstance(matching_class_name);
     }
