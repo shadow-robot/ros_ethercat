@@ -72,6 +72,7 @@
 using std::string;
 using boost::unordered_map;
 using boost::ptr_unordered_map;
+using boost::scoped_ptr;
 using ros_ethercat_model::JointState;
 using hardware_interface::JointStateHandle;
 using hardware_interface::JointHandle;
@@ -88,8 +89,7 @@ public:
   RosEthercat(NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "ethercat_controller_manager"),
     model_(config),
-    ec_(name, static_cast<hardware_interface::HardwareInterface*>(&model_), eth, allow),
-    mech_stats_publisher_(nh, model_)
+    ec_(name, static_cast<hardware_interface::HardwareInterface*>(&model_), eth, allow)
   {
     unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
     while (it != model_.joint_states_.end())
@@ -106,6 +106,9 @@ public:
       position_joint_interface_.registerHandle(jh);
       ++it;
     }
+
+    if (!model_.joint_states_.empty())
+      mech_stats_publisher_.reset(new MechStatsPublisher(nh, model_));
 
     registerInterface(&model_);
     registerInterface(&joint_state_interface_);
@@ -143,7 +146,8 @@ public:
       ++it;
     }
     model_.propagateJointEffortToActuatorEffort();
-    mech_stats_publisher_.publish();
+    if (!model_.joint_states_.empty())
+      mech_stats_publisher_->publish();
   }
 
   void shutdown()
@@ -160,7 +164,7 @@ public:
   NodeHandle cm_node_;
   RobotState model_;
   EthercatHardware ec_;
-  MechStatsPublisher mech_stats_publisher_;
+  scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::JointCommandInterface joint_command_interface_;
