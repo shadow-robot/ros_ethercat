@@ -140,8 +140,8 @@ class EtherCAT_SlaveConfig
       // EtherCAT_SM_PDO_Assign m_sm_pdo_assign;
       // EtherCAT_Startup_Objects m_startup_objects;
   */
-  EtherCAT_SlaveConfig(EC_UDINT a_product_code,
-		       EC_UDINT a_revision,
+  EtherCAT_SlaveConfig(uint32_t a_product_code,
+		       uint32_t a_revision,
 		       EC_FixedStationAddress a_station_address,
 		       EtherCAT_FMMU_Config * a_fmmu_config,
 		       EtherCAT_PD_Config * a_pd_config,
@@ -153,9 +153,9 @@ class EtherCAT_SlaveConfig
   /// Is this a complex slave?
   bool is_complex(void) const { return m_complex; };
   /// Get product code
-  EC_UDINT get_product_code() const { return m_product_code; };
+  uint32_t get_product_code() const { return m_product_code; };
   /// Get revision
-  EC_UDINT get_revision() const { return m_revision; };
+  uint32_t get_revision() const { return m_revision; };
   /// Get station address
   EC_FixedStationAddress get_station_address() const {return m_station_address; };
   /// Get FMMU config to be written when going to preop
@@ -177,9 +177,9 @@ class EtherCAT_SlaveConfig
 
  protected:
   /// Product code
-  EC_UDINT m_product_code;
+  uint32_t m_product_code;
   /// Revision
-  EC_UDINT m_revision;
+  uint32_t m_revision;
   /// Station address
   EC_FixedStationAddress m_station_address;
   /// FMMU config to be written when going to preop
@@ -217,8 +217,8 @@ class EtherCAT_SlaveDb
       @return Pointer to slave configuration if found, or NULL
   otherwise)
   */
-  const EtherCAT_SlaveConfig * find(EC_UDINT productcode,
-				    EC_UDINT revision) const;
+  const EtherCAT_SlaveConfig * find(uint32_t productcode,
+				    uint32_t revision) const;
  protected:
   /// Constructor
   EtherCAT_SlaveDb(unsigned int num_slaves);

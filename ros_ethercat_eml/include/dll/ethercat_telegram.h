@@ -58,13 +58,13 @@ class EC_Telegram : public EC_DataStruct
   const unsigned char *   build(const unsigned char * a_buffer);
 
   /// Set working counter
-  void                    set_wkc(EC_UINT a_wkc) { m_wkc = a_wkc; }
+  void                    set_wkc(uint16_t a_wkc) { m_wkc = a_wkc; }
   /// Set index
-  void                    set_idx(EC_USINT a_idx) { m_idx = a_idx; }
+  void                    set_idx(uint8_t a_idx) { m_idx = a_idx; }
   /// Get working counter
-  EC_UINT                 get_wkc(void) const { return m_wkc; }
+  uint16_t                 get_wkc(void) const { return m_wkc; }
   /// Get index
-  EC_USINT                get_idx(void) const { return m_idx; }
+  uint8_t                get_idx(void) const { return m_idx; }
   /// Get pointer to data
   const unsigned char *   get_data(void) const { return m_data; }
   /// Set data
@@ -88,9 +88,9 @@ class EC_Telegram : public EC_DataStruct
       
   protected:
   EC_Telegram(size_t a_datasize = 0, const unsigned char * a_data = NULL);
-  EC_Telegram(EC_USINT a_idx, EC_UINT a_wkc);
+  EC_Telegram(uint8_t a_idx, uint16_t a_wkc);
   EC_Telegram(size_t a_datasize, const unsigned char * a_data,
-	      EC_USINT a_idx, EC_UINT a_wkc);
+	      uint8_t a_idx, uint16_t a_wkc);
 
   EC_Telegram(const EC_Telegram& a_telegram);
 
@@ -115,11 +115,11 @@ class EC_Telegram : public EC_DataStruct
   // Length of data field
   //  size_t                  m_datalength;
   /// Index Field
-  EC_USINT                m_idx;
+  uint8_t                m_idx;
   /// Working counter Field
-  EC_UINT                 m_wkc;
+  uint16_t                 m_wkc;
   /// IRQ Field (currently unused)
-  static const EC_UINT          m_irq;
+  static const uint16_t          m_irq;
 
   virtual size_t          header_length(void)const { return ETHERCAT_TELEGRAM_HEADER_SIZE; }
   virtual size_t          tail_length(void)const { return ETHERCAT_TELEGRAM_WKC_SIZE; }

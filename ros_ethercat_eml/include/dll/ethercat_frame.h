@@ -46,7 +46,7 @@
     @return the length of the buffer expressed as a number of bytes,
     if smaller than bufferlength, 0 otherwise
 */
-externC int framedump(const struct EtherCAT_Frame * frame, 
+ int framedump(const struct EtherCAT_Frame * frame,
 		      unsigned char * buffer, 
 		      size_t bufferlength);
 
@@ -56,7 +56,7 @@ externC int framedump(const struct EtherCAT_Frame * frame,
     the necessary info
     @return zero on succes, -1 otherwise
 */
-externC int framebuild(struct EtherCAT_Frame * frame, 
+ int framebuild(struct EtherCAT_Frame * frame,
 		       const unsigned char * buffer);
 
 /// EtherCAT Frame Interface (we need a C interface)
@@ -65,6 +65,7 @@ externC int framebuild(struct EtherCAT_Frame * frame,
 */
 typedef struct EtherCAT_Frame 
 {
+  virtual ~EtherCAT_Frame () {}
   /// Return the length of the whole frame
   virtual size_t length(void) const = 0;
   

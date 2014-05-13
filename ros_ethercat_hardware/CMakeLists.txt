@@ -8,13 +8,11 @@ find_package(catkin REQUIRED COMPONENTS
     diagnostic_updater
     pluginlib
     hardware_interface
+    ros_ethercat_eml
 )
-
-find_package(EML REQUIRED)
 
 include_directories(include
     ${catkin_INCLUDE_DIRS}
-    ${EML_INCLUDE_DIRS}
 )
 
 catkin_package(
@@ -25,7 +23,7 @@ catkin_package(
         diagnostic_updater
         pluginlib
         hardware_interface
-    DEPENDS EML
+        ros_ethercat_eml
     INCLUDE_DIRS include
     LIBRARIES ros_ethercat_hardware
 )
@@ -39,10 +37,8 @@ add_library(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME}
     ${catkin_EXPORTED_TARGETS}
 )
-
 target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
-    ${EML_LIBRARIES}
 )
 
 

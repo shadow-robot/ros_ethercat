@@ -62,37 +62,37 @@ class EtherCAT_SlaveHandler : public EC_ESM, public EtherCAT_SlaveConfig
       @param a_mbx_config MBX configuration if this slave is complex.
       Default argument is NULL for simple slaves
   */
-  EtherCAT_SlaveHandler(EC_UINT a_ring_position,
-			EC_UDINT a_product_code,
-			EC_UDINT a_revision,
-                        EC_UDINT a_serial,
+  EtherCAT_SlaveHandler(uint16_t a_ring_position,
+			uint32_t a_product_code,
+			uint32_t a_revision,
+                        uint32_t a_serial,
 			EC_FixedStationAddress a_station_address,
 			EtherCAT_FMMU_Config * a_fmmu_config,
 			EtherCAT_PD_Config * a_pd_config,
 			EtherCAT_MbxConfig * a_mbx_config = NULL);
   /// Constructor using Slave Configuration
-  EtherCAT_SlaveHandler(EC_UINT a_ring_position,
+  EtherCAT_SlaveHandler(uint16_t a_ring_position,
 			const EtherCAT_SlaveConfig * a_sconf,
-                        EC_UDINT a_serial);
+                        uint32_t a_serial);
   virtual ~EtherCAT_SlaveHandler();
 
   /// Get position in the EtherCAT logical ring
-  EC_UINT get_ring_position() const {return m_ring_position; };
+  uint16_t get_ring_position() const {return m_ring_position; };
   /// Get serial
-  EC_UDINT get_serial() const { return m_serial; };
+  uint32_t get_serial() const { return m_serial; };
 
   /// Returns and increments sequence number used for duplication mailbox write dectition
-  EC_USINT get_mbx_counter();
+  uint8_t get_mbx_counter();
  protected:
 
   /// Position in the EtherCAT logical Ring
-  EC_UINT m_ring_position;
+  uint16_t m_ring_position;
 
   /// Serial
-  EC_UDINT m_serial;
+  uint32_t m_serial;
 
   /// Sequence number for duplicate mailbox write detection
-  EC_USINT m_mbx_counter;
+  uint8_t m_mbx_counter;
 };
 
 

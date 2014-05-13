@@ -36,10 +36,6 @@
 
 #include <tinyxml.h>
 
-#include <dll/ethercat_device_addressed_telegram.h>
-#include <dll/ethercat_logical_addressed_telegram.h>
-#include <dll/ethercat_frame.h>
-
 #include <iomanip>
 
 bool et1x00_error_counters::isGreaterThan(unsigned value) const

@@ -35,8 +35,6 @@
 #include "ros_ethercat_hardware/ethercat_hardware.h"
 
 #include <ethercat/ethercat_xenomai_drv.h>
-#include <dll/ethercat_dll.h>
-#include <dll/ethercat_device_addressed_telegram.h>
 
 #include <sstream>
 

@@ -46,18 +46,18 @@ class EC_FixedStationAddress;
 /** @param ringpos Position in the ring (counting starts from 0)
     @return adp
 */
-inline EC_UINT ringpos2adp(EC_UINT ringpos)
+inline uint16_t ringpos2adp(uint16_t ringpos)
 {
-  return (EC_UINT) (0x0000 - ringpos);
+  return (uint16_t) (0x0000 - ringpos);
 }
 
 /// Convert adp2ringpos in case of autoincrement addressing;
 /** @param adp Auto increment address
     @return ringpos
 */
-inline EC_UINT adp2ringpos(EC_UINT adp)
+inline uint16_t adp2ringpos(uint16_t adp)
 {
-  return (EC_UINT) (0x0000 - adp);
+  return (uint16_t) (0x0000 - adp);
 }
 
 /// EtherCAT "logic"
@@ -70,25 +70,22 @@ class EC_Logic
   static EC_Logic * instance();
   virtual ~EC_Logic(){};
   /// Get current idx
-  EC_USINT get_idx();
+  uint8_t get_idx();
   /// Get wkc (normally always zero, not truly necessary)
-  EC_UINT get_wkc();
+  uint16_t get_wkc();
 
- private:
   /// Constructor
   EC_Logic();
   /// Instance
   static EC_Logic * m_instance;
   /// Working Counter
-  const EC_UINT m_wkc;
+  const uint16_t m_wkc;
   /// Index (Increased with each frame the master sends)
-  EC_USINT m_idx;
+  uint8_t m_idx;
 };
 
-inline EC_USINT
-EC_Logic::get_idx(){ return m_idx++;}
-inline EC_UINT
-EC_Logic::get_wkc(){ return m_wkc;}
+inline uint8_t  EC_Logic::get_idx(){ return m_idx++;}
+inline uint16_t EC_Logic::get_wkc(){ return m_wkc;}
 
 /// EtherCAT Master Application Layer
 class EtherCAT_AL
@@ -170,7 +167,7 @@ class EtherCAT_AL
       @param a_buffer buffer to put the data in
       @return reading succeeded?
   */
-  bool read_SII(EC_UINT slave_adp, EC_UDINT address, unsigned char * a_buffer);
+  bool read_SII(uint16_t slave_adp, uint32_t address, unsigned char * a_buffer);
   
   /// Number of slaves in the setup
   unsigned int m_num_slaves;

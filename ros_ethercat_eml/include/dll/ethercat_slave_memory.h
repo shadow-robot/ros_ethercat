@@ -47,9 +47,9 @@ static const size_t EC_DLInformationSize = 0xa; // 10 bytes
 /* BIG FAT WARNING:  THIS VARIES FROM WHAT IS WRITTEN IN THE ETHERCAT
    SPEC VERSION 1.0!!!
 */
-static const EC_UDINT EC_ProductCodeAddressInSII = 0x0000000a;
-static const EC_UDINT EC_RevisionAddressInSII = 0x0000000c;
-static const EC_UDINT EC_SerialAddressInSII = 0x0000000e;
+static const uint32_t EC_ProductCodeAddressInSII = 0x0000000a;
+static const uint32_t EC_RevisionAddressInSII = 0x0000000c;
+static const uint32_t EC_SerialAddressInSII = 0x0000000e;
 
 typedef enum {
   Type = 0,
@@ -140,13 +140,13 @@ typedef struct
   /// Register name
   const char * name; 
   /// Register offset addres
-  const EC_UINT ado; 
+  const uint16_t ado; 
   /// Access of the master to the register (r, w, or r/w)
   const ECAT_Register_Access ECAT_access;
   /// Access of the slave to the register (r, w, or r/w)
   const ECAT_Register_Access uC_access;
   /// Size of the register area (expressed as number of bytes)
-  const EC_USINT size; 
+  const uint8_t size; 
 } ECAT_Slave_Register_Data;
 
 
@@ -305,34 +305,34 @@ static inline int Watchdog_Time_Channelx(int channel)
 class EC_DLInformation : public EC_DataStruct
 {
  public:
-  EC_DLInformation(EC_USINT type,
-		   EC_USINT revision,
-		   EC_UINT build,
-		   EC_USINT no_of_supp_fmmu_channels,
-		   EC_USINT no_of_supp_syncman_channels,
-		   EC_USINT ram_size,
+  EC_DLInformation(uint8_t type,
+		   uint8_t revision,
+		   uint16_t build,
+		   uint8_t no_of_supp_fmmu_channels,
+		   uint8_t no_of_supp_syncman_channels,
+		   uint8_t ram_size,
 		   bool fmmu_bit_operation_not_supp);
   EC_DLInformation(const unsigned char * a_buffer);
   virtual ~EC_DLInformation(){};
   virtual unsigned char * dump(unsigned char * a_buffer) const;
 
-  EC_USINT Type;
-  EC_USINT Revision;
-  EC_UINT Build;
-  EC_USINT NoOfSuppFmmuChannels;
-  EC_USINT NoOfSuppSyncManChannels;
-  EC_USINT RamSize;
-  // EC_USINT Reserved1;
+  uint8_t Type;
+  uint8_t Revision;
+  uint16_t Build;
+  uint8_t NoOfSuppFmmuChannels;
+  uint8_t NoOfSuppSyncManChannels;
+  uint8_t RamSize;
+  // uint8_t Reserved1;
   bool FmmuBitOperationNotSupp;
-  // EC_UINT Reserved2;
-  // EC_USINT Reserved3;
+  // uint16_t Reserved2;
+  // uint8_t Reserved3;
 };
 
 /// EtherCAT Fixed Station Address
 class EC_FixedStationAddress : public EC_DataStruct
 {
  public:
-  EC_FixedStationAddress(EC_UINT fixed_station_address = 0x0000) :
+  EC_FixedStationAddress(uint16_t fixed_station_address = 0x0000) :
     EC_DataStruct(EC_Slave_RD[ECAT_Station_Address].size), FixedStationAddress(fixed_station_address){};
   virtual ~EC_FixedStationAddress(){};
   EC_FixedStationAddress(const unsigned char * data) :
@@ -346,10 +346,10 @@ class EC_FixedStationAddress : public EC_DataStruct
   bool operator ==(const EC_FixedStationAddress & ad) const{
     return (this->FixedStationAddress == ad.FixedStationAddress);
   }
-  operator EC_UINT() const { return FixedStationAddress; }
+  operator uint16_t() const { return FixedStationAddress; }
  private:
   /// Fixed Station Address
-  EC_UINT FixedStationAddress;
+  uint16_t FixedStationAddress;
 };
  
 /* class EC_DLControl : public EC_DataStruct */
@@ -392,7 +392,7 @@ class EC_ALControl : public EC_DataStruct
 
   EC_State State; // 4 bits
   bool Acknowledge; // 1 bit
-  // EC_USINT ApplSpecific; // 8 bits
+  // uint8_t ApplSpecific; // 8 bits
 };
 
 /// AL Status register
@@ -414,7 +414,7 @@ class EC_ALStatus : public EC_DataStruct
 
   EC_State State; // 4 bits
   bool Change; // 1 bit
-  // EC_USINT ApplSpecific; // 8 bits
+  // uint8_t ApplSpecific; // 8 bits
 };
 
 /* class EC_PDIControl : public EC_DataStruct */
@@ -468,16 +468,16 @@ public:
   /// Constructor
   /** @param a_int Bit position in the byte (an int from 0 to 7)
    */
-  EC_BitPos(EC_USINT a_int = 0){
+  EC_BitPos(uint8_t a_int = 0){
     // There are only 8 bits in a byte...
     assert(a_int < 8);
     m_bitpos = a_int;
   }
   virtual ~EC_BitPos(){};
   /// Cast operator
-  operator EC_USINT() const {return m_bitpos;}
+  operator uint8_t() const {return m_bitpos;}
 private:
-  EC_USINT m_bitpos;
+  uint8_t m_bitpos;
 };
 
 /// EtherCAT FMMU
@@ -485,11 +485,11 @@ class EC_FMMU : public EC_DataStruct
 {
  public:
   /// Constructor (see spec for params)
-  EC_FMMU(EC_UDINT  logical_start_address = 0x00000000,
-	  EC_UINT   length                = 0x0000,
+  EC_FMMU(uint32_t  logical_start_address = 0x00000000,
+	  uint16_t   length                = 0x0000,
 	  EC_BitPos logical_start_bit     = 0x00,
 	  EC_BitPos logical_end_bit       = 0x00,
-	  EC_UINT   physical_start_address= 0x0000,
+	  uint16_t   physical_start_address= 0x0000,
 	  EC_BitPos physical_start_bit    = 0x00,
 	  bool      read_enable           = false,
 	  bool      write_enable          = false,
@@ -499,22 +499,22 @@ class EC_FMMU : public EC_DataStruct
   virtual ~EC_FMMU(){};
   virtual unsigned char * dump(unsigned char * a_buffer) const;
   
-  EC_UDINT  LogicalStartAddress;
-  EC_UINT   Length;
+  uint32_t  LogicalStartAddress;
+  uint16_t   Length;
   EC_BitPos LogicalStartBit; 
-  // EC_USINT  Reserved1; // 5 bits
+  // uint8_t  Reserved1; // 5 bits
   EC_BitPos LogicalEndBit;
-  // EC_UINT   Reserved2; // 5 bits;
-  EC_UINT   PhysicalStartAddress;
+  // uint16_t   Reserved2; // 5 bits;
+  uint16_t   PhysicalStartAddress;
   EC_BitPos PhysicalStartBit;
-  // EC_USINT  Reserved3; // 5 bits
+  // uint8_t  Reserved3; // 5 bits
   bool ReadEnable;
   bool WriteEnable;
-  // EC_USINT  Reserved4; // 6 bits
+  // uint8_t  Reserved4; // 6 bits
   bool ChannelEnable;
-  // EC_USINT  Reserved5; // 7 bits
-  // EC_USINT Reserved6; // 1 byte
-  // EC_UINT  Reserved7; // 2 bytes
+  // uint8_t  Reserved5; // 7 bits
+  // uint8_t Reserved6; // 1 byte
+  // uint16_t  Reserved7; // 2 bytes
 };
 
 // ==================================================
@@ -535,13 +535,13 @@ class EC_BufferType
   /** @param bt Buffertype (buffered (EC_BUFFERED) or queued (EC_QUEUED)
    */
   EC_BufferType(ECBufferType bt = EC_BUFFERED){
-    m_buffertype = (EC_USINT) bt;
+    m_buffertype = (uint8_t) bt;
   }
   virtual ~EC_BufferType(){};
   /// Cast operator
-  operator EC_USINT() const {return m_buffertype;}
+  operator uint8_t() const {return m_buffertype;}
 private:
-  EC_USINT m_buffertype;
+  uint8_t m_buffertype;
 };
 
 typedef enum
@@ -563,13 +563,13 @@ class EC_Direction
       - "Memory is written from Master" (EC_WRITTEN_FROM_MASTER) 
   */
   EC_Direction(ECDirection dir = EC_READ_FROM_MASTER){
-    m_direction = (EC_USINT) dir;
+    m_direction = (uint8_t) dir;
   }
   virtual ~EC_Direction(){};
   /// Cast operator
-  operator EC_USINT() const {return m_direction;}
+  operator uint8_t() const {return m_direction;}
 private:
-  EC_USINT m_direction;
+  uint8_t m_direction;
 };
 
 typedef enum {
@@ -594,13 +594,13 @@ class EC_BufferedState
       - EC_LOCKED_BUFFER
   */
   EC_BufferedState(ECBufferedState state = EC_FIRST_BUFFER){
-    m_buffered_state = (EC_USINT) state;
+    m_buffered_state = (uint8_t) state;
   }
   virtual ~EC_BufferedState(){};
   /// Cast operator
-  operator EC_USINT() const {return m_buffered_state;}
+  operator uint8_t() const {return m_buffered_state;}
 private:
-  EC_USINT m_buffered_state;
+  uint8_t m_buffered_state;
 };
 
 static const bool EC_QUEUED_STATE_READ = false;
@@ -611,8 +611,8 @@ class EC_SyncMan : public EC_DataStruct
 {
  public:
   /// Constructor (see spec for arguments)
-  EC_SyncMan(EC_UINT physical_start_address = 0x0000,
-	     EC_UINT length                 = 0x0000,
+  EC_SyncMan(uint16_t physical_start_address = 0x0000,
+	     uint16_t length                 = 0x0000,
 	     EC_BufferType buffer_type      = EC_BUFFERED,
 	     EC_Direction direction         = EC_READ_FROM_MASTER,
 	     bool AL_event_enable           = false,
@@ -628,8 +628,8 @@ class EC_SyncMan : public EC_DataStruct
   virtual ~EC_SyncMan(){};
   virtual unsigned char * dump(unsigned char * a_buffer) const;
   
-  EC_UINT PhysicalStartAddress;
-  EC_UINT Length;
+  uint16_t PhysicalStartAddress;
+  uint16_t Length;
   EC_BufferType BufferType;
   EC_Direction Direction;
   bool ALEventEnable;

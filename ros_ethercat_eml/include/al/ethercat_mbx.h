@@ -58,9 +58,9 @@ class EC_MbxMsgType
   EC_MbxMsgType(ECMbxMsgType type = EC_CoE) : msg_type(type){};
   virtual ~EC_MbxMsgType(){};
   /// Cast operator
-  operator EC_USINT() const {return msg_type;}
+  operator uint8_t() const {return msg_type;}
  private:
-  EC_USINT msg_type;
+  uint8_t msg_type;
 };
 
 /// EtherCAT Mbx Message Priority
@@ -71,7 +71,7 @@ class EC_MbxMsgPriority
   /** @param priority priority of the msg (from 0 to 3 is allowed,
       with 3 the max Priority)
   */
-  EC_MbxMsgPriority(EC_USINT priority = 0x00)
+  EC_MbxMsgPriority(uint8_t priority = 0x00)
     {
       if(priority < 4)
 	msg_priority = priority;
@@ -82,9 +82,9 @@ class EC_MbxMsgPriority
     }
   virtual ~EC_MbxMsgPriority(){};
   /// Cast operator
-  operator EC_USINT() const {return msg_priority;}
+  operator uint8_t() const {return msg_priority;}
  private:
-  EC_USINT msg_priority;
+  uint8_t msg_priority;
 };
 
 // Header size is 6 bytes
@@ -109,7 +109,7 @@ class EC_MbxMsgHdr : public EC_DataStruct
       @param a_priority Priority of this message
       @param a_type Type of this Message (higher level protocol)
   */
-  EC_MbxMsgHdr(EC_UINT a_length, 
+  EC_MbxMsgHdr(uint16_t a_length, 
 		EC_FixedStationAddress a_address,
 		EC_MbxMsgPriority a_priority,
 		EC_MbxMsgType a_type)
@@ -124,12 +124,12 @@ class EC_MbxMsgHdr : public EC_DataStruct
   virtual unsigned char * dump(unsigned char * a_buffer) const;
 
  public:
-  EC_UINT  m_length;
+  uint16_t  m_length;
   EC_FixedStationAddress m_address;
-  // EC_USINT  m_channel; 6 bits unused for now...;
+  // uint8_t  m_channel; 6 bits unused for now...;
   EC_MbxMsgPriority  m_priority;
   EC_MbxMsgType      m_type;
-  // EC_UINT reserved : 4;
+  // uint16_t reserved : 4;
 };
 
 /// EtherCAT Mailbox Message
@@ -141,7 +141,7 @@ class EtherCAT_MbxMsg
   /// Constructor
   EtherCAT_MbxMsg(EC_MbxMsgHdr a_hdr, unsigned char * a_MbxMsgdata)
     : m_hdr(a_hdr), m_MbxMsgdata(a_MbxMsgdata){}
-  EtherCAT_MbxMsg(EC_UINT a_length, EC_UINT a_address,
+  EtherCAT_MbxMsg(uint16_t a_length, uint16_t a_address,
 		  EC_MbxMsgPriority a_priority,
 		  EC_MbxMsgType a_type,
 		  unsigned char * a_MbxMsgdata)
@@ -211,7 +211,7 @@ class CANopen_Service
 
   virtual ~CANopen_Service(){};
   /// Cast operator
-  operator EC_USINT() const { return m_service; }
+  operator uint8_t() const { return m_service; }
 
  private:
   CANopenService m_service;
@@ -248,7 +248,7 @@ class EtherCAT_CoE_MbxMsg : public EtherCAT_MbxMsg
 		      EC_CoE_Hdr a_CoE_hdr,
 		      unsigned char * a_MbxMsgdata)
     : EtherCAT_MbxMsg(a_hdr,a_MbxMsgdata), m_CoE_Hdr(a_CoE_hdr){}
-  EtherCAT_CoE_MbxMsg(EC_UINT a_length, EC_UINT a_address,
+  EtherCAT_CoE_MbxMsg(uint16_t a_length, uint16_t a_address,
 		      EC_MbxMsgPriority a_priority,
 		      EC_MbxMsgType a_type,
 		      CANopen_Service a_service,

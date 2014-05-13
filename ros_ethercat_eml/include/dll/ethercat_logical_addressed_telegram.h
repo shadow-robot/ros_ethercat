@@ -49,10 +49,10 @@ class Logical_Addressing_Telegram : public EC_Telegram {
       @param a_datalen data_length
       @param a_data data
   */
-  Logical_Addressing_Telegram(EC_USINT a_idx=0x00, 
-			      EC_UDINT a_adr=0x00000000, 
-			      EC_UINT a_wkc=0x0000, 
-			      EC_UINT a_datalen=0x0000, 
+  Logical_Addressing_Telegram(uint8_t a_idx=0x00, 
+			      uint32_t a_adr=0x00000000, 
+			      uint16_t a_wkc=0x0000, 
+			      uint16_t a_datalen=0x0000, 
 			      const unsigned char * a_data = NULL);
 
   virtual                ~Logical_Addressing_Telegram();
@@ -60,11 +60,11 @@ class Logical_Addressing_Telegram : public EC_Telegram {
   /// Set address field
   /** @param a_adr 4 byte logical address
    */
-  void                    set_adr(EC_UDINT a_adr) { m_adr = a_adr; }
+  void                    set_adr(uint32_t a_adr) { m_adr = a_adr; }
   /// Get address field
   /** @return 4 byte logical address
    */
-  EC_UDINT                get_adr() const { return m_adr;}
+  uint32_t                get_adr() const { return m_adr;}
   
  protected:
   virtual unsigned char * dump_header_head(unsigned char * a_buffer) const;
@@ -74,7 +74,7 @@ class Logical_Addressing_Telegram : public EC_Telegram {
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer) = 0;
   
  private:
-  EC_UDINT                 m_adr;
+  uint32_t                 m_adr;
 };
 
 /// Logical Read Telegram
@@ -87,8 +87,8 @@ class LRD_Telegram : public Logical_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be read
   */
-  LRD_Telegram(EC_USINT a_idx, EC_UDINT a_adr,
-	       EC_UINT a_wkc, EC_UINT a_datalen,
+  LRD_Telegram(uint8_t a_idx, uint32_t a_adr,
+	       uint16_t a_wkc, uint16_t a_datalen,
 	       const unsigned char * a_data);
 			    
   virtual                ~LRD_Telegram();
@@ -108,8 +108,8 @@ class LWR_Telegram : public Logical_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written
   */
-  LWR_Telegram(EC_USINT a_idx, EC_UDINT a_adr,
-	       EC_UINT a_wkc, EC_UINT a_datalen,
+  LWR_Telegram(uint8_t a_idx, uint32_t a_adr,
+	       uint16_t a_wkc, uint16_t a_datalen,
 	       const unsigned char * a_data);
 			    
   virtual                ~LWR_Telegram();
@@ -129,8 +129,8 @@ class LRW_Telegram : public Logical_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written and read
   */
-  LRW_Telegram(EC_USINT a_idx, EC_UDINT a_adr,
-	       EC_UINT a_wkc, EC_UINT a_datalen,
+  LRW_Telegram(uint8_t a_idx, uint32_t a_adr,
+	       uint16_t a_wkc, uint16_t a_datalen,
 	       const unsigned char * a_data);
 			    
   virtual                ~LRW_Telegram();

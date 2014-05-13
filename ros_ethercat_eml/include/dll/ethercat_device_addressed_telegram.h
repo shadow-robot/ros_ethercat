@@ -53,23 +53,23 @@ class Device_Addressing_Telegram : public EC_Telegram {
       @param a_datalen data_length
       @param a_data data
   */
-  Device_Addressing_Telegram(EC_USINT a_idx=0x00, 
-			     EC_UINT a_adp =0x0000, 
-			     EC_UINT a_ado =0x0000,
-			     EC_UINT a_wkc =0x0000,
-			     EC_UINT a_datalen=0x0000, 
+  Device_Addressing_Telegram(uint8_t a_idx=0x00, 
+			     uint16_t a_adp =0x0000, 
+			     uint16_t a_ado =0x0000,
+			     uint16_t a_wkc =0x0000,
+			     uint16_t a_datalen=0x0000, 
 			     const unsigned char * a_data=NULL);
 
   virtual                ~Device_Addressing_Telegram();
 
   /// Set address pointer
-  void                    set_adp(EC_UINT a_adp) { m_adp = a_adp; }
+  void                    set_adp(uint16_t a_adp) { m_adp = a_adp; }
   /// Set address offset
-  void                    set_ado(EC_UINT a_ado) { m_ado = a_ado; }
+  void                    set_ado(uint16_t a_ado) { m_ado = a_ado; }
   /// Get address pointer
-  EC_UINT                 get_adp() const { return m_adp;}
+  uint16_t                 get_adp() const { return m_adp;}
   /// Get address offset
-  EC_UINT                 get_ado() const { return m_ado;}
+  uint16_t                 get_ado() const { return m_ado;}
   
  protected:
   virtual unsigned char * dump_header_head(unsigned char * a_buffer) const;
@@ -79,8 +79,8 @@ class Device_Addressing_Telegram : public EC_Telegram {
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer) = 0;
   
  private:
-  EC_UINT                 m_adp;
-  EC_UINT                 m_ado;
+  uint16_t                 m_adp;
+  uint16_t                 m_ado;
 };
 
 /// Auto Increment Physical Read Telegram (APRD)
@@ -96,9 +96,9 @@ class APRD_Telegram : public Device_Addressing_Telegram {
       @note remove a_data parameter, since is it merely modified by the
       slave (the result of the read op)??
   */
-  APRD_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  APRD_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   /// Construct telegram from received bytestream...
@@ -122,9 +122,9 @@ class APWR_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written
   */
-  APWR_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  APWR_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   virtual                ~APWR_Telegram();
@@ -145,9 +145,9 @@ class APRW_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be read and written
   */
-  APRW_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  APRW_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   virtual                ~APRW_Telegram();
@@ -167,8 +167,8 @@ class BWR_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written
   */
-  BWR_Telegram(EC_USINT a_idx, EC_UINT a_ado,
-	       EC_UINT a_wkc, EC_UINT a_datalen, 
+  BWR_Telegram(uint8_t a_idx, uint16_t a_ado,
+	       uint16_t a_wkc, uint16_t a_datalen, 
 	       const unsigned char * a_data);
 			    
   virtual                ~BWR_Telegram();
@@ -188,8 +188,8 @@ class BRD_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be read
   */
-  BRD_Telegram(EC_USINT a_idx, EC_UINT a_ado,
-	       EC_UINT a_wkc, EC_UINT a_datalen, 
+  BRD_Telegram(uint8_t a_idx, uint16_t a_ado,
+	       uint16_t a_wkc, uint16_t a_datalen, 
 	       const unsigned char * a_data);
 			    
   virtual                ~BRD_Telegram();
@@ -214,9 +214,9 @@ class NPWR_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written
   */
-  NPWR_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  NPWR_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   virtual                ~NPWR_Telegram();
@@ -240,9 +240,9 @@ class NPRW_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written
   */
-  NPRW_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  NPRW_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   virtual                ~NPRW_Telegram();
@@ -266,9 +266,9 @@ class NPRD_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be written
   */
-  NPRD_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  NPRD_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   virtual                ~NPRD_Telegram();
@@ -289,9 +289,9 @@ class ARMW_Telegram : public Device_Addressing_Telegram {
       @param a_datalen data_length
       @param a_data data to be read/written
   */
-  ARMW_Telegram(EC_USINT a_idx, EC_UINT a_adp, 
-		EC_UINT a_ado,EC_UINT a_wkc,
-		EC_UINT a_datalen, 
+  ARMW_Telegram(uint8_t a_idx, uint16_t a_adp, 
+		uint16_t a_ado,uint16_t a_wkc,
+		uint16_t a_datalen, 
 		const unsigned char * a_data);
 			    
   virtual                ~ARMW_Telegram();
