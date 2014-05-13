@@ -1,6 +1,6 @@
 <package>
   <name>ros_ethercat_hardware</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>Package for creating a hardware interface to the robot using the EtherCAT motor controller/driver</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
