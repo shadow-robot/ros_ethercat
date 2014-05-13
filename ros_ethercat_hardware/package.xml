@@ -16,6 +16,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
+  <build_depend>eml</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>realtime_tools</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
@@ -23,6 +24,7 @@
   <build_depend>pluginlib</build_depend>
   <build_depend>hardware_interface</build_depend>
 
+  <run_depend>eml</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>realtime_tools</run_depend>
   <run_depend>diagnostic_msgs</run_depend>
