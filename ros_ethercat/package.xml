@@ -5,7 +5,8 @@
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>BSD</license>
-
+  <license>GPL</license>
+  
   <url type="website">http://ros.org/wiki/ros_ethercat</url>
   <url type="repository">https://github.com/shadow-robot/ros_ethercat</url>
   <url type="bugtracker">https://github.com/shadow-robot/ros_ethercat/issues</url>
@@ -16,6 +17,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>ros_ethercat_eml</run_depend>
   <run_depend>ros_ethercat_hardware</run_depend>
   <run_depend>ros_ethercat_loop</run_depend>
   <run_depend>ros_ethercat_model</run_depend>

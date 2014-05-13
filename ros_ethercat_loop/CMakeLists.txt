@@ -33,8 +33,6 @@ CATKIN_DEPENDS
     pluginlib
 )
 
-add_definitions(-O3)
-
 add_executable(${PROJECT_NAME}
    src/main.cpp)
 target_link_libraries(${PROJECT_NAME} rt ${catkin_LIBRARIES} ${Boost_LIBRARIES})
