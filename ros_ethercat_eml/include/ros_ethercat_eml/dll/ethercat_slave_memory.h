@@ -51,7 +51,7 @@ static const uint32_t EC_ProductCodeAddressInSII = 0x0000000a;
 static const uint32_t EC_RevisionAddressInSII = 0x0000000c;
 static const uint32_t EC_SerialAddressInSII = 0x0000000e;
 
-typedef enum {
+enum ECAT_Slave_Registers {
   Type = 0,
   Revision,
   Build,
@@ -124,18 +124,18 @@ typedef enum {
   Sync_Manager_14,
   Sync_Manager_15,
   NumRegisters,
-} ECAT_Slave_Registers;
+};
 
-typedef enum {
+enum ECAT_Register_Access {
   EC_R = 0, // Read access only
   EC_W = 1, // Write access only
   EC_RW = 2 // RW accesc
-} ECAT_Register_Access;
+};
 
 
 
 /// EtherCAT Slave Register data
-typedef struct
+struct ECAT_Slave_Register_Data
 {
   /// Register name
   const char * name; 
@@ -147,7 +147,7 @@ typedef struct
   const ECAT_Register_Access uC_access;
   /// Size of the register area (expressed as number of bytes)
   const uint8_t size; 
-} ECAT_Slave_Register_Data;
+};
 
 
 
@@ -352,25 +352,15 @@ class EC_FixedStationAddress : public EC_DataStruct
   uint16_t FixedStationAddress;
 };
  
-/* class EC_DLControl : public EC_DataStruct */
-/* { */
-/*   // fixme todo   */
-/* }; */
-
-
-/* class EC_DLStatus : public EC_DataStruct */
-/* { */
-/* }; */
-
 // EtherCAT states
-typedef enum 
+enum EC_State
 {
   EC_INIT_STATE = 0x01,
   EC_PREOP_STATE = 0x02,
   EC_BOOTSTRAP_STATE = 0x03,
   EC_SAFEOP_STATE = 0x04,
   EC_OP_STATE = 0x08
-} EC_State;
+};
 
 /// AL Control register
 class EC_ALControl : public EC_DataStruct
@@ -417,15 +407,6 @@ class EC_ALStatus : public EC_DataStruct
   // uint8_t ApplSpecific; // 8 bits
 };
 
-/* class EC_PDIControl : public EC_DataStruct */
-/* { */
-/* }; */
-
-// fixme EC_PDIConfigurationMCI16
-// fixme EC_PDIConfigurationMCI16
-// fixme EC_ALEvent
-// fixme statistics and watchdogs
-
 /// Slave Information Interface Control/Status
 class EC_SIIControlStatus : public EC_DataStruct
 {
@@ -445,7 +426,7 @@ class EC_SIIControlStatus : public EC_DataStruct
   
   /// Write access?
   bool EepromWriteAccess;
-  /// ?? FIXME meaning?
+
   bool EepromAddressAlgorithm; 
   /// Read Operation?
   bool ReadOp;
@@ -519,11 +500,11 @@ class EC_FMMU : public EC_DataStruct
 
 // ==================================================
 
-typedef enum
+enum ECBufferType
 {
   EC_BUFFERED = 0x00,
   EC_QUEUED = 0x02,
-} ECBufferType;
+};
 
 /// Class representing queued or buffered Syncman buffertypes
 /** @see EC_SyncMan
@@ -544,11 +525,11 @@ private:
   uint8_t m_buffertype;
 };
 
-typedef enum
+enum ECDirection
 {
   EC_READ_FROM_MASTER = 0x00,
   EC_WRITTEN_FROM_MASTER = 0x01,
-} ECDirection;
+};
 
 /// Class representing read/write direction of Syncman buffer
 /** @see EC_SyncMan
@@ -572,12 +553,12 @@ private:
   uint8_t m_direction;
 };
 
-typedef enum {
+enum ECBufferedState {
   EC_FIRST_BUFFER = 0x00,
   EC_SECOND_BUFFER = 0x01,
   EC_THIRD_BUFFER = 0x02,
   EC_LOCKED_BUFFER = 0x03,
-} ECBufferedState;
+};
 
 /// Class representing buffered state of a SyncMan
 /** @see EC_SyncMan
@@ -642,7 +623,5 @@ class EC_SyncMan : public EC_DataStruct
   EC_BufferedState BufferedState;
   bool ChannelEnable;
 };
-
-// fixme distributed clock stuff
 
 #endif // __ethercat_slave_memory_h__
