@@ -694,7 +694,7 @@ static struct outstanding_pkt *low_level_lookup(struct EtherCAT_Frame * frame, s
   // 3th byte of source MAC address tells us where outstanding packet should be in queue    
   unsigned pkt_index = 0xFF & ether_shost[3];
   if (pkt_index >= PKT_LIST_SIZE) {
-    ec_log(EC_LOG_ERROR, "low_level_lookup: handle 0x%08X references bad pkt_index\n", handle, pkt_index);  
+    ec_log(EC_LOG_ERROR, "low_level_lookup: handle 0x%08X references bad pkt_index 0x%08X\n", handle, pkt_index);
     return NULL; //error
   }
   struct outstanding_pkt *pkt = &ni->pkt_list[pkt_index];
