@@ -31,13 +31,13 @@
 //===========================================================================
 
  
-#include "al/ethercat_slave_conf.h"
+#include "ros_ethercat_eml/al/ethercat_slave_conf.h"
 
-#include "dll/ethercat_slave_memory.h"
-#include "dll/ethercat_dll.h"
-#include "dll/ethercat_frame.h"
-#include "dll/ethercat_device_addressed_telegram.h"
-#include "al/ethercat_master.h"
+#include "ros_ethercat_eml/dll/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/dll/ethercat_dll.h"
+#include "ros_ethercat_eml/dll/ethercat_frame.h"
+#include "ros_ethercat_eml/dll/ethercat_device_addressed_telegram.h"
+#include "ros_ethercat_eml/al/ethercat_master.h"
 
 EtherCAT_FMMU_Config::EtherCAT_FMMU_Config(unsigned int a_num_used_fmmus)
   : m_num_used_fmmus(a_num_used_fmmus)

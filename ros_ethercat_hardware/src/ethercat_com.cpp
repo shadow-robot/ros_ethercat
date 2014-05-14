@@ -35,6 +35,7 @@
 #include "ros_ethercat_hardware/ethercat_com.h"
 #include <stdio.h>
 #include <errno.h>
+#include <assert.h>
 
 EthercatDirectCom::EthercatDirectCom(EtherCAT_DataLinkLayer *dll) : 
   dll_(dll)

@@ -30,8 +30,8 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
-#include "dll/ethercat_frame.h"
-#include "ethercat/ethercat_log.h"
+#include "ros_ethercat_eml/dll/ethercat_frame.h"
+#include "ros_ethercat_eml/ethercat/ethercat_log.h"
 
  int framedump(const struct EtherCAT_Frame * frame,
 		      unsigned char * buffer, 

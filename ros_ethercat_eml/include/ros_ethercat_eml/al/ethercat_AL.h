@@ -34,7 +34,7 @@
 #ifndef __ethercat_al__
 #define __ethercat_al__
 
-#include "ethercat/ethercat_defs.h"
+#include "ros_ethercat_eml/ethercat/ethercat_defs.h"
 
 // forward declaration
 class EtherCAT_DataLinkLayer;

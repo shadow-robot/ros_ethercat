@@ -38,8 +38,8 @@
 class EC_Logic;
 class EtherCAT_DataLinkLayer;
 
-#include "dll/ethercat_logical_addressed_telegram.h"
-#include "dll/ethercat_frame.h"
+#include "ros_ethercat_eml/dll/ethercat_logical_addressed_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_frame.h"
 
 /// EtherCAT Process Data buffer
 /** @note The current implementation starts passing PD as soon as *one* of the

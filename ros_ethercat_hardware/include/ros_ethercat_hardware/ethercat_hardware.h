@@ -37,11 +37,11 @@
 
 #include <hardware_interface/hardware_interface.h>
 
-#include <al/ethercat_AL.h>
-#include <al/ethercat_master.h>
-#include <al/ethercat_slave_handler.h>
-#include <dll/ethercat_dll.h>
-#include <dll/ethercat_device_addressed_telegram.h>
+#include <ros_ethercat_eml/al/ethercat_AL.h>
+#include <ros_ethercat_eml/al/ethercat_master.h>
+#include <ros_ethercat_eml/al/ethercat_slave_handler.h>
+#include <ros_ethercat_eml/dll/ethercat_dll.h>
+#include <ros_ethercat_eml/dll/ethercat_device_addressed_telegram.h>
 
 #include "ros_ethercat_hardware/ethercat_device.h"
 #include "ros_ethercat_hardware/ethercat_com.h"

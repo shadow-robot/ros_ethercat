@@ -31,16 +31,16 @@
 //===========================================================================
 
  
-#include "al/ethercat_master.h"
-#include "al/ethercat_AL.h"
-#include "al/ethercat_router.h"
-#include "al/ethercat_slave_conf.h"
-#include "dll/ethercat_slave_memory.h"
-#include "dll/ethercat_dll.h"
-#include "dll/ethercat_telegram.h"
-#include "dll/ethercat_frame.h"
-#include "dll/ethercat_device_addressed_telegram.h"
-#include "dll/ethercat_logical_addressed_telegram.h"
+#include "ros_ethercat_eml/al/ethercat_master.h"
+#include "ros_ethercat_eml/al/ethercat_AL.h"
+#include "ros_ethercat_eml/al/ethercat_router.h"
+#include "ros_ethercat_eml/al/ethercat_slave_conf.h"
+#include "ros_ethercat_eml/dll/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/dll/ethercat_dll.h"
+#include "ros_ethercat_eml/dll/ethercat_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_frame.h"
+#include "ros_ethercat_eml/dll/ethercat_device_addressed_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_logical_addressed_telegram.h"
 
 EtherCAT_Master * EtherCAT_Master::m_instance = 0;
 

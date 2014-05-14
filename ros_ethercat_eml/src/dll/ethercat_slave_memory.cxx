@@ -31,7 +31,7 @@
 //===========================================================================
 
  
-#include "dll/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/dll/ethercat_slave_memory.h"
 
 EC_DLInformation::EC_DLInformation(uint8_t type,
 				   uint8_t revision,

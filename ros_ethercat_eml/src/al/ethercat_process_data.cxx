@@ -31,11 +31,11 @@
 //===========================================================================
 
  
-#include "al/ethercat_process_data.h"
-#include "al/ethercat_slave_handler.h"
-#include "al/ethercat_AL.h"
-#include "al/ethercat_master.h"
-#include "dll/ethercat_dll.h"
+#include "ros_ethercat_eml/al/ethercat_process_data.h"
+#include "ros_ethercat_eml/al/ethercat_slave_handler.h"
+#include "ros_ethercat_eml/al/ethercat_AL.h"
+#include "ros_ethercat_eml/al/ethercat_master.h"
+#include "ros_ethercat_eml/dll/ethercat_dll.h"
 
 EtherCAT_PD_Buffer * EtherCAT_PD_Buffer::m_instance = 0;
 

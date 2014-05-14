@@ -407,7 +407,7 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  
                               length,                   // Data Length,
                               p);             // Buffer to put read result into
 
-  // Put read telegram in ethercat/ethernet frame  
+  // Put read telegram in ros_ethercat_eml/ethercat/ethernet frame  
   EC_Telegram * telegram = NULL;
   if (addrMode == FIXED_ADDR) {
     telegram = &nprw_telegram;
@@ -418,7 +418,7 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  
     return -1;
   }
   
-  // Put telegram in ethercat/ethernet frame
+  // Put telegram in ros_ethercat_eml/ethercat/ethernet frame
   EC_Ethernet_Frame frame(telegram);
   
   // Send/Recv data from slave
@@ -454,7 +454,7 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint1
                               length,                   // Data Length,
                               p);             // Buffer to put read result into
 
-  // Put read telegram in ethercat/ethernet frame  
+  // Put read telegram in ros_ethercat_eml/ethercat/ethernet frame  
   EC_Telegram * telegram = NULL;
   if (addrMode == FIXED_ADDR) {
     telegram = &nprd_telegram;
@@ -465,7 +465,7 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh,  uint1
     return -1;
   }
 
-  // Put telegram in ethercat/ethernet frame
+  // Put telegram in ros_ethercat_eml/ethercat/ethernet frame
   EC_Ethernet_Frame frame(telegram);
 
   // Send/Recv data from slave
@@ -501,7 +501,7 @@ int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint1
                               length,                   // Data Length,
                               p);             // Buffer to put read result into
 
-  // Put read telegram in ethercat/ethernet frame  
+  // Put read telegram in ros_ethercat_eml/ethercat/ethernet frame  
   EC_Telegram * telegram = NULL;
   if (addrMode == FIXED_ADDR) {
     telegram = &npwr_telegram;
@@ -512,7 +512,7 @@ int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint1
     return -1;
   }
 
-  // Put telegram in ethercat/ethernet frame
+  // Put telegram in ros_ethercat_eml/ethercat/ethernet frame
   EC_Ethernet_Frame frame(telegram);
 
   // Send/Recv data from slave

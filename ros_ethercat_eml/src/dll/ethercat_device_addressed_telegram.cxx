@@ -32,7 +32,7 @@
 
  
 #include <assert.h>
-#include "dll/ethercat_device_addressed_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_device_addressed_telegram.h"
 // --------------------------------------------------
 // Device Addressing Telegram
 // --------------------------------------------------

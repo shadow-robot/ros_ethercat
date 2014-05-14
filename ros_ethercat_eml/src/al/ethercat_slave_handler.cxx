@@ -31,7 +31,7 @@
 //===========================================================================
 
  
-#include "al/ethercat_slave_handler.h"
+#include "ros_ethercat_eml/al/ethercat_slave_handler.h"
 #include <assert.h>
 
 EtherCAT_SlaveHandler::EtherCAT_SlaveHandler(uint16_t a_ring_position,

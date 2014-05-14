@@ -34,8 +34,8 @@
 #ifndef __ethercat_mbx__
 #define __ethercat_mbx__
 
-#include "ethercat/ethercat_defs.h"
-#include "dll/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/ethercat/ethercat_defs.h"
+#include "ros_ethercat_eml/dll/ethercat_slave_memory.h"
 
 typedef enum {
   EC_AoE = 0x01, // ADS over EtherCAT

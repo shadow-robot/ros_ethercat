@@ -32,7 +32,7 @@
 
  
 #include <assert.h>
-#include "dll/ethercat_logical_addressed_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_logical_addressed_telegram.h"
 
 static const uint8_t LRD  = 0x0a; // Logical Read
 static const uint8_t LWR  = 0x0b; // Logical Write

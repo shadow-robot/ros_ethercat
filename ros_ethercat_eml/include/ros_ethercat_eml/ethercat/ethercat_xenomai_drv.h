@@ -33,7 +33,7 @@
 
 #ifndef ethercat_xenomai_drv_h
 #define ethercat_xenomai_drv_h
-#include <ethercat/netif.h>
+#include <ros_ethercat_eml/ethercat/netif.h>
 
 int set_socket_timeout(struct netif* , int64_t ); // change the timeout (in ns)
 struct netif* init_ec(const char *);	// create an EtharCAT network interface

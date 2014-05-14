@@ -34,8 +34,8 @@
 #ifndef __ethercat_slave_conf__
 #define __ethercat_slave_conf__
 
-#include "ethercat/ethercat_defs.h"
-#include "dll/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/ethercat/ethercat_defs.h"
+#include "ros_ethercat_eml/dll/ethercat_slave_memory.h"
 
 /// FMMU Configuration of a slave
 class EtherCAT_FMMU_Config

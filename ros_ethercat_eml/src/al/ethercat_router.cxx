@@ -31,14 +31,14 @@
 //===========================================================================
 
  
-#include "al/ethercat_router.h"
-#include "al/ethercat_mbx.h"
-#include "al/ethercat_slave_handler.h"
-#include "al/ethercat_AL.h"
-#include "al/ethercat_master.h"
-#include "dll/ethercat_device_addressed_telegram.h"
-#include "dll/ethercat_frame.h"
-#include "dll/ethercat_dll.h"
+#include "ros_ethercat_eml/al/ethercat_router.h"
+#include "ros_ethercat_eml/al/ethercat_mbx.h"
+#include "ros_ethercat_eml/al/ethercat_slave_handler.h"
+#include "ros_ethercat_eml/al/ethercat_AL.h"
+#include "ros_ethercat_eml/al/ethercat_master.h"
+#include "ros_ethercat_eml/dll/ethercat_device_addressed_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_frame.h"
+#include "ros_ethercat_eml/dll/ethercat_dll.h"
 
 EtherCAT_Router * EtherCAT_Router::m_instance = 0;
 

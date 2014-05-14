@@ -34,7 +34,7 @@
 #ifndef __ethercat_logical_addressed_telegram_h__
 #define __ethercat_logical_addressed_telegram_h__
 
-#include "ethercat_telegram.h"
+#include "ros_ethercat_eml/dll/ethercat_telegram.h"
 
 /// EtherCAT telegram for all _logical addressing_ modes
 /** EtherCAT telegram for all _logical addressing_ modes, that is

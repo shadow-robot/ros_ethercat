@@ -38,11 +38,11 @@
 #include <vector>
 
 
-#include <ethercat/ethercat_defs.h>
-#include <al/ethercat_slave_handler.h>
-#include <dll/ethercat_device_addressed_telegram.h>
-#include <dll/ethercat_logical_addressed_telegram.h>
-#include <dll/ethercat_frame.h>
+#include <ros_ethercat_eml/ethercat/ethercat_defs.h>
+#include <ros_ethercat_eml/al/ethercat_slave_handler.h>
+#include <ros_ethercat_eml/dll/ethercat_device_addressed_telegram.h>
+#include <ros_ethercat_eml/dll/ethercat_logical_addressed_telegram.h>
+#include <ros_ethercat_eml/dll/ethercat_frame.h>
 
 #include <hardware_interface/hardware_interface.h>
 

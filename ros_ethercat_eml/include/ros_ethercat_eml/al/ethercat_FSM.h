@@ -48,7 +48,7 @@ class EtherCAT_PD_Buffer;
 
 // FIXME how to do forward declaration of typedef enum?, with "extern"
 // keyword?
-#include "dll/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/dll/ethercat_slave_memory.h"
 
 /// EtherCAT State Machine Operations
 class EC_ESM_Ops 

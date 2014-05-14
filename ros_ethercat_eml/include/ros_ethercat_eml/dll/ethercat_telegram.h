@@ -34,8 +34,8 @@
 #ifndef __ethercat_telegram_h__
 #define __ethercat_telegram_h__
 
-#include "ethercat/ethercat_defs.h"
-#include "ethercat/ethercat_datastruct.h"
+#include "ros_ethercat_eml/ethercat/ethercat_defs.h"
+#include "ros_ethercat_eml/ethercat/ethercat_datastruct.h"
 
 // Header size of telegram expressed as a number of bytes
 static const size_t ETHERCAT_TELEGRAM_HEADER_SIZE = 10;
