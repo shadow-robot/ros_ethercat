@@ -34,7 +34,7 @@
 
 #include "ros_ethercat_hardware/ethercat_hardware.h"
 
-#include <ros_ethercat_eml/ethercat/ethercat_xenomai_drv.h>
+#include <ros_ethercat_eml/ethercat_xenomai_drv.h>
 
 #include <sstream>
 
@@ -934,7 +934,7 @@ void EthercatHardware::collectDiagnostics()
                          length, // Data Length,
                          p); // Buffer to put read result into
     
-    // Put read telegram in ros_ethercat_eml/ethercat/ethernet frame
+    // Put read telegram in ros_ethercat_eml/ethernet frame
     EC_Ethernet_Frame frame(&status);    
     oob_com_->txandrx(&frame);
 

@@ -76,7 +76,7 @@ void Usage(const string &msg = "")
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
   fprintf(stderr, "    -p, --period                RT loop period in msec\n");
-  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/ethercat/realtime\" in seconds\n");
+  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/realtime\" in seconds\n");
   fprintf(stderr, "    -x, --xml <file>            Load the robot description from this file\n");
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
   fprintf(stderr, "    -u, --allow_unprogrammed    Allow control loop to run with unprogrammed devices\n");

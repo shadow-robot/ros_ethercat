@@ -35,10 +35,10 @@
 #ifndef ETHERCAT_COM_H
 #define ETHERCAT_COM_H
 
-#include <ros_ethercat_eml/al/ethercat_AL.h>
-#include <ros_ethercat_eml/al/ethercat_master.h>
-#include <ros_ethercat_eml/al/ethercat_slave_handler.h>
-#include <ros_ethercat_eml/dll/ethercat_dll.h>
+#include <ros_ethercat_eml/ethercat_AL.h>
+#include <ros_ethercat_eml/ethercat_master.h>
+#include <ros_ethercat_eml/ethercat_slave_handler.h>
+#include <ros_ethercat_eml/ethercat_dll.h>
 #include <pthread.h>
 
 class EthercatCom 

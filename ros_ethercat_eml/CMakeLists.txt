@@ -14,21 +14,21 @@ catkin_package(
 )
 
 add_library(${PROJECT_NAME}
-    src/al/ethercat_AL.cxx
-    src/al/ethercat_FSM.cxx
-    src/al/ethercat_master.cxx
-    src/al/ethercat_mbx.cxx
-    src/al/ethercat_process_data.cxx
-    src/al/ethercat_router.cxx
-    src/al/ethercat_slave_conf.cxx
-    src/al/ethercat_slave_handler.cxx
-    src/dll/ethercat_device_addressed_telegram.cxx
-    src/dll/ethercat_dll.cxx
-    src/dll/ethercat_frame.cxx
-    src/dll/ethercat_logical_addressed_telegram.cxx
-    src/dll/ethercat_slave_memory.cxx
-    src/dll/ethercat_telegram.cxx
-    src/posix/ethercat_posix_drv.cxx
+    src/ethercat_AL.cxx
+    src/ethercat_FSM.cxx
+    src/ethercat_master.cxx
+    src/ethercat_mbx.cxx
+    src/ethercat_process_data.cxx
+    src/ethercat_router.cxx
+    src/ethercat_slave_conf.cxx
+    src/ethercat_slave_handler.cxx
+    src/ethercat_device_addressed_telegram.cxx
+    src/ethercat_dll.cxx
+    src/ethercat_frame.cxx
+    src/ethercat_logical_addressed_telegram.cxx
+    src/ethercat_slave_memory.cxx
+    src/ethercat_telegram.cxx
+    src/ethercat_posix_drv.cxx
 )
 
 target_link_libraries(${PROJECT_NAME}
