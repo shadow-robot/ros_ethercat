@@ -2,6 +2,9 @@
 Changelog for package ros_ethercat_loop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.5 (2014-05-14)
 ------------------
 
