@@ -1,6 +1,6 @@
 <package>
   <name>ros_ethercat_loop</name>
-  <version>0.1.5</version>
+  <version>0.1.6</version>
   <description>Main loop to run EtherCAT robot hardware.</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
