@@ -42,7 +42,8 @@
 #include <tinyxml.h>
 #include <urdf_model/joint.h>
 
-namespace ros_ethercat_model {
+namespace ros_ethercat_model
+{
 
 enum
 {
@@ -59,10 +60,13 @@ class JointState;
 
 class JointStatistics
 {
- public:
-  JointStatistics():min_position_(0), max_position_(0),
-                    max_abs_velocity_(0.0), max_abs_effort_(0.0),
-                    violated_limits_(false), initialized_(false){}
+public:
+  JointStatistics() :
+      min_position_(0), max_position_(0),
+          max_abs_velocity_(0.0), max_abs_effort_(0.0),
+          violated_limits_(false), initialized_(false)
+  {
+  }
 
   void update(JointState *jnt);
 
@@ -81,7 +85,7 @@ class JointStatistics
   double max_abs_effort_;
   bool violated_limits_;
 
- private:
+private:
   bool initialized_;
   double old_position_;
 };
@@ -98,14 +102,15 @@ public:
 
     // limit the commanded effort based on position, velocity and effort limits
     commanded_effort_ =
-      std::min( std::max(commanded_effort_, effort_low), effort_high);
+        std::min(std::max(commanded_effort_, effort_low), effort_high);
   }
 
   /// Returns the safety effort limits given the current position and velocity.
   void getLimits(double &effort_low, double &effort_high)
   {
     // only enforce joints that specify joint limits and safety code
-    if (!joint_->safety || !joint_->limits) {
+    if (!joint_->safety || !joint_->limits)
+    {
       effort_low = -std::numeric_limits<double>::max();
       effort_high = std::numeric_limits<double>::max();
       return;
@@ -117,25 +122,28 @@ public:
     effort_low = -joint_->limits->effort;
 
     // enforce position bounds on rotary and prismatic joints that are calibrated
-    if (calibrated_ && (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC))
+    if (calibrated_
+        && (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC))
     {
       // Computes the velocity bounds based on the absolute limit and the
       // proximity to the joint limit.
-      vel_high = std::max(-joint_->limits->velocity,
-                     std::min(joint_->limits->velocity,
-                         -joint_->safety->k_position * (position_ - joint_->safety->soft_upper_limit)));
-      vel_low = std::min(joint_->limits->velocity,
-                    std::max(-joint_->limits->velocity,
-                        -joint_->safety->k_position * (position_ - joint_->safety->soft_lower_limit)));
+      vel_high = std::max(
+          -joint_->limits->velocity,
+          std::min(joint_->limits->velocity,
+                   -joint_->safety->k_position * (position_ - joint_->safety->soft_upper_limit)));
+      vel_low = std::min(
+          joint_->limits->velocity,
+          std::max(-joint_->limits->velocity,
+                   -joint_->safety->k_position * (position_ - joint_->safety->soft_lower_limit)));
     }
 
     // Computes the effort bounds based on the velocity and effort bounds.
     effort_high = std::max(-joint_->limits->effort,
                            std::min(joint_->limits->effort,
-                          -joint_->safety->k_velocity * (velocity_ - vel_high)));
+                                    -joint_->safety->k_velocity * (velocity_ - vel_high)));
     effort_low = std::min(joint_->limits->effort,
-                     std::max(-joint_->limits->effort,
-                         -joint_->safety->k_velocity * (velocity_ - vel_low)));
+                          std::max(-joint_->limits->effort,
+                                   -joint_->safety->k_velocity * (velocity_ - vel_low)));
   }
 
   /// A pointer to the corresponding urdf::Joint from the urdf::Model
@@ -163,15 +171,19 @@ public:
   double reference_position_;
 
   /// Constructor
-  JointState() : position_(0.0), velocity_(0.0), measured_effort_(0.0),
-    commanded_effort_(0.0), calibrated_(false), reference_position_(0.0){}
+  JointState() :
+      position_(0.0), velocity_(0.0), measured_effort_(0.0),
+          commanded_effort_(0.0), calibrated_(false), reference_position_(0.0)
+  {
+  }
 };
 
 inline void JointStatistics::update(JointState *jnt)
 {
   if (initialized_)
   {
-    if (jnt->joint_->safety && jnt->joint_->limits && (fabs(jnt->commanded_effort_) > fabs(jnt->measured_effort_)))
+    if (jnt->joint_->safety && jnt->joint_->limits
+        && (fabs(jnt->commanded_effort_) > fabs(jnt->measured_effort_)))
       violated_limits_ = true;
     min_position_ = fmin(jnt->position_, min_position_);
     max_position_ = fmax(jnt->position_, max_position_);

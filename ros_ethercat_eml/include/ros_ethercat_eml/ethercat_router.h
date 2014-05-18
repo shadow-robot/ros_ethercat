@@ -47,7 +47,6 @@ class EtherCAT_Router
  public:
   /// Singleton
   static EtherCAT_Router * instance();
-  virtual ~EtherCAT_Router();
 
   /// Start routing
   void start();

@@ -45,8 +45,6 @@ namespace ros_ethercat_model {
 class Chain
 {
 public:
-  Chain() {}
-  ~Chain() {}
 
   /** \brief initialize the chain object
    *

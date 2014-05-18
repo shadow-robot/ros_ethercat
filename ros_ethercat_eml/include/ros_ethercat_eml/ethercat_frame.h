@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_frame_h__
 #define __ethercat_frame_h__
 
@@ -38,76 +37,82 @@
 #include "ros_ethercat_eml/netif.h"
 
 /** "Dump" an EtherCAT frame into an array of bytes (for
-    transmitting).
-    @param frame pointer to the frame to be dumped
-    @param buffer pointer to an array of unsigned chars that can be
-    put into an ethernet frame
-    @param bufferlength the maximum length that the frame may have
-    @return the length of the buffer expressed as a number of bytes,
-    if smaller than bufferlength, 0 otherwise
-*/
- int framedump(const struct EtherCAT_Frame * frame,
-		      unsigned char * buffer, 
-		      size_t bufferlength);
+ transmitting).
+ @param frame pointer to the frame to be dumped
+ @param buffer pointer to an array of unsigned chars that can be
+ put into an ethernet frame
+ @param bufferlength the maximum length that the frame may have
+ @return the length of the buffer expressed as a number of bytes,
+ if smaller than bufferlength, 0 otherwise
+ */
+int framedump(const struct EtherCAT_Frame * frame,
+              unsigned char * buffer,
+              size_t bufferlength);
 
 /** Build an EtherCAT frame from an array of bytes (for receiving).
-    @param frame pointer to the frame where data can be put in
-    @param buffer pointer to an array of unsigned chars that contain
-    the necessary info
-    @return zero on succes, -1 otherwise
-*/
- int framebuild(struct EtherCAT_Frame * frame,
-		       const unsigned char * buffer);
+ @param frame pointer to the frame where data can be put in
+ @param buffer pointer to an array of unsigned chars that contain
+ the necessary info
+ @return zero on succes, -1 otherwise
+ */
+int framebuild(struct EtherCAT_Frame * frame,
+               const unsigned char * buffer);
 
 /// EtherCAT Frame Interface (we need a C interface)
 /** Due to the fact that this is a C-interface, this class does not
-    herit from EC_Datastruct, although it has the same needs
-*/
-typedef struct EtherCAT_Frame 
+ herit from EC_Datastruct, although it has the same needs
+ */
+typedef struct EtherCAT_Frame
 {
-  virtual ~EtherCAT_Frame () {}
+  virtual ~EtherCAT_Frame()
+  {
+  }
   /// Return the length of the whole frame
   virtual size_t length(void) const = 0;
-  
+
   /// Dump the contents of a frame into a byte array
-  virtual unsigned char *   dump(unsigned char * a_buffer) const = 0;
+  virtual unsigned char * dump(unsigned char * a_buffer) const = 0;
 
   /// Build and check a frame from a byte array
   /** @param a_buffer the byte array
-      @return 0 if succesful, -1 otherwise
-  */
+   @return 0 if succesful, -1 otherwise
+   */
   virtual int build(const unsigned char * a_buffer) = 0;
 
   /// Get first telegram
   virtual EC_Telegram * get_telegram() const = 0;
-  
+
 } ECFrame;
 
 /// EtherCAT Frame base class
 /** @todo This interface is not complete, eg. currently there is no
-    way to add/remove telegrams to a frame.  Note however that this
-    EtherCAT feature is rarely used AFAIS.
-*/
-class EC_Frame: public ECFrame
+ way to add/remove telegrams to a frame.  Note however that this
+ EtherCAT feature is rarely used AFAIS.
+ */
+class EC_Frame : public ECFrame
 {
- public:
-  virtual ~EC_Frame();
-  
+public:
   /// return the length of the whole frame
   /** @return the length of the whole frame in bytes
    */
-  size_t length(void) const  { return header_length() + body_length();}
-  
+  size_t length(void) const
+                {
+    return header_length() + body_length();
+  }
+
   /// Dump the contents of a frame into an byte array
   virtual unsigned char * dump(unsigned char * a_buffer) const;
 
   /// Build and check frame starting from byte array
   virtual int build(const unsigned char * a_buffer);
-    
+
   /// Get first telegram
-  EC_Telegram * get_telegram() const { return m_telegram;}
-      
- protected:
+  EC_Telegram * get_telegram() const
+  {
+    return m_telegram;
+  }
+
+protected:
   /// Constructor
   EC_Frame();
   EC_Frame(const EC_Frame & a_frame);
@@ -115,14 +120,14 @@ class EC_Frame: public ECFrame
 
   /// Pointer to the first EtherCAT
   EC_Telegram * m_telegram;
-  
+
   /// Dump the header
-  virtual unsigned char *    dump_header(unsigned char * a_buffer) const = 0;
+  virtual unsigned char * dump_header(unsigned char * a_buffer) const = 0;
   /// Check if received header in byte array complies to the frame data
   virtual bool check_header(const unsigned char * a_buffer) const = 0;
 
   /// Return the length of the header
-  virtual size_t             header_length(void) const = 0;
+  virtual size_t header_length(void) const = 0;
   /// Return the length of the body
   virtual size_t body_length(void) const;
 
@@ -131,25 +136,24 @@ class EC_Frame: public ECFrame
 /// Ethercat Ethernet_mode frame
 static const size_t ETHERCAT_ETHERNET_FRAME_HEADER_SIZE = 2;
 
-
 /// Class representing EtherCAT Frames in "raw" ethernet mode
 class EC_Ethernet_Frame : public EC_Frame
 {
- public:
+public:
   /// Constructor
   /** @param a_telegram pointer to the first telegram of the frame */
   EC_Ethernet_Frame(EC_Telegram * a_telegram);
-  virtual ~EC_Ethernet_Frame(){};
 
- protected:
-  virtual size_t            header_length(void) const 
-    { return ETHERCAT_ETHERNET_FRAME_HEADER_SIZE; }
-        
-  virtual unsigned char *   dump_header(unsigned char * a_buffer) const;
+protected:
+  virtual size_t header_length(void) const
+                               {
+    return ETHERCAT_ETHERNET_FRAME_HEADER_SIZE;
+  }
+
+  virtual unsigned char * dump_header(unsigned char * a_buffer) const;
 
   virtual bool check_header(const unsigned char * a_buffer) const;
 };
-
 
 /// Ethercat UDP_mode Frame
 // FIXME TO BE IMPLEMENTED

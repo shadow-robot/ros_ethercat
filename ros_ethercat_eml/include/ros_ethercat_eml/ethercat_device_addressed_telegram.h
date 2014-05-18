@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_device_addressed_telegram_h__
 #define __ethercat_device_addressed_telegram_h__
 
@@ -38,268 +37,281 @@
 
 /// EtherCAT telegram for all _device addressing_ modes
 /** EtherCAT telegram for all _device addressing_ modes, including
-    Position Addressing Modes (e.g.~Auto Increment Physical Read--APRD),
-    Node Addressing modes (e.g.~Node addressed Physical Read--NPRD)
-    and Broadcast Adressing modes (e.g.~Broadcast read)
-    
-*/
-class Device_Addressing_Telegram : public EC_Telegram {
- public:
+ Position Addressing Modes (e.g.~Auto Increment Physical Read--APRD),
+ Node Addressing modes (e.g.~Node addressed Physical Read--NPRD)
+ and Broadcast Adressing modes (e.g.~Broadcast read)
+
+ */
+class Device_Addressing_Telegram : public EC_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp device address
-      @param a_ado address offset withing device
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data
-  */
-  Device_Addressing_Telegram(uint8_t a_idx=0x00, 
-			     uint16_t a_adp =0x0000, 
-			     uint16_t a_ado =0x0000,
-			     uint16_t a_wkc =0x0000,
-			     uint16_t a_datalen=0x0000, 
-			     const unsigned char * a_data=NULL);
+   @param a_adp device address
+   @param a_ado address offset withing device
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data
+   */
+  Device_Addressing_Telegram(uint8_t a_idx = 0x00,
+                             uint16_t a_adp = 0x0000,
+                             uint16_t a_ado = 0x0000,
+                             uint16_t a_wkc = 0x0000,
+                             uint16_t a_datalen = 0x0000,
+                             const unsigned char * a_data = NULL);
 
-  virtual                ~Device_Addressing_Telegram();
+  virtual ~Device_Addressing_Telegram()
+  {
+  }
 
   /// Set address pointer
-  void                    set_adp(uint16_t a_adp) { m_adp = a_adp; }
+  void set_adp(uint16_t a_adp)
+  {
+    m_adp = a_adp;
+  }
   /// Set address offset
-  void                    set_ado(uint16_t a_ado) { m_ado = a_ado; }
+  void set_ado(uint16_t a_ado)
+  {
+    m_ado = a_ado;
+  }
   /// Get address pointer
-  uint16_t                 get_adp() const { return m_adp;}
+  uint16_t get_adp() const
+  {
+    return m_adp;
+  }
   /// Get address offset
-  uint16_t                 get_ado() const { return m_ado;}
-  
- protected:
+  uint16_t get_ado() const
+  {
+    return m_ado;
+  }
+
+protected:
   virtual unsigned char * dump_header_head(unsigned char * a_buffer) const;
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const = 0;
-  
+
   virtual const unsigned char * build_header_head(const unsigned char * a_buffer);
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer) = 0;
-  
- private:
-  uint16_t                 m_adp;
-  uint16_t                 m_ado;
+
+private:
+  uint16_t m_adp;
+  uint16_t m_ado;
 };
 
 /// Auto Increment Physical Read Telegram (APRD)
-class APRD_Telegram : public Device_Addressing_Telegram {
- public:
+class APRD_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp auto increment address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be read: Is actually not used, can be initialised at all zeros
-      @note remove a_data parameter, since is it merely modified by the
-      slave (the result of the read op)??
-  */
-  APRD_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
+   @param a_adp auto increment address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be read: Is actually not used, can be initialised at all zeros
+   @note remove a_data parameter, since is it merely modified by the
+   slave (the result of the read op)??
+   */
+  APRD_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
+
   /// Construct telegram from received bytestream...
   // APRD_Telegram(const unsigned char * a_telegram);
 
-  virtual                ~APRD_Telegram();
-
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Auto Increment Physical Write Telegram (APWR)
-class APWR_Telegram : public Device_Addressing_Telegram {
- public:
+class APWR_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp auto increment address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written
-  */
-  APWR_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
-  virtual                ~APWR_Telegram();
+   @param a_adp auto increment address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written
+   */
+  APWR_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Auto Increment Physical Read and Write Telegram (APRW)
-class APRW_Telegram : public Device_Addressing_Telegram {
- public:
+class APRW_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp auto increment address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be read and written
-  */
-  APRW_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
-  virtual                ~APRW_Telegram();
+   @param a_adp auto increment address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be read and written
+   */
+  APRW_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Broadcast Write Telegram (BWR)
-class BWR_Telegram : public Device_Addressing_Telegram {
- public:
+class BWR_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written
-  */
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written
+   */
   BWR_Telegram(uint8_t a_idx, uint16_t a_ado,
-	       uint16_t a_wkc, uint16_t a_datalen, 
-	       const unsigned char * a_data);
-			    
-  virtual                ~BWR_Telegram();
+               uint16_t a_wkc,
+               uint16_t a_datalen,
+               const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Broadcast Read Telegram (BRD)
-class BRD_Telegram : public Device_Addressing_Telegram {
- public:
+class BRD_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be read
-  */
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be read
+   */
   BRD_Telegram(uint8_t a_idx, uint16_t a_ado,
-	       uint16_t a_wkc, uint16_t a_datalen, 
-	       const unsigned char * a_data);
-			    
-  virtual                ~BRD_Telegram();
+               uint16_t a_wkc,
+               uint16_t a_datalen,
+               const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
-
 /// Node Addressed Physical Write Telegram (NPWR)
 /** @note older versions of the spec and the ethereal plugin use FPWR
-    for this type
-*/
-class NPWR_Telegram : public Device_Addressing_Telegram {
- public:
+ for this type
+ */
+class NPWR_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp slave address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written
-  */
-  NPWR_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
-  virtual                ~NPWR_Telegram();
+   @param a_adp slave address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written
+   */
+  NPWR_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Node Addressed Physical Read Write Telegram (NPRW)
 /** @note older versions of the spec and the ethereal plugin use FPRW
-    for this type
-*/
-class NPRW_Telegram : public Device_Addressing_Telegram {
- public:
+ for this type
+ */
+class NPRW_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp slave address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written
-  */
-  NPRW_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
-  virtual                ~NPRW_Telegram();
+   @param a_adp slave address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written
+   */
+  NPRW_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Node Addressed Physical Read Telegram (NPRD)
 /** @note older versions of the spec and the ethereal plugin use FPWR
-    for this type
-*/
-class NPRD_Telegram : public Device_Addressing_Telegram {
- public:
+ for this type
+ */
+class NPRD_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp slave address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written
-  */
-  NPRD_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
-  virtual                ~NPRD_Telegram();
+   @param a_adp slave address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written
+   */
+  NPRD_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Auto Increment Physical Read Multiple Write Telegram (ARMW)
-class ARMW_Telegram : public Device_Addressing_Telegram {
- public:
+class ARMW_Telegram : public Device_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adp auto increment address
-      @param a_ado physical memory address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be read/written
-  */
-  ARMW_Telegram(uint8_t a_idx, uint16_t a_adp, 
-		uint16_t a_ado,uint16_t a_wkc,
-		uint16_t a_datalen, 
-		const unsigned char * a_data);
-			    
-  virtual                ~ARMW_Telegram();
+   @param a_adp auto increment address
+   @param a_ado physical memory address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be read/written
+   */
+  ARMW_Telegram(uint8_t a_idx, uint16_t a_adp,
+                uint16_t a_ado,
+                uint16_t a_wkc,
+                uint16_t a_datalen,
+                const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
-
 
 #endif // __ethercat_device_addressed_telegram_h__

@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_logical_addressed_telegram_h__
 #define __ethercat_logical_addressed_telegram_h__
 
@@ -38,104 +37,109 @@
 
 /// EtherCAT telegram for all _logical addressing_ modes
 /** EtherCAT telegram for all _logical addressing_ modes, that is
-    logical read (LRD), logical write (LWR), and logical Read-Write (LRW)    
-*/
-class Logical_Addressing_Telegram : public EC_Telegram {
- public:
+ logical read (LRD), logical write (LWR), and logical Read-Write (LRW)
+ */
+class Logical_Addressing_Telegram : public EC_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adr logical address (4 bytes)
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data
-  */
-  Logical_Addressing_Telegram(uint8_t a_idx=0x00, 
-			      uint32_t a_adr=0x00000000, 
-			      uint16_t a_wkc=0x0000, 
-			      uint16_t a_datalen=0x0000, 
-			      const unsigned char * a_data = NULL);
-
-  virtual                ~Logical_Addressing_Telegram();
+   @param a_adr logical address (4 bytes)
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data
+   */
+  Logical_Addressing_Telegram(uint8_t a_idx = 0x00,
+                              uint32_t a_adr = 0x00000000,
+                              uint16_t a_wkc = 0x0000,
+                              uint16_t a_datalen = 0x0000,
+                              const unsigned char * a_data = NULL);
 
   /// Set address field
   /** @param a_adr 4 byte logical address
    */
-  void                    set_adr(uint32_t a_adr) { m_adr = a_adr; }
+  void set_adr(uint32_t a_adr)
+  {
+    m_adr = a_adr;
+  }
   /// Get address field
   /** @return 4 byte logical address
    */
-  uint32_t                get_adr() const { return m_adr;}
-  
- protected:
+  uint32_t get_adr() const
+  {
+    return m_adr;
+  }
+
+protected:
   virtual unsigned char * dump_header_head(unsigned char * a_buffer) const;
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const = 0;
-  
+
   virtual const unsigned char * build_header_head(const unsigned char * a_buffer);
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer) = 0;
-  
- private:
-  uint32_t                 m_adr;
+
+private:
+  uint32_t m_adr;
 };
 
 /// Logical Read Telegram
-class LRD_Telegram : public Logical_Addressing_Telegram {
- public:
+class LRD_Telegram : public Logical_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adr logical address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be read
-  */
+   @param a_adr logical address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be read
+   */
   LRD_Telegram(uint8_t a_idx, uint32_t a_adr,
-	       uint16_t a_wkc, uint16_t a_datalen,
-	       const unsigned char * a_data);
-			    
-  virtual                ~LRD_Telegram();
+               uint16_t a_wkc,
+               uint16_t a_datalen,
+               const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Logical Write Telegram
-class LWR_Telegram : public Logical_Addressing_Telegram {
- public:
+class LWR_Telegram : public Logical_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adr logical address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written
-  */
+   @param a_adr logical address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written
+   */
   LWR_Telegram(uint8_t a_idx, uint32_t a_adr,
-	       uint16_t a_wkc, uint16_t a_datalen,
-	       const unsigned char * a_data);
-			    
-  virtual                ~LWR_Telegram();
+               uint16_t a_wkc,
+               uint16_t a_datalen,
+               const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };
 
 /// Logical Read Write Telegram
-class LRW_Telegram : public Logical_Addressing_Telegram {
- public:
+class LRW_Telegram : public Logical_Addressing_Telegram
+{
+public:
   /// Constructor
   /** @param a_idx index
-      @param a_adr logical address
-      @param a_wkc working counter
-      @param a_datalen data_length
-      @param a_data data to be written and read
-  */
+   @param a_adr logical address
+   @param a_wkc working counter
+   @param a_datalen data_length
+   @param a_data data to be written and read
+   */
   LRW_Telegram(uint8_t a_idx, uint32_t a_adr,
-	       uint16_t a_wkc, uint16_t a_datalen,
-	       const unsigned char * a_data);
-			    
-  virtual                ~LRW_Telegram();
+               uint16_t a_wkc,
+               uint16_t a_datalen,
+               const unsigned char * a_data);
 
- protected:
+protected:
   virtual unsigned char * dump_command_field(unsigned char * a_buffer) const;
   virtual const unsigned char * build_command_field(const unsigned char * a_buffer);
 };

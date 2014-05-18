@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_dll__
 #define __ethercat_dll__
 
@@ -41,23 +40,23 @@ class EtherCAT_Frame;
 /// Abstract representation of the EtherCAT DLL
 class EtherCAT_DataLinkLayer
 {
-  public:
+public:
   /// This class is a singleton
   /** @todo Pass destination MAC address instead of defaulting to
-      broadcast?
-  */
+   broadcast?
+   */
   static EtherCAT_DataLinkLayer * instance(void);
 
   /// Attach the DLL to a networking interface
   /** @param netif pointer to the NIC
    */
-  void                attach(struct netif * netif);
+  void attach(struct netif * netif);
 
   /// transmit and receive EtherCAT frame (blocking call!)  
   /** @param a_frame ethercat frame to be sent
    *  NOTE that txandrx will retry sending lost frames.
-  */
-  bool                txandrx(EtherCAT_Frame * a_frame);
+   */
+  bool txandrx(EtherCAT_Frame * a_frame);
 
   /// transmit an EtherCAT frame (non-blocking call)
   /** @param a_frame ethercat frame to be sent
@@ -73,18 +72,12 @@ class EtherCAT_DataLinkLayer
    */
   bool rx(EtherCAT_Frame * a_frame, int a_handle);
 
-  /// Destructor
-  /** @todo some kind of smart pointer concept necessary for all these
-      singletons.  For EtherCAT master on ecos not really an issue...
-  */
-  virtual            ~EtherCAT_DataLinkLayer();
+protected:
+  EtherCAT_DataLinkLayer();
 
-  protected:
-                        EtherCAT_DataLinkLayer();
-
-  private:
-    static EtherCAT_DataLinkLayer * m_instance;
-    struct netif *                  m_if;
+private:
+  static EtherCAT_DataLinkLayer * m_instance;
+  struct netif * m_if;
 };
 
 #endif // __ethercat_dll__

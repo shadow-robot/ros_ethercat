@@ -53,8 +53,10 @@ namespace ros_ethercat_model
 class Tree
 {
 public:
-  Tree() : kdl_tree_() {};
-  ~Tree() {};
+  Tree() :
+      kdl_tree_()
+  {
+  }
 
   /**
    * \brief initializes the tree object
@@ -72,13 +74,13 @@ public:
     // construct the kdl tree
     if (!kdl_parser::treeFromUrdfModel(robot_state->robot_model_, kdl_tree_))
     {
-       ROS_ERROR("Failed to construct KDL:Tree from robot_state's URDF model! Aborting ...");
+      ROS_ERROR("Failed to construct KDL:Tree from robot_state's URDF model! Aborting ...");
     }
     else
     {
-        ROS_INFO("KDL::Tree successful created.");
+      ROS_INFO("KDL::Tree successful created.");
 
-        segmentMap = kdl_tree_.getSegments();
+      segmentMap = kdl_tree_.getSegments();
     }
 
     // the first step of extracting the joints from the tree is to go through all tree_elements, check for a joint,
@@ -88,7 +90,8 @@ public:
     std::map<unsigned int, std::string> jointMap;
 
     ROS_DEBUG("Extracting all joints from the tree, which are not of type KDL::Joint::None.");
-    for (KDL::SegmentMap::const_iterator seg_it = segmentMap.begin(); seg_it != segmentMap.end(); ++seg_it)
+    for (KDL::SegmentMap::const_iterator seg_it = segmentMap.begin(); seg_it != segmentMap.end();
+        ++seg_it)
     {
       if (seg_it->second.segment.getJoint().getType() != KDL::Joint::None)
         jointMap[seg_it->second.q_nr] = seg_it->second.segment.getJoint().getName().c_str();
@@ -98,13 +101,13 @@ public:
     ROS_DEBUG("Checking, if extracted joints can be found in the JointState vector of the robot.");
     joints_.clear();
     for (std::map<unsigned int, std::string>::const_iterator jnt_it = jointMap.begin();
-    jnt_it != jointMap.end(); ++jnt_it)
+        jnt_it != jointMap.end(); ++jnt_it)
     {
       JointState* jnt = robot_state->getJointState(jnt_it->second.c_str());
       if (!jnt)
       {
         ROS_ERROR("Joint '%s' has not been found in the robot's joint state vector! Aborting ...",
-        jnt_it->second.c_str());
+                  jnt_it->second.c_str());
         return false;
       }
       joints_.push_back(jnt);
@@ -123,23 +126,24 @@ public:
 
   /// get the position of the joints of the tree as a KDL::JntArray
   void getPositions(KDL::JntArray& positions) const
-  {
+                    {
     assert(positions.rows() == joints_.size());
     for (unsigned int i = 0; i < joints_.size(); ++i)
       positions(i) = joints_[i]->position_;
   }
 
   /// get the position of the joints of the tree as any type with size() and [] lookup
-  template <class Vec> void getPositions(Vec &v) const
-  {
-    assert((int)v.size() == (int)joints_.size());
-    for (size_t i = 0; i < joints_.size(); ++i)
-      v[i] = joints_[i]->position_;
-  }
+  template<class Vec>
+    void getPositions(Vec &v) const
+                      {
+      assert((int )v.size() == (int )joints_.size());
+      for (size_t i = 0; i < joints_.size(); ++i)
+        v[i] = joints_[i]->position_;
+    }
 
   /// get the velocities of the joints of the tree as a KDL::JntArrayVel (fills in the positions, too)
   void getVelocities(KDL::JntArrayVel &velocities) const
-  {
+                     {
     assert(velocities.q.rows() == joints_.size());
     assert(velocities.qdot.rows() == joints_.size());
     for (unsigned int i = 0; i < joints_.size(); ++i)
@@ -150,28 +154,30 @@ public:
   }
 
   /// get the velocities of the joints of the tree as any type with size() and [] lookup
-  template <class Vec> void getVelocities(Vec &v) const
-  {
-    assert((int)v.size() == (int)joints_.size());
-    for (size_t i = 0; i < joints_.size(); ++i)
-      v[i] = joints_[i]->velocity_;
-  }
+  template<class Vec>
+    void getVelocities(Vec &v) const
+                       {
+      assert((int )v.size() == (int )joints_.size());
+      for (size_t i = 0; i < joints_.size(); ++i)
+        v[i] = joints_[i]->velocity_;
+    }
 
   /// get the measured joint efforts of the tree's joints as a KDL::JntArray
   void getEfforts(KDL::JntArray &efforts) const
-  {
+                  {
     assert(efforts.rows() == joints_.size());
     for (unsigned int i = 0; i < joints_.size(); ++i)
       efforts(i) = joints_[i]->measured_effort_;
   }
 
   /// get the measured joint efforts of the tree's joints as any type with size() and [] lookup
-  template <class Vec> void getEfforts(Vec &v) const
-  {
-    assert((int)v.size() == (int)joints_.size());
-    for (size_t i = 0; i < joints_.size(); ++i)
-      v[i] = joints_[i]->measured_effort_;
-  }
+  template<class Vec>
+    void getEfforts(Vec &v) const
+                    {
+      assert((int )v.size() == (int )joints_.size());
+      for (size_t i = 0; i < joints_.size(); ++i)
+        v[i] = joints_[i]->measured_effort_;
+    }
 
   /// set the commanded joint efforts of the tree's joints from a KDL::JntArray
   void setEfforts(const KDL::JntArray &efforts)
@@ -182,12 +188,13 @@ public:
   }
 
   /// set the commanded joint efforts of the tree's joints from any type that implements size() and [] lookup
-  template <class Vec> void setEfforts(const Vec &v)
-  {
-    assert((int)v.size() == (int)joints_.size());
-    for (size_t i = 0; i < joints_.size(); ++i)
-      joints_[i]->commanded_effort_ = v[i];
-  }
+  template<class Vec>
+    void setEfforts(const Vec &v)
+    {
+      assert((int )v.size() == (int )joints_.size());
+      for (size_t i = 0; i < joints_.size(); ++i)
+        joints_[i]->commanded_effort_ = v[i];
+    }
 
   /// add to the commanded joint efforts of the tree's joints from a KDL::JntArray
   void addEfforts(const KDL::JntArray &efforts)
@@ -198,12 +205,13 @@ public:
   }
 
   /// add to the commanded joint efforts of the tree's joints from any type that implements size() and [] lookup
-  template <class Vec> void addEfforts(const Vec &v)
-  {
-    assert((int)v.size() == (int)joints_.size());
-    for (size_t i = 0; i < joints_.size(); ++i)
-      joints_[i]->commanded_effort_ += v[i];
-  }
+  template<class Vec>
+    void addEfforts(const Vec &v)
+    {
+      assert((int )v.size() == (int )joints_.size());
+      for (size_t i = 0; i < joints_.size(); ++i)
+        joints_[i]->commanded_effort_ += v[i];
+    }
 
   /// returns true, if all the joints in the tree are calibrated
   bool allCalibrated() const
@@ -216,13 +224,13 @@ public:
 
   /// get a KDL::Tree object that respresents the tree
   void toKdl(KDL::Tree &tree) const
-  {
+             {
     tree = kdl_tree_;
   }
 
   /// returns a pointer to the joint state of a joint in the list of the tree's actuated joints (index starts at 0)
   JointState* getJoint(unsigned int actuated_joint_i) const
-  {
+                       {
     if (actuated_joint_i >= joints_.size())
       return NULL;
     else
@@ -240,7 +248,6 @@ private:
   /// a vector of pointers to joint states; includes only the ones that can be actuated (not fixed joints)
   std::vector<JointState*> joints_;
 };
-
 
 } // namespace
 

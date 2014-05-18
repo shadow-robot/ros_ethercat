@@ -353,12 +353,6 @@ EthercatDevice::EthercatDevice() : use_ros_(true)
   }    
 }
 
-EthercatDevice::~EthercatDevice()
-{
-  delete sh_->get_fmmu_config();
-  delete sh_->get_pd_config();
-}
-
 void EthercatDevice::collectDiagnostics(EthercatCom *com)
 {
   // Really, should not need this lock, since there should only be one thread updating diagnostics.

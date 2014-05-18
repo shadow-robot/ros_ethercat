@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 // fixme include copyright notice
 
 #ifndef __ethercat_ds_h
@@ -38,33 +37,41 @@
 
 /// Base class for all EtherCAT register area data structs
 /** The main purpose of this class is to serialize and deserialize
-    data.
-*/
+ data.
+ */
 class EC_DataStruct
 {
- public:
+public:
   /// Constructor
   /** @param a_data_length data length expressed as a number of bytes
    */
-  EC_DataStruct(size_t a_data_length) : m_data_length(a_data_length){};
+  EC_DataStruct(size_t a_data_length) :
+      m_data_length(a_data_length)
+  {
+  }
 
   /// Destructor
-  virtual ~EC_DataStruct(){};
+  virtual ~EC_DataStruct()
+  {
+  }
 
   // default copy constructor will do...
 
   /// Return length of data array expressed as a number of bytes
   /** @return the number of bytes
    */
-  size_t length() const {return m_data_length;} 
+  size_t length() const
+  {
+    return m_data_length;
+  }
 
   /// Dump the data struct into an array (EtherCAT Little Endian)
   /** @param a_buffer where data should be dumped
-      @return pointer just beyond the array
-  */
+   @return pointer just beyond the array
+   */
   virtual unsigned char * dump(unsigned char * a_buffer) const = 0;
 
- protected:
+protected:
   /// Length of data array expressed as a number of bytes
   size_t m_data_length;
 };

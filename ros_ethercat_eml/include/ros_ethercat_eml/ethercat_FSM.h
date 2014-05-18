@@ -30,13 +30,12 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_fsm__
 #define __ethercat_fsm__
 
 /* Note, this class is supposed to be programmed according to the
-   FSM design Pattern.
-*/
+ FSM design Pattern.
+ */
 
 // forward declarations
 class EtherCAT_AL;
@@ -51,9 +50,9 @@ class EtherCAT_PD_Buffer;
 #include "ros_ethercat_eml/ethercat_slave_memory.h"
 
 /// EtherCAT State Machine Operations
-class EC_ESM_Ops 
+class EC_ESM_Ops
 {
- protected:
+protected:
   /// Start MBX communication
   bool start_mbx_comm();
   /// Stop MBX communication
@@ -67,13 +66,12 @@ class EC_ESM_Ops
   /// Stop Output update
   bool stop_output_update();
 
-  virtual ~EC_ESM_Ops(){};
- protected:
+  protected:
   /// Constructor
   /** @param a_SH pointer to slave handler
    */
   EC_ESM_Ops(EtherCAT_SlaveHandler * a_SH);
-  
+
   EtherCAT_DataLinkLayer * m_dll_instance;
   EC_Logic * m_logic_instance;
   EtherCAT_SlaveHandler * m_SH;
@@ -82,9 +80,9 @@ class EC_ESM_Ops
 
   /// Change state of Slave
   /** @return true if succeeded
-      @pre The station address of the slave is set (this function uses
-      npwr telegrams!
-  */
+   @pre The station address of the slave is set (this function uses
+   npwr telegrams!
+   */
   bool set_state(EC_State a_state);
 };
 
@@ -101,21 +99,24 @@ class EC_ESM_OpState;
 class EC_ESM_State
 {
   friend class EC_ESM;
-  
- public:
-  virtual ~EC_ESM_State(){};
+
+public:
+  virtual ~EC_ESM_State()
+  {
+  }
+
   /// Change the state of an EtherCAT state machine
   /** @param a_ESM pointer to the EtherCAT state machine
-      @param a_state to which state?  Possibilities are
-      - EC_INIT_STATE = 0x01,
-      - EC_PREOP_STATE = 0x02,
-      - EC_BOOTSTRAP_STATE = 0x03,
-      - EC_SAFEOP_STATE = 0x04,
-      - EC_OP_STATE = 0x08
-  */
-  virtual bool to_state(EC_ESM * a_ESM, EC_State a_state) = 0;  
-  virtual EC_State get_state( ) const = 0;
- protected:
+   @param a_state to which state?  Possibilities are
+   - EC_INIT_STATE = 0x01,
+   - EC_PREOP_STATE = 0x02,
+   - EC_BOOTSTRAP_STATE = 0x03,
+   - EC_SAFEOP_STATE = 0x04,
+   - EC_OP_STATE = 0x08
+   */
+  virtual bool to_state(EC_ESM * a_ESM, EC_State a_state) = 0;
+  virtual EC_State get_state() const = 0;
+  protected:
   static EC_ESM_InitState initState;
   static EC_ESM_PreOpState preopState;
   static EC_ESM_SafeOpState safeopState;
@@ -124,11 +125,11 @@ class EC_ESM_State
 
 /// EtherCAT State Machine
 /** @todo Unexpected transitions in the state of the slave (via slaves
-    application, only for complex slaves) are not dealt with for
-    now...  This should probably be fixed using a special mailbox msg or a polling
-    mechanism but AFAIS this is undocumented in the spec (see
-    8.2.4.4.6 Stop output update)...
-*/
+ application, only for complex slaves) are not dealt with for
+ now...  This should probably be fixed using a special mailbox msg or a polling
+ mechanism but AFAIS this is undocumented in the spec (see
+ 8.2.4.4.6 Stop output update)...
+ */
 class EC_ESM : public EC_ESM_Ops
 {
   friend class EC_ESM_State;
@@ -137,59 +138,66 @@ class EC_ESM : public EC_ESM_Ops
   friend class EC_ESM_SafeOpState;
   friend class EC_ESM_OpState;
 
- public:
+public:
   /// State Transitions
   /** @param a_state state to go to. Possibilities are
-      - EC_INIT_STATE = 0x01,
-      - EC_PREOP_STATE = 0x02,
-      - EC_BOOTSTRAP_STATE = 0x03,
-      - EC_SAFEOP_STATE = 0x04,
-      - EC_OP_STATE = 0x08
-  */
-  bool to_state(EC_State a_state){ return (m_esm_state->to_state(this,a_state)); }
-  
-  EC_State get_state() { return m_esm_state->get_state(); } 
+   - EC_INIT_STATE = 0x01,
+   - EC_PREOP_STATE = 0x02,
+   - EC_BOOTSTRAP_STATE = 0x03,
+   - EC_SAFEOP_STATE = 0x04,
+   - EC_OP_STATE = 0x08
+   */
+  bool to_state(EC_State a_state)
+  {
+    return (m_esm_state->to_state(this, a_state));
+  }
 
-  virtual ~EC_ESM(){};
-  
- protected:
+  EC_State get_state()
+  {
+    return m_esm_state->get_state();
+  }
+
+protected:
   /// Set the internal state
-  void setState(EC_ESM_State * a_esm_state){ m_esm_state = a_esm_state; }
+  void setState(EC_ESM_State * a_esm_state)
+  {
+    m_esm_state = a_esm_state;
+  }
 
   /// Constructor
   /** @param a_SH pointer to Slave Handler this FSM concerns
    */
   EC_ESM(EtherCAT_SlaveHandler * a_SH);
 
- private:
+private:
   EC_ESM_State * m_esm_state;
 };
 
 class EC_ESM_InitState : public EC_ESM_State
 {
- public:
-  virtual EC_State get_state( ) const;
+public:
+  virtual EC_State get_state() const;
   virtual bool to_state(EC_ESM * a_ESM, EC_State a_state);
 };
 
 class EC_ESM_PreOpState : public EC_ESM_State
 {
- public:
-  virtual EC_State get_state( ) const;
+public:
+  virtual EC_State get_state() const;
   virtual bool to_state(EC_ESM * a_ESM, EC_State a_state);
 };
 
 class EC_ESM_SafeOpState : public EC_ESM_State
 {
- public:
-  virtual EC_State get_state( ) const;
+public:
+  virtual EC_State get_state() const;
   virtual bool to_state(EC_ESM * a_ESM, EC_State a_state);
 };
 
 class EC_ESM_OpState : public EC_ESM_State
 {
- public:
-  virtual EC_State get_state( ) const;
+public:
+  virtual EC_State get_state() const;
   virtual bool to_state(EC_ESM * a_ESM, EC_State a_state);
 };
 

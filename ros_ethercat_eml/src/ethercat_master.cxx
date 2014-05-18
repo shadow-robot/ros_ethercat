@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #include "ros_ethercat_eml/ethercat_master.h"
 #include "ros_ethercat_eml/ethercat_AL.h"
 #include "ros_ethercat_eml/ethercat_router.h"
@@ -47,7 +46,8 @@ EtherCAT_Master * EtherCAT_Master::m_instance = 0;
 EtherCAT_Master *
 EtherCAT_Master::instance()
 {
-  if (!m_instance) {
+  if (!m_instance)
+  {
     m_instance = new EtherCAT_Master();
   }
   return m_instance;
@@ -60,21 +60,16 @@ EtherCAT_Master::EtherCAT_Master()
   m_pdbuf_instance = EtherCAT_PD_Buffer::instance();
 }
 
-EtherCAT_Master::~EtherCAT_Master(){}
-
 EtherCAT_SlaveHandler *
 EtherCAT_Master::get_slave_handler(EC_FixedStationAddress address)
 {
   return m_al_instance->get_slave_handler(address);
 }
 
-
 bool
 EtherCAT_Master::txandrx_PD(size_t datalen,
-			    unsigned char * data)
+                            unsigned char * data)
 {
-  return m_pdbuf_instance->txandrx(datalen,data);
+  return m_pdbuf_instance->txandrx(datalen, data);
 }
-
-
 

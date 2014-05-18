@@ -40,21 +40,23 @@
 
 #include <ros/ros.h>
 
-namespace ros_ethercat_model{
+namespace ros_ethercat_model
+{
 
-
-class ActuatorState{
+class ActuatorState
+{
 public:
   ActuatorState() :
       device_id_(0),
-      position_(0),
-      velocity_(0),
-      last_commanded_current_(0),
-      last_measured_current_(0),
-      last_commanded_effort_(0),
-      last_measured_effort_(0),
-      motor_voltage_(0)
-  {}
+          position_(0),
+          velocity_(0),
+          last_commanded_current_(0),
+          last_measured_current_(0),
+          last_commanded_effort_(0),
+          last_measured_effort_(0),
+          motor_voltage_(0)
+  {
+  }
 
   int device_id_; //!< Position in EtherCAT chain
 
@@ -76,8 +78,9 @@ class ActuatorCommand
 {
 public:
   ActuatorCommand() :
-    enable_(0), effort_(0)
-  {}
+      enable_(0), effort_(0)
+  {
+  }
 
   bool enable_; //!< Enable this actuator
   double effort_; //!< Force to apply (in Nm)

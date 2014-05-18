@@ -30,14 +30,14 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_mbx__
 #define __ethercat_mbx__
 
 #include "ros_ethercat_eml/ethercat_defs.h"
 #include "ros_ethercat_eml/ethercat_slave_memory.h"
 
-typedef enum {
+typedef enum
+{
   EC_AoE = 0x01, // ADS over EtherCAT
   EC_EoE = 0x02, // Ethernet over EtherCAT
   EC_CoE = 0x03, // CANOpen over EtherCAT
@@ -47,43 +47,53 @@ typedef enum {
 /// EtherCAT Mbx Message type
 class EC_MbxMsgType
 {
- public:
+public:
   /// Constructor
   /** @param type Message type:  Possibilities include
-      - EC_AoE (ADS over EtherCAT),
-      - EC_EoE (Ethernet over EtherCAT)
-      - EC_CoE (CANOpen over EtherCAT)
-      - EC_FoE (File Access over EtherCAT)
-  */
-  EC_MbxMsgType(ECMbxMsgType type = EC_CoE) : msg_type(type){};
-  virtual ~EC_MbxMsgType(){};
+   - EC_AoE (ADS over EtherCAT),
+   - EC_EoE (Ethernet over EtherCAT)
+   - EC_CoE (CANOpen over EtherCAT)
+   - EC_FoE (File Access over EtherCAT)
+   */
+  EC_MbxMsgType(ECMbxMsgType type = EC_CoE) :
+      msg_type(type)
+  {
+  }
+
   /// Cast operator
-  operator uint8_t() const {return msg_type;}
- private:
+  operator uint8_t() const
+  {
+    return msg_type;
+  }
+private:
   uint8_t msg_type;
 };
 
 /// EtherCAT Mbx Message Priority
 class EC_MbxMsgPriority
 {
- public:
+public:
   /// Constructor
   /** @param priority priority of the msg (from 0 to 3 is allowed,
-      with 3 the max Priority)
-  */
+   with 3 the max Priority)
+   */
   EC_MbxMsgPriority(uint8_t priority = 0x00)
+  {
+    if (priority < 4)
+      msg_priority = priority;
+    else
     {
-      if(priority < 4)
-	msg_priority = priority;
-      else {
-	ec_log(EC_LOG_WARNING, "EC_MbxMsgPriority: Max Priority is 0x03, using 0x03\n");
-	msg_priority = 0x03;
-      }
+      ec_log(EC_LOG_WARNING, "EC_MbxMsgPriority: Max Priority is 0x03, using 0x03\n");
+      msg_priority = 0x03;
     }
-  virtual ~EC_MbxMsgPriority(){};
+  }
+
   /// Cast operator
-  operator uint8_t() const {return msg_priority;}
- private:
+  operator uint8_t() const
+  {
+    return msg_priority;
+  }
+private:
   uint8_t msg_priority;
 };
 
@@ -94,41 +104,43 @@ static const size_t EC_MBXMSG_HDR_SIZE = 6;
 class EC_MbxMsgHdr : public EC_DataStruct
 {
   friend class EtherCAT_Router;
-  
- public:
+
+public:
   /// Constructor
   /** @param a_length Length of the MbxMsg
-      @param a_address 
-      - For Master/Slave and Slave/Master communication: Address of
-      destination.
-      - For slave to slave communication (routing by Master).  Slave
-        puts station address of destination (it must therefore now this
-	address!) so master knows where to send it.  Master (in the
-	router) alters address field so destination slave knows where
-	the message came from.
-      @param a_priority Priority of this message
-      @param a_type Type of this Message (higher level protocol)
-  */
-  EC_MbxMsgHdr(uint16_t a_length, 
-		EC_FixedStationAddress a_address,
-		EC_MbxMsgPriority a_priority,
-		EC_MbxMsgType a_type)
-    : EC_DataStruct(EC_MBXMSG_HDR_SIZE),
-    m_length(a_length), m_address(a_address), 
-    m_priority(a_priority), m_type(a_type){};
-  
+   @param a_address
+   - For Master/Slave and Slave/Master communication: Address of
+   destination.
+   - For slave to slave communication (routing by Master).  Slave
+   puts station address of destination (it must therefore now this
+   address!) so master knows where to send it.  Master (in the
+   router) alters address field so destination slave knows where
+   the message came from.
+   @param a_priority Priority of this message
+   @param a_type Type of this Message (higher level protocol)
+   */
+  EC_MbxMsgHdr(uint16_t a_length,
+               EC_FixedStationAddress a_address,
+               EC_MbxMsgPriority a_priority,
+               EC_MbxMsgType a_type)
+  :
+      EC_DataStruct(EC_MBXMSG_HDR_SIZE),
+          m_length(a_length), m_address(a_address),
+          m_priority(a_priority), m_type(a_type)
+  {
+  }
+
   /// Constructor from data array
   EC_MbxMsgHdr(const unsigned char * a_buffer);
-  virtual ~EC_MbxMsgHdr(){};
 
   virtual unsigned char * dump(unsigned char * a_buffer) const;
 
- public:
-  uint16_t  m_length;
+public:
+  uint16_t m_length;
   EC_FixedStationAddress m_address;
   // uint8_t  m_channel; 6 bits unused for now...;
-  EC_MbxMsgPriority  m_priority;
-  EC_MbxMsgType      m_type;
+  EC_MbxMsgPriority m_priority;
+  EC_MbxMsgType m_type;
   // uint16_t reserved : 4;
 };
 
@@ -136,24 +148,32 @@ class EC_MbxMsgHdr : public EC_DataStruct
 class EtherCAT_MbxMsg
 {
   friend class EtherCAT_Router;
-  
- public:
+
+public:
   /// Constructor
   EtherCAT_MbxMsg(EC_MbxMsgHdr a_hdr, unsigned char * a_MbxMsgdata)
-    : m_hdr(a_hdr), m_MbxMsgdata(a_MbxMsgdata){}
+  :
+      m_hdr(a_hdr), m_MbxMsgdata(a_MbxMsgdata)
+  {
+  }
   EtherCAT_MbxMsg(uint16_t a_length, uint16_t a_address,
-		  EC_MbxMsgPriority a_priority,
-		  EC_MbxMsgType a_type,
-		  unsigned char * a_MbxMsgdata)
-    : m_hdr(a_length,a_address,a_priority,a_type), m_MbxMsgdata(a_MbxMsgdata){}
+                  EC_MbxMsgPriority a_priority,
+                  EC_MbxMsgType a_type,
+                  unsigned char * a_MbxMsgdata)
+  :
+      m_hdr(a_length, a_address, a_priority, a_type), m_MbxMsgdata(a_MbxMsgdata)
+  {
+  }
   EtherCAT_MbxMsg(const unsigned char * a_buffer);
 
-  virtual ~EtherCAT_MbxMsg(){};
+  virtual ~EtherCAT_MbxMsg()
+  {
+  }
 
   /// Dump msg to buffer for sending...
   virtual unsigned char * dump(unsigned char * a_buffer) const;
 
- protected:
+protected:
   /// MbxMsg header
   EC_MbxMsgHdr m_hdr;
   /// MbxMsg data
@@ -165,22 +185,23 @@ class EtherCAT_MbxMsg
 /// EtherCAT Mailbox
 class EtherCAT_Mbx
 {
- public:
+public:
   /// Write a message to the mailbox
   bool write(EtherCAT_MbxMsg * a_msg);
   /// Read a message from the mailbox
-  bool read(EtherCAT_MbxMsg * a_msg);  
+  bool read(EtherCAT_MbxMsg * a_msg);
 
-  EtherCAT_Mbx(){};
-  virtual ~EtherCAT_Mbx(){};
- protected:
+  EtherCAT_Mbx()
+  {
+  }
 };
 
 // ==================================================
 // CANopen over EtherCAT
 // ==================================================
 
-typedef enum {
+typedef enum
+{
   CANopen_Emergency = 0x01,
   CANopen_SDORequest = 0x02,
   CANopen_SDOResponse = 0x03,
@@ -194,26 +215,31 @@ typedef enum {
 /// CANOpen Service
 class CANopen_Service
 {
- public:
+public:
   /// Constructor
   /** @param a_service CanOpen Service.  Possibilities are
-      - CANopen_Emergency, 
-      - CANopen_SDORequest, 
-      - CANopen_SDOResponse,
-      - CANopen_txPDO, 
-      - CANopen_rxPDO, 
-      - CANopen_txPDORemoteReq,
-      - CANopen_rxPDORemoteReq, 
-      - CANopen_SDOInformation
+   - CANopen_Emergency,
+   - CANopen_SDORequest,
+   - CANopen_SDOResponse,
+   - CANopen_txPDO,
+   - CANopen_rxPDO,
+   - CANopen_txPDORemoteReq,
+   - CANopen_rxPDORemoteReq,
+   - CANopen_SDOInformation
    */
   CANopen_Service(CANopenService a_service = CANopen_Emergency)
-    : m_service(a_service){}
+  :
+      m_service(a_service)
+  {
+  }
 
-  virtual ~CANopen_Service(){};
   /// Cast operator
-  operator uint8_t() const { return m_service; }
+  operator uint8_t() const
+  {
+    return m_service;
+  }
 
- private:
+private:
   CANopenService m_service;
 };
 
@@ -222,18 +248,21 @@ static const size_t EC_MBXMSG_COE_HDR_SIZE = 2;
 /// CANopen over EtherCAT Mailbox Message header
 class EC_CoE_Hdr : public EC_DataStruct
 {
- public:
+public:
   /// Constructor
   /** @param a_service CanOpen Service
-  */
+   */
   EC_CoE_Hdr(CANopen_Service a_service = CANopen_Emergency) :
-    EC_DataStruct(EC_MBXMSG_COE_HDR_SIZE),
-    m_service(a_service){};
+      EC_DataStruct(EC_MBXMSG_COE_HDR_SIZE),
+          m_service(a_service)
+  {
+  }
+
   EC_CoE_Hdr(const unsigned char * a_buffer);
-  virtual ~EC_CoE_Hdr(){};
+
   virtual unsigned char * dump(unsigned char * a_buffer) const;
 
- private:
+private:
   // FIXME meaning of these is nog clear from spec
   // Number Low: 8 bits depending on CANopen service
   // Number High: 1 bit depending on CANopen service
@@ -243,21 +272,27 @@ class EC_CoE_Hdr : public EC_DataStruct
 /// CANopen over EtherCAT Mailbox Message
 class EtherCAT_CoE_MbxMsg : public EtherCAT_MbxMsg
 {
- public:
-  EtherCAT_CoE_MbxMsg(EC_MbxMsgHdr a_hdr, 
-		      EC_CoE_Hdr a_CoE_hdr,
-		      unsigned char * a_MbxMsgdata)
-    : EtherCAT_MbxMsg(a_hdr,a_MbxMsgdata), m_CoE_Hdr(a_CoE_hdr){}
+public:
+  EtherCAT_CoE_MbxMsg(EC_MbxMsgHdr a_hdr,
+                      EC_CoE_Hdr a_CoE_hdr,
+                      unsigned char * a_MbxMsgdata)
+  :
+      EtherCAT_MbxMsg(a_hdr, a_MbxMsgdata), m_CoE_Hdr(a_CoE_hdr)
+  {
+  }
   EtherCAT_CoE_MbxMsg(uint16_t a_length, uint16_t a_address,
-		      EC_MbxMsgPriority a_priority,
-		      EC_MbxMsgType a_type,
-		      CANopen_Service a_service,
-		      unsigned char * a_MbxMsgdata)
-    : EtherCAT_MbxMsg(a_length,a_address,a_priority,a_type,a_MbxMsgdata), m_CoE_Hdr(a_service){}
+                      EC_MbxMsgPriority a_priority,
+                      EC_MbxMsgType a_type,
+                      CANopen_Service a_service,
+                      unsigned char * a_MbxMsgdata)
+  :
+      EtherCAT_MbxMsg(a_length, a_address, a_priority, a_type, a_MbxMsgdata), m_CoE_Hdr(a_service)
+  {
+  }
   EtherCAT_CoE_MbxMsg(unsigned char * a_buffer);
 
   virtual unsigned char * dump(unsigned char * a_buffer) const;
- protected:
+  protected:
   EC_CoE_Hdr m_CoE_Hdr;
 };
 
