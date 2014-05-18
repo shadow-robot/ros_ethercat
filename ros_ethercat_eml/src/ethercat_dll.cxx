@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #include <string.h>
 #include "ros_ethercat_eml/ethercat_log.h"
 #include "ros_ethercat_eml/ethercat_dll.h"
@@ -42,22 +41,18 @@
 
 #include "unistd.h"
 
-
-
 EtherCAT_DataLinkLayer * EtherCAT_DataLinkLayer::m_instance = 0;
 
 EtherCAT_DataLinkLayer::EtherCAT_DataLinkLayer()
-  : m_if(0)
-{
-}
-
-EtherCAT_DataLinkLayer::~EtherCAT_DataLinkLayer()
+:
+    m_if(0)
 {
 }
 
 EtherCAT_DataLinkLayer * EtherCAT_DataLinkLayer::instance(void)
 {
-  if(!m_instance) {
+  if (!m_instance)
+  {
     m_instance = new EtherCAT_DataLinkLayer();
   }
 
@@ -92,6 +87,4 @@ void EtherCAT_DataLinkLayer::attach(struct netif * netif)
 {
   m_if = netif;
 }
-
-
 

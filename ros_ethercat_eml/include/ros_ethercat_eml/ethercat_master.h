@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #ifndef __ethercat_master__
 #define __ethercat_master__
 
@@ -49,33 +48,31 @@ class EtherCAT_DataLinkLayer;
 /// EtherCAT Master instance
 class EtherCAT_Master
 {
- public:
+public:
   /// This class is a singleton
   static EtherCAT_Master * instance();
-  /// Destructor
-  virtual ~EtherCAT_Master();
 
   /// Get Slave Handler
   /** @return Pointer to slavehandler if found in the network, or NULL
-      otherwise 
-  */
+   otherwise
+   */
   EtherCAT_SlaveHandler * get_slave_handler(EC_FixedStationAddress address);
 
   /// Send Process data
   /** @param datalen number of bytes that should be set
-      @param data pointer to data array.  Data is read, transmitted,
-      and (if the operation succeeded) the received data is put in the 
-      data array.  This happens synchronously with the method call.
-      @return true if msg got true
-  */
+   @param data pointer to data array.  Data is read, transmitted,
+   and (if the operation succeeded) the received data is put in the
+   data array.  This happens synchronously with the method call.
+   @return true if msg got true
+   */
   bool txandrx_PD(size_t datalen,
-		  unsigned char * data);
+                  unsigned char * data);
 
- protected:
+protected:
   /// Constructor (protected)
   EtherCAT_Master();
 
- private:
+private:
   /// Master instance
   static EtherCAT_Master * m_instance;
   /// Pointer to m_AL_instance
@@ -86,10 +83,10 @@ class EtherCAT_Master
   EtherCAT_PD_Buffer * m_pdbuf_instance;
 
   /* If master also has slave functionality, it has its own mailbox
-     and its own address, so slaves can post msgs to it.
-  EtherCAT_Mbx m_mbx;
-  EC_FixedStationAddress m_address;
-  */
+   and its own address, so slaves can post msgs to it.
+   EtherCAT_Mbx m_mbx;
+   EC_FixedStationAddress m_address;
+   */
 
   /// Pointer to logic instance
   EC_Logic * m_logic_instance;

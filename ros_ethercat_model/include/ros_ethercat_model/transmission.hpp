@@ -48,8 +48,6 @@ class RobotState;
 class Transmission
 {
 public:
-  /// Constructor
-  Transmission() {}
 
   /// Destructor
   virtual ~Transmission() {}

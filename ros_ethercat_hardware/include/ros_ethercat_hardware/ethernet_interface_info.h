@@ -53,7 +53,10 @@ struct EthtoolStats
 
 struct InterfaceState
 {
-  InterfaceState() : up_(false), running_(false) {}
+  InterfaceState() :
+      up_(false), running_(false)
+  {
+  }
   bool up_;
   bool running_;
 };
@@ -63,7 +66,7 @@ class EthernetInterfaceInfo
 public:
   EthernetInterfaceInfo();
   void initialize(const std::string &interface);
-  ~EthernetInterfaceInfo();  
+  ~EthernetInterfaceInfo();
 
   /**
    * \brief Collect and append ethernet interface diagnostics
@@ -95,7 +98,6 @@ protected:
   int rx_frame_error_index_;
   int rx_align_error_index_;
 
-
   //! Number of time master link went down
   unsigned lost_link_count_;
 
@@ -103,6 +105,5 @@ protected:
   EthtoolStats orig_stats_;
   InterfaceState last_state_;
 };
-
 
 #endif //ETHERNET_INTERFACE_INFO_H

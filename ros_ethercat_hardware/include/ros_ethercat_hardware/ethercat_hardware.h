@@ -65,15 +65,15 @@
 #include <boost/regex.hpp>
 
 using namespace boost::accumulators;
- 
-struct EthercatHardwareDiagnostics 
+
+struct EthercatHardwareDiagnostics
 {
   EthercatHardwareDiagnostics();
   void resetMaxTiming();
   accumulator_set<double, stats<tag::max, tag::mean> > pack_command_acc_; //!< time taken by all devices packCommand functions
-  accumulator_set<double, stats<tag::max, tag::mean> > txandrx_acc_;      //!< time taken by to transmit and recieve process data
+  accumulator_set<double, stats<tag::max, tag::mean> > txandrx_acc_; //!< time taken by to transmit and recieve process data
   accumulator_set<double, stats<tag::max, tag::mean> > unpack_state_acc_; //!< time taken by all devices updateState functions
-  accumulator_set<double, stats<tag::max, tag::mean> > publish_acc_;      //!< time taken by any publishing step in main loop
+  accumulator_set<double, stats<tag::max, tag::mean> > publish_acc_; //!< time taken by any publishing step in main loop
   double max_pack_command_;
   double max_txandrx_;
   double max_unpack_state_;
@@ -84,7 +84,7 @@ struct EthercatHardwareDiagnostics
   bool halt_after_reset_; //!< True if motor halt soon after motor reset 
   unsigned reset_motors_service_count_; //!< Number of times reset_motor service has been used
   unsigned halt_motors_service_count_;  //!< Number of time halt_motor service call is used
-  unsigned halt_motors_error_count_;    //!< Number of transitions into halt state due to device error
+  unsigned halt_motors_error_count_;  //!< Number of transitions into halt state due to device error
   struct netif_counters counters_;
   bool input_thread_is_stopped_;
   bool motors_halted_; //!< True if motors are halted  
@@ -92,7 +92,6 @@ struct EthercatHardwareDiagnostics
 
   static const bool collect_extra_timing_ = true;
 };
-
 
 /*!
  * \brief Publishes EthercatHardware diagnostics.
@@ -119,10 +118,11 @@ public:
    * \param buffer_size size of proccess data buffer
    * \param number of EtherCAT slave devices
    */
-  void initialize(const string &interface, unsigned int buffer_size, 
+  void initialize(const string &interface, unsigned int buffer_size,
                   const std::vector<boost::shared_ptr<EthercatDevice> > &slaves,
                   unsigned int num_ethercat_devices_,
-                  unsigned timeout, unsigned max_pd_retries);
+                  unsigned timeout,
+                  unsigned max_pd_retries);
 
   /*!
    * \brief Triggers publishing of new diagnostics data
@@ -132,12 +132,12 @@ public:
    * This function will not block.
    */
   void publish(const unsigned char *buffer, const EthercatHardwareDiagnostics &diagnostics);
- 
+
   /*!
    * \brief Stops publishing thread.  May block.
    */
   void stop();
-   
+
 private:
 
   /*!
@@ -156,15 +156,14 @@ private:
    */
   void diagnosticsThreadFunc();
 
-
   /*!
    * \brief Helper function for converting timing for diagnostics
-   */  
+   */
   static void timingInformation(
-        diagnostic_updater::DiagnosticStatusWrapper &status, 
-        const string &key, 
-        const accumulator_set<double, stats<tag::max, tag::mean> > &acc,
-        double max);
+                                diagnostic_updater::DiagnosticStatusWrapper &status,
+                                const string &key,
+                                const accumulator_set<double, stats<tag::max, tag::mean> > &acc,
+                                double max);
 
   ros::NodeHandle node_;
 
@@ -190,7 +189,7 @@ private:
   //! Count of dropped packets last diagnostics cycle
   uint64_t last_dropped_packet_count_;
   //! Time last packet was dropped 0 otherwise.  Used for warning about dropped packets. 
-  ros::Time last_dropped_packet_time_; 
+  ros::Time last_dropped_packet_time_;
   //! Number of seconds since late dropped packet to keep warning 
   static const unsigned dropped_packet_warning_hold_time_ = 10;  //keep warning up for 10 seconds
 
@@ -201,14 +200,14 @@ private:
   diagnostic_updater::DiagnosticStatusWrapper status_;
 };
 
-
 class EthercatHardware
 {
 public:
   /*!
    * \brief Constructor
    */
-  EthercatHardware(const std::string& name, hardware_interface::HardwareInterface *hw, const string &eth, bool allow_unprogrammed);
+  EthercatHardware(const std::string& name, hardware_interface::HardwareInterface *hw,
+                   const string &eth, bool allow_unprogrammed);
 
   /*!
    * \brief Destructor
@@ -232,7 +231,7 @@ public:
    */
   void collectDiagnostics();
 
-  void printCounters(std::ostream &os=std::cout); 
+  void printCounters(std::ostream &os = std::cout);
 
   /*!
    * \brief Send process data
@@ -256,7 +255,8 @@ private:
   static void changeState(EtherCAT_SlaveHandler *sh, EC_State new_state);
 
   void loadNonEthercatDevices();
-  boost::shared_ptr<EthercatDevice> configNonEthercatDevice(const std::string &product_id, const std::string &data);
+  boost::shared_ptr<EthercatDevice> configNonEthercatDevice(const std::string &product_id,
+                                                            const std::string &data);
 
   void haltMotors(bool error, const char* reason);
 
@@ -281,11 +281,12 @@ private:
   bool halt_motors_;
   unsigned int reset_state_;
 
-  unsigned timeout_;        //!< Timeout (in microseconds) to used for sending/recieving packets once in realtime mode.
+  unsigned timeout_; //!< Timeout (in microseconds) to used for sending/recieving packets once in realtime mode.
   unsigned max_pd_retries_; //!< Max number of times to retry sending process data before halting motors
 
-  void publishDiagnostics();  //!< Collects raw diagnostics data and passes it to diagnostics_publisher
-  static void updateAccMax(double &max, const accumulator_set<double, stats<tag::max, tag::mean> > &acc);
+  void publishDiagnostics(); //!< Collects raw diagnostics data and passes it to diagnostics_publisher
+  static void updateAccMax(double &max,
+                           const accumulator_set<double, stats<tag::max, tag::mean> > &acc);
   EthercatHardwareDiagnostics diagnostics_;
   EthercatHardwareDiagnosticsPublisher diagnostics_publisher_;
   ros::Time last_published_;
@@ -293,7 +294,7 @@ private:
 
   realtime_tools::RealtimePublisher<std_msgs::Bool> motor_publisher_;
 
-  EthercatOobCom *oob_com_;  
+  EthercatOobCom *oob_com_;
 
   pluginlib::ClassLoader<EthercatDevice> device_loader_;
 

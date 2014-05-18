@@ -30,7 +30,6 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 // $Id: netif.h,v 1.13 2006/02/20 15:57:33 kgad Exp $
 #ifndef __posix_netif_h__
 #define __posix_netif_h__
@@ -46,10 +45,9 @@ struct netif;
 // Size of MAC adresses expressed as a number of bytes 
 #define MAC_ADDRESS_SIZE 6 
 
- void if_attach(struct netif * netif);
- int framedump(const struct EtherCAT_Frame * frame, unsigned char * buffer, size_t bufferlength);
- int framebuild(struct EtherCAT_Frame * frame, const unsigned char * buffer);
-
+void if_attach(struct netif * netif);
+int framedump(const struct EtherCAT_Frame * frame, unsigned char * buffer, size_t bufferlength);
+int framebuild(struct EtherCAT_Frame * frame, const unsigned char * buffer);
 
 // Number of outstanding packets to keep track of 
 #define PKT_LIST_SIZE 128
@@ -60,9 +58,9 @@ struct netif;
 // Should be < number of RX buffers
 #define MAX_UNCLAIMED_PACKETS (BUF_LIST_SIZE-1)
 
-
 // buffer to hold recieved packets
-struct pkt_buf {
+struct pkt_buf
+{
   // True if the buffer is being used
   bool is_free;
   // buffer for to store ethernet message
@@ -74,17 +72,18 @@ struct pkt_buf {
 //  1. has not received reply
 //      .... OR ....
 //  2. has not been claimed by higher level software
-struct outstanding_pkt {
+struct outstanding_pkt
+{
   // whether this record is holding an outstanding packet or not
   bool is_free;
 
   // pointer to received packet buffer
   // If this is NULL if the packet has not been received
-  struct pkt_buf *buf;  
+  struct pkt_buf *buf;
 
   // The source MAC address is used to keep track of
   // which packet belongs where
-  uint8_t  ether_shost[MAC_ADDRESS_SIZE];
+  uint8_t ether_shost[MAC_ADDRESS_SIZE];
 
   // EtherCAT_Frame that was use to generate the sent packet...
   // The exact same frame must be used to pickup the packet
@@ -126,43 +125,42 @@ struct netif_counters
 
 /// Generic ethercat interface towards lower level drivers. 
 /** It should be readily re-implemented for different OSes such as
-    RTAI, linux, ...     etc. (For the ease of porting the interface
-    is in C).
-*/
-struct netif {
+ RTAI, linux, ...     etc. (For the ease of porting the interface
+ is in C).
+ */
+struct netif
+{
   /// Transmit and receive an EtherCAT frame
   /** Implemented for ecos in low_level_txandrx() in 
-      packages/io/eth/current/src/ethercatmaster/eth_drv.c
-      and mapped in eth_drv_init()
+   packages/io/eth/current/src/ethercatmaster/eth_drv.c
+   and mapped in eth_drv_init()
    */
-  bool (* txandrx)(struct EtherCAT_Frame * frame, struct netif * netif);
+  bool (*txandrx)(struct EtherCAT_Frame * frame, struct netif * netif);
 
   /// Transmit and receive an EtherCAT frame - only attempt to send
   /// frame once
-  bool (* txandrx_once)(struct EtherCAT_Frame * frame, struct netif * netif);
-
+  bool (*txandrx_once)(struct EtherCAT_Frame * frame, struct netif * netif);
 
   /// Transmit frame
   /** Negative return value is an error code, positive and zero is a
-      handle 
-  */
-  int  (* tx)(struct EtherCAT_Frame * frame, struct netif * netif);
-
+   handle
+   */
+  int (*tx)(struct EtherCAT_Frame * frame, struct netif * netif);
 
   /// Recieve frame
   /** May block, returns true if correct frame is recieved 
    */
-  bool (* rx)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
+  bool (*rx)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
 
   /// Drop frame 
   /** Like rx(), but does not fill in frame with result, useful for testing
    */
-  bool (* drop)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
+  bool (*drop)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
 
   /// Recieve frame
   /** Will not block, returns true if correct frame is recieved 
    */
-  bool (* rx_nowait)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
+  bool (*rx_nowait)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
 
   /// The MAC address
   unsigned char hwaddr[MAC_ADDRESS_SIZE];
@@ -190,7 +188,7 @@ struct netif {
 
   /// List of buffers used for packet reception 
   struct pkt_buf buf_list[BUF_LIST_SIZE];
-  
+
   // For thread safety: txandrx() can be called from multiple threads...
   pthread_mutex_t txandrx_mut;
   pthread_mutexattr_t txandrx_attr;

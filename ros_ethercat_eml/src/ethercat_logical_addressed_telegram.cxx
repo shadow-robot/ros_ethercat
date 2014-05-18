@@ -30,32 +30,31 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
 #include <assert.h>
 #include "ros_ethercat_eml/ethercat_logical_addressed_telegram.h"
 
-static const uint8_t LRD  = 0x0a; // Logical Read
-static const uint8_t LWR  = 0x0b; // Logical Write
-static const uint8_t LRW  = 0x0c; // Logical Read-Write
+static const uint8_t LRD = 0x0a; // Logical Read
+static const uint8_t LWR = 0x0b; // Logical Write
+static const uint8_t LRW = 0x0c; // Logical Read-Write
 
 // --------------------------------------------------
 // Logical Addressing Telegram
 // --------------------------------------------------
 
 #define LA_TG Logical_Addressing_Telegram
-LA_TG::LA_TG(uint8_t a_idx, uint32_t a_adr,
-	     uint16_t a_wkc, uint16_t a_datalen, 
-	     const unsigned char * a_data)
-  : EC_Telegram(a_datalen, a_data, a_idx, a_wkc),
-    m_adr(a_adr)
+LA_TG ::LA_TG(uint8_t a_idx, uint32_t a_adr,
+              uint16_t a_wkc,
+              uint16_t a_datalen,
+              const unsigned char * a_data)
+:
+    EC_Telegram(a_datalen, a_data, a_idx, a_wkc),
+        m_adr(a_adr)
 {
 }
 
-LA_TG::~LA_TG(){}
-
-unsigned char * 
+unsigned char *
 LA_TG::dump_header_head(unsigned char * a_buffer) const
-{
+                        {
   a_buffer = this->dump_command_field(a_buffer);
   a_buffer = host2nw(a_buffer, m_idx);
   a_buffer = host2nw(a_buffer, m_adr);
@@ -65,35 +64,34 @@ LA_TG::dump_header_head(unsigned char * a_buffer) const
 const unsigned char * LA_TG::build_header_head(const unsigned char * a_buffer)
 {
   a_buffer = this->build_command_field(a_buffer);
-  
-  if (this->check_index(a_buffer) == true){
+
+  if (this->check_index(a_buffer) == true)
+  {
     a_buffer++;
     // Read ADR (Fixme, check if not altered)
     a_buffer = nw2host(a_buffer, m_adr);
     // Leave pointer at the start of the data field
     return a_buffer;
   }
-  else return NULL;
+  else
+    return NULL;
 }
 
 // --------------------------------------------------
 // Logical Read Telegram
 // --------------------------------------------------
-LRD_Telegram::LRD_Telegram(uint8_t a_idx,  uint32_t a_adr, 
-			   uint16_t a_wkc, uint16_t a_datalen, 
-			   const unsigned char * a_data)
-  : LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
+LRD_Telegram::LRD_Telegram(uint8_t a_idx, uint32_t a_adr,
+                           uint16_t a_wkc,
+                           uint16_t a_datalen,
+                           const unsigned char * a_data)
+:
+    LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
 {
 }
 
-
-LRD_Telegram::~LRD_Telegram()
-{
-}
-
-unsigned char * 
+unsigned char *
 LRD_Telegram::dump_command_field(unsigned char * a_buffer) const
-{
+                                 {
   a_buffer = host2nw(a_buffer, LRD);
   return a_buffer;
 }
@@ -107,21 +105,18 @@ const unsigned char * LRD_Telegram::build_command_field(const unsigned char * a_
 // --------------------------------------------------
 // Logical Write Telegram
 // --------------------------------------------------
-LWR_Telegram::LWR_Telegram(uint8_t a_idx,  uint32_t a_adr, 
-			   uint16_t a_wkc, uint16_t a_datalen, 
-			   const unsigned char * a_data)
-  : LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
+LWR_Telegram::LWR_Telegram(uint8_t a_idx, uint32_t a_adr,
+                           uint16_t a_wkc,
+                           uint16_t a_datalen,
+                           const unsigned char * a_data)
+:
+    LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
 {
 }
 
-
-LWR_Telegram::~LWR_Telegram()
-{
-}
-
-unsigned char * 
+unsigned char *
 LWR_Telegram::dump_command_field(unsigned char * a_buffer) const
-{
+                                 {
   a_buffer = host2nw(a_buffer, LWR);
   return a_buffer;
 }
@@ -132,25 +127,21 @@ const unsigned char * LWR_Telegram::build_command_field(const unsigned char * a_
   return ++a_buffer;
 }
 
-
 // --------------------------------------------------
 // Logical Read Write Telegram
 // --------------------------------------------------
-LRW_Telegram::LRW_Telegram(uint8_t a_idx,  uint32_t a_adr, 
-			   uint16_t a_wkc, uint16_t a_datalen, 
-			   const unsigned char * a_data)
-  : LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
+LRW_Telegram::LRW_Telegram(uint8_t a_idx, uint32_t a_adr,
+                           uint16_t a_wkc,
+                           uint16_t a_datalen,
+                           const unsigned char * a_data)
+:
+    LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
 {
 }
 
-
-LRW_Telegram::~LRW_Telegram()
-{
-}
-
-unsigned char * 
+unsigned char *
 LRW_Telegram::dump_command_field(unsigned char * a_buffer) const
-{
+                                 {
   a_buffer = host2nw(a_buffer, LRW);
   return a_buffer;
 }
@@ -160,5 +151,4 @@ const unsigned char * LRW_Telegram::build_command_field(const unsigned char * a_
   assert(a_buffer[0] == LRW);
   return ++a_buffer;
 }
-
 
