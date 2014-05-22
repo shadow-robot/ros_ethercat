@@ -14,13 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
 )
 
-find_package(Boost REQUIRED COMPONENTS system thread)
-include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 catkin_package(
 DEPENDS
-    tinyxml
-    urdfdom
 CATKIN_DEPENDS
     roscpp
     std_msgs
@@ -33,17 +30,16 @@ CATKIN_DEPENDS
     pluginlib
 )
 
-add_executable(${PROJECT_NAME}
-   src/main.cpp)
-target_link_libraries(${PROJECT_NAME} rt ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} rt ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS ${PROJECT_NAME}
-   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(DIRECTORY scripts/${PROJECT_NAME}/
+install(PROGRAMS scripts/${PROJECT_NAME}/ros_grant
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

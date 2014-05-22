@@ -10,15 +10,22 @@ find_package(catkin REQUIRED COMPONENTS
     urdf
     kdl_parser
     pr2_mechanism_msgs
+    cmake_modules
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
-include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+find_package(TinyXML REQUIRED)
+
+include_directories(include
+    ${Boost_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+    ${TinyXML_INCLUDE_DIRS})
 
 catkin_package(
 DEPENDS
     tinyxml
     urdfdom
+    Boost
 CATKIN_DEPENDS
     roscpp
     hardware_interface
