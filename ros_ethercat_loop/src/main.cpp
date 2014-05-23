@@ -318,7 +318,8 @@ void *controlLoop(void *)
   static pthread_t diagnosticThread;
   int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ec_);
   if (rv != 0)
-    return terminate_control(&publisher, rtpublisher, "Unable to create control thread: rv = %d", rv);
+    return terminate_control(&publisher, rtpublisher,
+            "Unable to create control thread: rv = %s", boost::lexical_cast<string>(rv).c_str());
 
   // Set to realtime scheduler for this thread
   struct sched_param thread_param;
