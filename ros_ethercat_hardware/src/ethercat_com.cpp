@@ -37,17 +37,6 @@
 #include <errno.h>
 #include <assert.h>
 
-EthercatDirectCom::EthercatDirectCom(EtherCAT_DataLinkLayer *dll) :
-    dll_(dll)
-{
-  assert(dll_ != NULL);
-}
-
-EthercatDirectCom::~EthercatDirectCom()
-{
-  dll_ = NULL;
-}
-
 bool EthercatDirectCom::txandrx_once(struct EtherCAT_Frame * frame)
 {
   assert(frame!=NULL);
@@ -98,9 +87,7 @@ EthercatOobCom::EthercatOobCom(struct netif *ni) :
   }
   error = pthread_cond_init(&busy_cond_, NULL);
   if (error != 0)
-  {
     fprintf(stderr, "%s : Initializing busy condition failed : %d\n", __func__, error);
-  }
   return;
 }
 
@@ -122,9 +109,7 @@ bool EthercatOobCom::trylock(unsigned line)
   if (0 != (error = pthread_mutex_trylock(&mutex_)))
   {
     if (error != EBUSY)
-    {
       fprintf(stderr, "%s : lock %d at %d\n", __func__, error, line);
-    }
     return false;
   }
   line_ = line;
@@ -169,9 +154,7 @@ bool EthercatOobCom::txandrx_once(struct EtherCAT_Frame * frame)
   // Packet has been sent, wait for recv
   bool success = false;
   if (handle_ >= 0)
-  {
     success = ni_->rx(frame_, ni_, handle_);
-  }
   handle_ = -1;
 
   // Allow other threads to send data
@@ -190,9 +173,7 @@ bool EthercatOobCom::txandrx(struct EtherCAT_Frame * frame)
   for (unsigned tries = 0; tries < MAX_TRIES; ++tries)
   {
     if (this->txandrx_once(frame))
-    {
       return true;
-    }
   }
   return false;
 }
@@ -214,4 +195,3 @@ void EthercatOobCom::tx()
 
   unlock(__LINE__);
 }
-

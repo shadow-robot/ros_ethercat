@@ -61,7 +61,6 @@ static struct
 {
   char *program_;
   char *interface_;
-  char *xml_;
   char *rosparam_;
   bool allow_unprogrammed_;
   bool stats_;
@@ -77,7 +76,6 @@ void Usage(const string &msg = "")
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
   fprintf(stderr, "    -p, --period                RT loop period in msec\n");
   fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/realtime\" in seconds\n");
-  fprintf(stderr, "    -x, --xml <file>            Load the robot description from this file\n");
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
   fprintf(stderr, "    -u, --allow_unprogrammed    Allow control loop to run with unprogrammed devices\n");
   fprintf(stderr, "    -h, --help                  Print this message and exit\n");
@@ -108,7 +106,7 @@ static struct
   double overrun_ec;
   double overrun_cm;
 
-  // These values are set when realtime loop does not meet performace expections
+  // These values are set when realtime loop does not meet performance expectations
   bool rt_loop_not_making_timing;
   double halt_rt_loop_frequency;
   double rt_loop_frequency;
@@ -283,7 +281,7 @@ void *controlLoop(void *)
   unsigned rt_cycle_count = 0;
   double last_rt_monitor_time;
 
-  // Calculate realtime loop frequency every 200mseec
+  // Calculate realtime loop frequency every 200msec
   double rt_loop_monitor_period = 0.2;
   // Keep history of last 3 calculation intervals.
   RTLoopHistory rt_loop_history(3, 1000.0);
@@ -294,39 +292,17 @@ void *controlLoop(void *)
   // Load robot description
   TiXmlDocument xml;
   struct stat st;
-  if (g_options.rosparam_ != NULL)
-  {
-    if (ros::param::get(g_options.rosparam_, g_robot_desc))
-      xml.Parse(g_robot_desc.c_str());
-    else
-      return terminate_control(&publisher,
-                               rtpublisher,
-                               "Could not load the xml from parameter server: %s",
-                               g_options.rosparam_);
-  }
-  else if (0 == stat(g_options.xml_, &st))
-    xml.LoadFile(g_options.xml_);
+
+  if (ros::param::get(g_options.rosparam_, g_robot_desc))
+    xml.Parse(g_robot_desc.c_str());
   else
-  {
-    // In ROS Galapagos remove this fall-back to rosparam functionality
-    ROS_INFO("Xml file not found, reading from parameter server");
-    ros::NodeHandle top_level_node;
-    if (top_level_node.getParam(g_options.xml_, g_robot_desc))
-    {
-      xml.Parse(g_robot_desc.c_str());
-      ROS_WARN("Using -x to load robot description from parameter server is depricated.  Use -r instead.");
-    }
-    else
-      return terminate_control(&publisher,
-                               rtpublisher,
-                               "Could not load the xml from parameter server: %s",
-                               g_options.xml_);
-  }
+    return terminate_control(&publisher, rtpublisher,
+                             "Could not load the xml from parameter server: %s", g_options.rosparam_);
 
   root_element = xml.RootElement();
   root = xml.FirstChildElement("robot");
   if (!root || !root_element)
-    return terminate_control(&publisher, rtpublisher, "Could not parse the xml from %s", g_options.xml_);
+    return terminate_control(&publisher, rtpublisher, "Failed to parse the xml from %s", g_options.rosparam_);
 
   // Initialize the hardware interface
   ros::NodeHandle nh;
@@ -342,10 +318,7 @@ void *controlLoop(void *)
   static pthread_t diagnosticThread;
   int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ec_);
   if (rv != 0)
-    return terminate_control(&publisher,
-                             rtpublisher,
-                             "Unable to create control thread: rv = %s",
-                             boost::lexical_cast<string>(rv).c_str());
+    return terminate_control(&publisher, rtpublisher, "Unable to create control thread: rv = %d", rv);
 
   // Set to realtime scheduler for this thread
   struct sched_param thread_param;
@@ -459,13 +432,10 @@ void *controlLoop(void *)
     g_stats.jitter_acc(jitter);
 
     // Publish realtime loops statistics, if requested
-    if (rtpublisher)
+    if (rtpublisher && rtpublisher->trylock())
     {
-      if (rtpublisher->trylock())
-      {
-        rtpublisher->msg_.data  = jitter;
-        rtpublisher->unlockAndPublish();
-      }
+      rtpublisher->msg_.data  = jitter;
+      rtpublisher->unlockAndPublish();
     }
   }
 
@@ -502,16 +472,7 @@ static const char* PIDDIR = "/var/tmp/run/";
 string generatePIDFilename(const char* interface)
 {
   string filename;
-  if (interface != NULL)
-  {
-    // There should be a lock file for each EtherCAT interface instead of for entire computer
-    // It is entirely possible to have different EtherCAT utilities operating independently
-    // on different interfaces
-    filename = string(PIDDIR) + "EtherCAT_" +  string(interface) + ".pid";
-  }
-  else
-    filename = string(PIDDIR) + string("ros_etherCAT.pid");
-
+  filename = string(PIDDIR) + "EtherCAT_" +  string(interface) + ".pid";
   return filename;
 }
 
@@ -612,7 +573,7 @@ int main(int argc, char *argv[])
   // Keep the kernel from swapping us out
   if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
   {
-    perror("mlockall");
+    perror("Failed to lock memory. It is recommended to do rosrun ros_ethercat_loop ros_grant");
     exit(EXIT_FAILURE);
   }
 
@@ -621,9 +582,9 @@ int main(int argc, char *argv[])
 
   // Parse options
   g_options.program_ = argv[0];
-  g_options.xml_ = NULL;
   g_options.rosparam_ = NULL;
   g_options.period = 1e+6; // 1 ms in nanoseconds
+  
   while (true)
   {
     static struct option long_options[] = {
@@ -631,7 +592,6 @@ int main(int argc, char *argv[])
       {"stats", no_argument, 0, 's'},
       {"allow_unprogrammed", no_argument, 0, 'u'},
       {"interface", required_argument, 0, 'i'},
-      {"xml", required_argument, 0, 'x'},
       {"rosparam", required_argument, 0, 'r'},
       {"period", no_argument, 0, 'p'},
     };
@@ -646,19 +606,16 @@ int main(int argc, char *argv[])
         Usage();
         break;
       case 'u':
-        g_options.allow_unprogrammed_ = 1;
+        g_options.allow_unprogrammed_ = true;
         break;
       case 'i':
         g_options.interface_ = optarg;
-        break;
-      case 'x':
-        g_options.xml_ = optarg;
         break;
       case 'r':
         g_options.rosparam_ = optarg;
         break;
       case 's':
-        g_options.stats_ = 1;
+        g_options.stats_ = true;
         break;
       case 'p':
         // convert period given in msec to nsec
@@ -671,20 +628,10 @@ int main(int argc, char *argv[])
 
   if (!g_options.interface_)
     Usage("You must specify a network interface");
-  if (!g_options.xml_ && !g_options.rosparam_)
-    Usage("You must specify either an XML file or rosparam for robot description");
-  if (g_options.xml_ && g_options.rosparam_)
-    Usage("You must not specify both a rosparm and XML file for robot description");
+  if (!g_options.rosparam_)
+    Usage("You must specify a rosparam for robot description");
 
-  // The previous EtherCAT software created a lock for any EtherCAT master.
-  // This lock prevented two EtherCAT masters from running on the same computer.
-  // However, this locking scheme was too restrictive.  
-  // Two EtherCAT masters can run without conflicting with each other
-  // as long as they are communication with different sets of EtherCAT devices.
-  // A better locking scheme is to prevent two EtherCAT 
-  // masters from running on same Ethernet interface.  
-  // Therefore in the Groovy Galapagos ROS release, the global EtherCAT lock has been removed 
-  // and only the per-interface lock will remain.
+  // EtherCAT lock for this interface (e.g. Ethernet port)
   if (setupPidFile(g_options.interface_) < 0)
     exit(EXIT_FAILURE);
 

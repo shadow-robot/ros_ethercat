@@ -44,24 +44,19 @@
 class EthercatCom
 {
 protected:
-  EthercatCom()
-  {
-  }
+  EthercatCom() {}
 
 public:
   virtual bool txandrx(struct EtherCAT_Frame * frame)=0;
   virtual bool txandrx_once(struct EtherCAT_Frame * frame)=0;
 
-  virtual ~EthercatCom()
-  {
-  }
+  virtual ~EthercatCom() {}
 };
 
 class EthercatDirectCom : public EthercatCom
 {
 public:
-  EthercatDirectCom(EtherCAT_DataLinkLayer *dll);
-  ~EthercatDirectCom();
+  EthercatDirectCom(EtherCAT_DataLinkLayer *dll) : dll_(dll) {}
 
   bool txandrx(struct EtherCAT_Frame * frame);
   bool txandrx_once(struct EtherCAT_Frame * frame);
@@ -74,10 +69,6 @@ class EthercatOobCom : public EthercatCom
 {
 public:
   EthercatOobCom(struct netif *ni);
-  ~EthercatOobCom()
-  {
-    ni_ = NULL;
-  }
 
   bool txandrx(struct EtherCAT_Frame * frame);
   bool txandrx_once(struct EtherCAT_Frame * frame);
