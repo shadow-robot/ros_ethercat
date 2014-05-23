@@ -1,6 +1,6 @@
 <package>
   <name>ros_ethercat_eml</name>
-  <version>0.1.6</version>
+  <version>0.1.7</version>
   <description>
   	  This is an implementation of the EtherCAT master protocol for use wiht ros_ethercar package
       based on the work done at Flanders' Mechatronics Technology Centre and Willow Garage.
