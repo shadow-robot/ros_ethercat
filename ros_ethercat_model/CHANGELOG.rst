@@ -5,6 +5,7 @@ Changelog for package ros_ethercat_model
 Forthcoming
 -----------
 
+
 0.1.6 (2014-05-15)
 ------------------
 
