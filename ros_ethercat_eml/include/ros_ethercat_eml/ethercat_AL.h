@@ -47,7 +47,7 @@ class EC_FixedStationAddress;
  */
 inline uint16_t ringpos2adp(uint16_t ringpos)
 {
-  return (uint16_t)(0x0000 - ringpos);
+  return (uint16_t) (0x0000 - ringpos);
 }
 
 /// Convert adp2ringpos in case of autoincrement addressing;
@@ -56,10 +56,11 @@ inline uint16_t ringpos2adp(uint16_t ringpos)
  */
 inline uint16_t adp2ringpos(uint16_t adp)
 {
-  return (uint16_t)(0x0000 - adp);
+  return (uint16_t) (0x0000 - adp);
 }
 
 /// EtherCAT "logic"
+
 /** @todo search better name for this
  */
 class EC_Logic
@@ -81,7 +82,6 @@ public:
   /// Index (Increased with each frame the master sends)
   uint8_t m_idx;
 };
-
 inline uint8_t EC_Logic::get_idx()
 {
   return m_idx++;
@@ -92,6 +92,7 @@ inline uint16_t EC_Logic::get_wkc()
 }
 
 /// EtherCAT Master Application Layer
+
 class EtherCAT_AL
 {
   friend class EtherCAT_Router;
@@ -129,7 +130,7 @@ protected:
   /// Constructor (protected)
   EtherCAT_AL();
 
-  /// Init of EtherCAT network. 
+  /// Init of EtherCAT network.
   /** Counts and identifies the number of slaves in the network, and
    resets the slaves configuration.
    @return true if success
@@ -154,7 +155,7 @@ protected:
   bool put_slaves_in_init(void);
 
 private:
-  /// Instance 
+  /// Instance
   static EtherCAT_AL * m_instance;
   /// DLL Instance
   EtherCAT_DataLinkLayer * m_dll_instance;

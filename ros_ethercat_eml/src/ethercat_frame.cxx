@@ -60,22 +60,18 @@ int framebuild(struct EtherCAT_Frame * frame,
 // --------------------------------------------------
 
 EC_Frame::EC_Frame()
-:
-    m_telegram(NULL)
-{
-}
+  :
+  m_telegram(NULL){ }
 ;
 
 EC_Frame::EC_Frame(EC_Telegram * a_telegram)
-:
-    m_telegram(a_telegram)
-{
-}
+  :
+  m_telegram(a_telegram){ }
 ;
 
 size_t
 EC_Frame::body_length(void) const
-                      {
+{
   int result = 0;
   if (m_telegram)
   {
@@ -92,7 +88,7 @@ EC_Frame::body_length(void) const
 
 unsigned char *
 EC_Frame::dump(unsigned char * a_buffer) const
-               {
+{
   a_buffer = dump_header(a_buffer);
   if (m_telegram)
   {
@@ -132,15 +128,14 @@ EC_Frame::build(const unsigned char * a_buffer)
 // --------------------------------------------------
 // EC_Ethernet_Frame
 // --------------------------------------------------
+
 EC_Ethernet_Frame::EC_Ethernet_Frame(EC_Telegram * a_telegram)
-:
-    EC_Frame(a_telegram)
-{
-}
+  :
+  EC_Frame(a_telegram){ }
 
 unsigned char *
 EC_Ethernet_Frame::dump_header(unsigned char * a_buffer) const
-                               {
+{
   // Implementation: LSB = length, then Reserved, then MSB = type
   uint16_t tmp = 0x01; // Type = Ethercat command
   tmp = tmp << 12;
@@ -152,7 +147,7 @@ EC_Ethernet_Frame::dump_header(unsigned char * a_buffer) const
 
 bool
 EC_Ethernet_Frame::check_header(const unsigned char * a_buffer) const
-                                {
+{
   const unsigned char * dataptr = a_buffer;
   uint16_t frame_header;
   dataptr = nw2host(dataptr, frame_header);
@@ -161,7 +156,7 @@ EC_Ethernet_Frame::check_header(const unsigned char * a_buffer) const
   if (ec_command == (frame_header & ec_command))
   {
     uint16_t bodylength = 0x07ff;
-    if (this->body_length() == (size_t)(frame_header & bodylength))
+    if (this->body_length() == (size_t) (frame_header & bodylength))
       return true;
   }
   ec_log(EC_LOG_ERROR, "building frame: checkheader failed\n");

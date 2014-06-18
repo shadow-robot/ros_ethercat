@@ -57,11 +57,12 @@ using namespace std;
 
 struct et1x00_error_counters
 {
+
   struct
   {
     uint8_t invalid_frame;
     uint8_t rx_error;
-  }__attribute__((__packed__)) port[4];
+  } __attribute__((__packed__)) port[4];
   uint8_t forwarded_rx_error[4];
   uint8_t epu_error;
   uint8_t pdi_error;
@@ -71,7 +72,7 @@ struct et1x00_error_counters
   bool isGreaterThan(unsigned value) const;
   bool isGreaterThan(const et1x00_error_counters &value) const;
   void zero();
-}__attribute__((__packed__));
+} __attribute__((__packed__));
 
 struct et1x00_dl_status
 {
@@ -80,7 +81,7 @@ struct et1x00_dl_status
   bool isClosed(unsigned port);
   bool hasCommunication(unsigned port);
   static const uint16_t BASE_ADDR = 0x110;
-}__attribute__((__packed__));
+} __attribute__((__packed__));
 
 struct EthercatPortDiagnostics
 {
@@ -103,15 +104,15 @@ public:
   // Collects diagnostic data from specific ethercat slave, and updates object state
   //
   // com  EtherCAT communication object is used send/recv packets to/from ethercat chain.
-  // sh   slaveHandler of device to collect Diagnostics from 
+  // sh   slaveHandler of device to collect Diagnostics from
   // prev previously collected diagnostics (can be pointer to this object)
   //
   // collectDiagnotics will send/recieve multiple packets, and may considerable amount of time complete.
-  // 
+  //
   void collect(EthercatCom *com, EtherCAT_SlaveHandler *sh);
 
-  // Puts reviously diagnostic collected diagnostic state to DiagnosticStatus object 
-  // 
+  // Puts reviously diagnostic collected diagnostic state to DiagnosticStatus object
+  //
   // d         DiagnositcState to add diagnostics to.
   // numPorts  Number of ports device is supposed to have.  4 is max, 1 is min.
   void publish(diagnostic_updater::DiagnosticStatusWrapper &d, unsigned numPorts = 4) const;
@@ -139,9 +140,7 @@ public:
   virtual void construct(EtherCAT_SlaveHandler *sh, int &start_address);
 
   //!< Construct non-EtherCAT device
-  virtual void construct(ros::NodeHandle &nh)
-  {
-  }
+  virtual void construct(ros::NodeHandle &nh){ }
 
   EthercatDevice();
   virtual ~EthercatDevice()
@@ -149,20 +148,15 @@ public:
     delete sh_->get_fmmu_config();
     delete sh_->get_pd_config();
   }
-
   virtual int initialize(hardware_interface::HardwareInterface *hw, bool allow_unprogrammed = true)
   {
     return 0;
   }
-
   /**
    * \param reset  when asserted this will clear diagnostic error conditions device safety disable
    * \param halt   while asserted will disable actuator, usually by disabling H-bridge
    */
-  virtual void packCommand(unsigned char *buffer, bool halt, bool reset)
-  {
-  }
-
+  virtual void packCommand(unsigned char *buffer, bool halt, bool reset){ }
   virtual bool unpackState(unsigned char *this_buffer, unsigned char *prev_buffer)
   {
     return true;
@@ -172,7 +166,7 @@ public:
    * \brief For EtherCAT devices that publish more than one EtherCAT Status message.
    * If sub-class implements multiDiagnostics() then diagnostics() is not used.
    * \param vec     Vector of diagnostics status messages. Slave appends one or more new diagnostic status'.
-   * \param buffer  Pointer to slave process data.\ 
+   * \param buffer  Pointer to slave process data.\
    */
   virtual void multiDiagnostics(vector<diagnostic_msgs::DiagnosticStatus> &vec,
                                 unsigned char *buffer);
@@ -185,7 +179,7 @@ public:
    */
   virtual void diagnostics(diagnostic_updater::DiagnosticStatusWrapper &d, unsigned char *buffer);
 
-  /** 
+  /**
    * \brief Adds diagnostic information for EtherCAT ports.
    * \param d       EtherCAT port diagnostics information will be appended.
    * \param buffer  Number of communication ports slave has.
@@ -193,10 +187,9 @@ public:
   void ethercatDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &d, unsigned numPorts);
 
   virtual void collectDiagnostics(EthercatCom *com);
-
-  /** 
-   * \brief Asks device to publish (motor) trace. Only works for devices that support it. 
-   * \param reason Message to put in trace as reason. 
+  /**
+   * \brief Asks device to publish (motor) trace. Only works for devices that support it.
+   * \param reason Message to put in trace as reason.
    * \param level Level to put in trace (aka ERROR=2, WARN=1, OK=0)
    * \param delay Publish trace after delay cyles.  For 1kHz realtime loop 1cycle = 1ms.
    * \return Return true if device support publishing trace.  False, if not.
@@ -252,7 +245,7 @@ public:
 
   // The device diagnostics are collected with a non-readtime thread that calls collectDiagnostics()
   // The device published from the realtime loop by indirectly invoking ethercatDiagnostics()
-  // To avoid blocking of the realtime thread (for long) a double buffer is used the 
+  // To avoid blocking of the realtime thread (for long) a double buffer is used the
   // The publisher thread will lock newDiagnosticsIndex when publishing data.
   // The collection thread will lock deviceDiagnostics when updating deviceDiagnostics
   // The collection thread will also lock newDiagnosticsIndex at end of update, just before swapping buffers.

@@ -53,9 +53,10 @@ EtherCAT_Router::instance()
 
 // al_instance cannot be initiated right now, since this results in a
 // circular instantiation al_instance calls router_instance etc.
+
 EtherCAT_Router::EtherCAT_Router()
-:
-    m_al_instance(NULL), m_is_running(0)
+  :
+  m_al_instance(NULL), m_is_running(0)
 {
   // get pointer to DLL and logic
   m_dll_instance = EtherCAT_DataLinkLayer::instance();
@@ -76,7 +77,7 @@ EtherCAT_Router::stop()
   if (EtherCAT_Router::m_is_running > 0)
     --EtherCAT_Router::m_is_running;
   else
-  ec_log(EC_LOG_INFO, "EtherCAT_Router already stopped...\n");
+    ec_log(EC_LOG_INFO, "EtherCAT_Router already stopped...\n");
 }
 
 void
@@ -97,7 +98,7 @@ EtherCAT_Router::route() const
 
 bool
 EtherCAT_Router::check_mbx(const EtherCAT_SlaveHandler * sh) const
-                           {
+{
   if (sh->is_complex())
   {
     // SM0 is for M->S communication, SM1 for S->M
@@ -130,7 +131,7 @@ EtherCAT_Router::check_mbx(const EtherCAT_SlaveHandler * sh) const
 
 bool
 EtherCAT_Router::post_mbxmsg(EtherCAT_MbxMsg * msg, const EtherCAT_SlaveHandler * from_sh) const
-                             {
+{
   EC_FixedStationAddress dest_addr = msg->m_hdr.m_address;
   EtherCAT_SlaveHandler * dest_sh = m_al_instance->get_slave_handler(dest_addr);
   if (dest_sh->is_complex())
@@ -172,6 +173,7 @@ EtherCAT_Router::post_mbxmsg(EtherCAT_MbxMsg * msg, const EtherCAT_SlaveHandler 
 }
 
 /// C-interface to perform the routing
+
 void route_msgs(void)
 {
   static EtherCAT_Router * EC_Router = EtherCAT_Router::instance();

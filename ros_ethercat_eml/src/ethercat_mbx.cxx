@@ -34,8 +34,8 @@
 #include <assert.h>
 
 EC_MbxMsgHdr::EC_MbxMsgHdr(const unsigned char * a_buffer)
-:
-    EC_DataStruct(EC_MBXMSG_HDR_SIZE), m_address(a_buffer + sizeof(m_length))
+  :
+  EC_DataStruct(EC_MBXMSG_HDR_SIZE), m_address(a_buffer + sizeof (m_length))
 {
   a_buffer = nw2host(a_buffer, m_length);
   a_buffer += m_address.length();
@@ -46,12 +46,12 @@ EC_MbxMsgHdr::EC_MbxMsgHdr(const unsigned char * a_buffer)
   a_buffer = nw2host(a_buffer, msg_type);
   msg_type &= 0x7; // Only last 3 bits should last
   assert(msg_type <= EC_FoE);
-  m_type = (ECMbxMsgType)msg_type;
+  m_type = (ECMbxMsgType) msg_type;
 }
 
 unsigned char *
 EC_MbxMsgHdr::dump(unsigned char * a_buffer) const
-                   {
+{
   a_buffer = host2nw(a_buffer, m_length);
   a_buffer = m_address.dump(a_buffer);
 
@@ -65,8 +65,8 @@ EC_MbxMsgHdr::dump(unsigned char * a_buffer) const
 // ==================================================
 
 EtherCAT_MbxMsg::EtherCAT_MbxMsg(const unsigned char * a_buffer)
-:
-    m_hdr(a_buffer)
+  :
+  m_hdr(a_buffer)
 {
   a_buffer += EC_MBXMSG_HDR_SIZE;
   m_MbxMsgdata = a_buffer;
@@ -74,14 +74,14 @@ EtherCAT_MbxMsg::EtherCAT_MbxMsg(const unsigned char * a_buffer)
 
 unsigned char *
 EtherCAT_MbxMsg::dump_data(unsigned char * a_buffer) const
-                           {
+{
   memcpy(a_buffer, m_MbxMsgdata, m_hdr.m_length);
   return (a_buffer + m_hdr.m_length);
 }
 
 unsigned char *
 EtherCAT_MbxMsg::dump(unsigned char * a_buffer) const
-                      {
+{
   a_buffer = m_hdr.dump(a_buffer);
   a_buffer = dump_data(a_buffer);
   return a_buffer;
@@ -90,8 +90,8 @@ EtherCAT_MbxMsg::dump(unsigned char * a_buffer) const
 // ==================================================
 
 EC_CoE_Hdr::EC_CoE_Hdr(const unsigned char * a_buffer)
-:
-    EC_DataStruct(EC_MBXMSG_COE_HDR_SIZE)
+  :
+  EC_DataStruct(EC_MBXMSG_COE_HDR_SIZE)
 {
   uint16_t hdr;
   a_buffer = nw2host(a_buffer, hdr);
@@ -99,12 +99,12 @@ EC_CoE_Hdr::EC_CoE_Hdr(const unsigned char * a_buffer)
   hdr = hdr >> 12;
   hdr &= 0xf;
   assert(hdr <= CANopen_SDOInformation);
-  m_service = (CANopenService)hdr;
+  m_service = (CANopenService) hdr;
 }
 
 unsigned char *
 EC_CoE_Hdr::dump(unsigned char * a_buffer) const
-                 {
+{
   uint16_t hdr = m_service;
   a_buffer = host2nw(a_buffer, hdr);
   return a_buffer;
@@ -113,8 +113,8 @@ EC_CoE_Hdr::dump(unsigned char * a_buffer) const
 // ==================================================
 
 EtherCAT_CoE_MbxMsg::EtherCAT_CoE_MbxMsg(unsigned char * a_buffer)
-:
-    EtherCAT_MbxMsg(a_buffer), m_CoE_Hdr(a_buffer + EC_MBXMSG_HDR_SIZE)
+  :
+  EtherCAT_MbxMsg(a_buffer), m_CoE_Hdr(a_buffer + EC_MBXMSG_HDR_SIZE)
 {
   a_buffer += (EC_MBXMSG_COE_HDR_SIZE + EC_MBXMSG_HDR_SIZE);
   m_MbxMsgdata = a_buffer;
@@ -122,7 +122,7 @@ EtherCAT_CoE_MbxMsg::EtherCAT_CoE_MbxMsg(unsigned char * a_buffer)
 
 unsigned char *
 EtherCAT_CoE_MbxMsg::dump(unsigned char * a_buffer) const
-                          {
+{
   a_buffer = m_hdr.dump(a_buffer);
   a_buffer = m_CoE_Hdr.dump(a_buffer);
   a_buffer = this->dump_data(a_buffer);

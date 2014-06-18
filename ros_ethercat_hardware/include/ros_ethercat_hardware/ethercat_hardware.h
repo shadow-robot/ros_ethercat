@@ -81,14 +81,14 @@ struct EthercatHardwareDiagnostics
   int txandrx_errors_;
   unsigned device_count_;
   bool pd_error_;
-  bool halt_after_reset_; //!< True if motor halt soon after motor reset 
+  bool halt_after_reset_; //!< True if motor halt soon after motor reset
   unsigned reset_motors_service_count_; //!< Number of times reset_motor service has been used
-  unsigned halt_motors_service_count_;  //!< Number of time halt_motor service call is used
-  unsigned halt_motors_error_count_;  //!< Number of transitions into halt state due to device error
+  unsigned halt_motors_service_count_; //!< Number of time halt_motor service call is used
+  unsigned halt_motors_error_count_; //!< Number of transitions into halt state due to device error
   struct netif_counters counters_;
   bool input_thread_is_stopped_;
-  bool motors_halted_; //!< True if motors are halted  
-  const char* motors_halted_reason_; //!< reason that motors first halted 
+  bool motors_halted_; //!< True if motors are halted
+  const char* motors_halted_reason_; //!< reason that motors first halted
 
   static const bool collect_extra_timing_ = true;
 };
@@ -96,9 +96,9 @@ struct EthercatHardwareDiagnostics
 /*!
  * \brief Publishes EthercatHardware diagnostics.
  *
- * All the string formating used for creatign diagnostics is too 
- * slow to be run in the realtime thread. Instead, a copy of the raw 
- * diagnostics data is made and a separate thread does the string conversion 
+ * All the string formating used for creatign diagnostics is too
+ * slow to be run in the realtime thread. Instead, a copy of the raw
+ * diagnostics data is made and a separate thread does the string conversion
  * and publishing.
  * Previously, the diagnostics data used by publishing thread was contained
  * in the EthercatHardware class.  However, this allowed the publishing thread
@@ -127,8 +127,8 @@ public:
   /*!
    * \brief Triggers publishing of new diagnostics data
    *
-   * Makes copy of diagnostics data and triggers internal thread to 
-   * started conversion and publish of data.  
+   * Makes copy of diagnostics data and triggers internal thread to
+   * started conversion and publish of data.
    * This function will not block.
    */
   void publish(const unsigned char *buffer, const EthercatHardwareDiagnostics &diagnostics);
@@ -143,8 +143,8 @@ private:
   /*!
    * \brief Publishes diagnostics
    *
-   * Takes internally saved diagnostics data and converts to a ROS 
-   * diagnostics status message.  
+   * Takes internally saved diagnostics data and converts to a ROS
+   * diagnostics status message.
    * This function performs a lot of string formatting, so it is slow.
    */
   void publishDiagnostics();
@@ -183,15 +183,15 @@ private:
 
   //! Timeout controls how long EtherCAT driver waits for packet before declaring it as dropped.
   unsigned timeout_;
-  //! Number of times (in a row) to retry sending process data (realtime data) before halting motors 
+  //! Number of times (in a row) to retry sending process data (realtime data) before halting motors
   unsigned max_pd_retries_;
 
   //! Count of dropped packets last diagnostics cycle
   uint64_t last_dropped_packet_count_;
-  //! Time last packet was dropped 0 otherwise.  Used for warning about dropped packets. 
+  //! Time last packet was dropped 0 otherwise.  Used for warning about dropped packets.
   ros::Time last_dropped_packet_time_;
-  //! Number of seconds since late dropped packet to keep warning 
-  static const unsigned dropped_packet_warning_hold_time_ = 10;  //keep warning up for 10 seconds
+  //! Number of seconds since late dropped packet to keep warning
+  static const unsigned dropped_packet_warning_hold_time_ = 10; //keep warning up for 10 seconds
 
   diagnostic_msgs::DiagnosticArray diagnostic_array_;
   //! Information about Ethernet interface used for EtherCAT communication
@@ -241,10 +241,10 @@ public:
   /*!
    * \brief Ask one or all EtherCAT devices to publish (motor) traces
    * \param position device ring position to publish trace for.  Use -1 to trigger all devices.
-   * \param reason Message to put in trace as reason. 
+   * \param reason Message to put in trace as reason.
    * \param level Level to put in trace (aka ERROR=2, WARN=1, OK=0)
    * \param delay Publish trace after delay cyles.  For 1kHz realtime loop 1cycle = 1ms.
-   * \return Return true if device supports publishing trace.  False, if not.   
+   * \return Return true if device supports publishing trace.  False, if not.
    *         If all devices are triggered, returns true if any device publishes trace.
    */
   bool publishTrace(int position, const string &reason, unsigned level, unsigned delay);

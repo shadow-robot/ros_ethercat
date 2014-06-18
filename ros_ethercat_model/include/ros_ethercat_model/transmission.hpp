@@ -41,7 +41,8 @@
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
 
-namespace ros_ethercat_model {
+namespace ros_ethercat_model
+{
 
 class RobotState;
 
@@ -50,7 +51,7 @@ class Transmission
 public:
 
   /// Destructor
-  virtual ~Transmission() {}
+  virtual ~Transmission(){ }
 
   /// Initializes the transmission from XML data
   virtual bool initXml(TiXmlElement *config, RobotState *robot)

@@ -59,14 +59,13 @@ int framebuild(struct EtherCAT_Frame * frame,
                const unsigned char * buffer);
 
 /// EtherCAT Frame Interface (we need a C interface)
+
 /** Due to the fact that this is a C-interface, this class does not
  herit from EC_Datastruct, although it has the same needs
  */
 typedef struct EtherCAT_Frame
 {
-  virtual ~EtherCAT_Frame()
-  {
-  }
+  virtual ~EtherCAT_Frame(){ }
   /// Return the length of the whole frame
   virtual size_t length(void) const = 0;
 
@@ -85,6 +84,7 @@ typedef struct EtherCAT_Frame
 } ECFrame;
 
 /// EtherCAT Frame base class
+
 /** @todo This interface is not complete, eg. currently there is no
  way to add/remove telegrams to a frame.  Note however that this
  EtherCAT feature is rarely used AFAIS.
@@ -96,7 +96,7 @@ public:
   /** @return the length of the whole frame in bytes
    */
   size_t length(void) const
-                {
+  {
     return header_length() + body_length();
   }
 
@@ -137,6 +137,7 @@ protected:
 static const size_t ETHERCAT_ETHERNET_FRAME_HEADER_SIZE = 2;
 
 /// Class representing EtherCAT Frames in "raw" ethernet mode
+
 class EC_Ethernet_Frame : public EC_Frame
 {
 public:
@@ -146,7 +147,7 @@ public:
 
 protected:
   virtual size_t header_length(void) const
-                               {
+  {
     return ETHERCAT_ETHERNET_FRAME_HEADER_SIZE;
   }
 
@@ -158,6 +159,6 @@ protected:
 /// Ethercat UDP_mode Frame
 // FIXME TO BE IMPLEMENTED
 // class EC_UDP_Frame : public EC_Ethernet_Frame
-// redefine virtual header_length() function and 
+// redefine virtual header_length() function and
 
 #endif // __ethercat_frame_h__

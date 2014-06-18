@@ -30,7 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
+
 #ifndef __ethercat_pd__
 #define __ethercat_pd__
 
@@ -42,19 +42,20 @@ class EtherCAT_DataLinkLayer;
 #include "ros_ethercat_eml/ethercat_frame.h"
 
 /// EtherCAT Process Data buffer
+
 /** @note The current implementation starts passing PD as soon as *one* of the
     slaves indicated it arrived in its safe-operational state by using
     the EtherCAT_PD_Buffer::start() method.  The advantage is that an application could remain running.
     If a slave follows the spec, it won't process PD unless it is in
     its SafeOp or Op state, so this should harm...
-    Nevertheless, changing this behaviour into full spec compliance
+    Nevertheless, changing this behavior into full spec compliance
     only requires changing 2 lines of code.  See the .cxx file.
-*/
+ */
 class EtherCAT_PD_Buffer
 {
   friend class EC_ESM_Ops;
-  
- public:
+
+public:
   /// Singleton
   static EtherCAT_PD_Buffer * instance();
 
@@ -64,10 +65,10 @@ class EtherCAT_PD_Buffer
       and (if the operation succeeded) the received data is put in the
       data array
       @return true if msg got true
-  */
+   */
   bool txandrx(size_t datalen, unsigned char * data);
 
- protected:  
+protected:
   /// Start transmitting process data
   void start();
   /// Stop transmitting process data
@@ -76,8 +77,8 @@ class EtherCAT_PD_Buffer
   /// Constructor
   EtherCAT_PD_Buffer();
   virtual ~EtherCAT_PD_Buffer();
-  
- private:
+
+private:
   /// Pointer to EC_Logic
   EC_Logic * m_logic_instance;
   /// Pointer to DLL instance
@@ -88,10 +89,10 @@ class EtherCAT_PD_Buffer
   /// See note in class definition.
   unsigned int m_is_running;
 
-  /// Process data can be divided over MAX_CHUCKS packets 
+  /// Process data can be divided over MAX_CHUCKS packets
   /// of upto CHUNK_SIZE bytes
-  static const unsigned MAX_CHUNKS=4;
-  static const unsigned CHUNK_SIZE=1486;
+  static const unsigned MAX_CHUNKS = 4;
+  static const unsigned CHUNK_SIZE = 1486;
 
   /// Telegram(s) to be sent
   LRW_Telegram *m_lrw_telegram[MAX_CHUNKS];

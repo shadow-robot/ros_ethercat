@@ -36,29 +36,26 @@
 #include <stdio.h>
 #include <errno.h>
 #include <assert.h>
-
 bool EthercatDirectCom::txandrx_once(struct EtherCAT_Frame * frame)
 {
-  assert(frame!=NULL);
+  assert(frame != NULL);
   int handle = dll_->tx(frame);
   if (handle < 0)
     return false;
   return dll_->rx(frame, handle);
 }
-
 bool EthercatDirectCom::txandrx(struct EtherCAT_Frame * frame)
 {
   return dll_->txandrx(frame);
 }
-
 EthercatOobCom::EthercatOobCom(struct netif *ni) :
-    ni_(ni),
-        state_(IDLE),
-        frame_(NULL),
-        handle_(-1),
-        line_(0)
+  ni_(ni),
+  state_(IDLE),
+  frame_(NULL),
+  handle_(-1),
+  line_(0)
 {
-  assert(ni_!=NULL);
+  assert(ni_ != NULL);
 
   pthread_mutexattr_t mutex_attr;
   int error = pthread_mutexattr_init(&mutex_attr);
@@ -90,7 +87,6 @@ EthercatOobCom::EthercatOobCom(struct netif *ni) :
     fprintf(stderr, "%s : Initializing busy condition failed : %d\n", __func__, error);
   return;
 }
-
 bool EthercatOobCom::lock(unsigned line)
 {
   int error;
@@ -102,7 +98,6 @@ bool EthercatOobCom::lock(unsigned line)
   line_ = line;
   return true;
 }
-
 bool EthercatOobCom::trylock(unsigned line)
 {
   int error;
@@ -115,7 +110,6 @@ bool EthercatOobCom::trylock(unsigned line)
   line_ = line;
   return true;
 }
-
 bool EthercatOobCom::unlock(unsigned line)
 {
   int error;
@@ -145,11 +139,12 @@ bool EthercatOobCom::txandrx_once(struct EtherCAT_Frame * frame)
   frame_ = frame;
   state_ = READY_TO_SEND;
 
-  // RT control loop will send frame 
+  // RT control loop will send frame
   do
   {
     pthread_cond_wait(&busy_cond_, &mutex_);
-  } while (state_ != WAITING_TO_RECV);
+  }
+  while (state_ != WAITING_TO_RECV);
 
   // Packet has been sent, wait for recv
   bool success = false;
@@ -166,7 +161,6 @@ bool EthercatOobCom::txandrx_once(struct EtherCAT_Frame * frame)
 
   return success;
 }
-
 bool EthercatOobCom::txandrx(struct EtherCAT_Frame * frame)
 {
   static const unsigned MAX_TRIES = 10;
@@ -187,7 +181,7 @@ void EthercatOobCom::tx()
   if (state_ == READY_TO_SEND)
   {
     // Packet is in need of being sent
-    assert(frame_!=NULL);
+    assert(frame_ != NULL);
     handle_ = ni_->tx(frame_, ni_);
     state_ = WAITING_TO_RECV;
     pthread_cond_signal(&busy_cond_);

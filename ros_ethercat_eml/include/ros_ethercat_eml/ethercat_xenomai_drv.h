@@ -35,7 +35,7 @@
 #include <ros_ethercat_eml/netif.h>
 
 int set_socket_timeout(struct netif*, int64_t); // change the timeout (in ns)
-struct netif* init_ec(const char *);	// create an EtharCAT network interface
-int close_socket(struct netif*);		// close the used socket
+struct netif* init_ec(const char *); // create an EtharCAT network interface
+int close_socket(struct netif*); // close the used socket
 
 #endif

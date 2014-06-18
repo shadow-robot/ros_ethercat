@@ -46,10 +46,8 @@
 EC_Logic * EC_Logic::m_instance = NULL;
 
 EC_Logic::EC_Logic()
-:
-    m_wkc(0), m_idx(0)
-{
-}
+  :
+  m_wkc(0), m_idx(0){ }
 
 EC_Logic *
 EC_Logic::instance()
@@ -76,8 +74,8 @@ EtherCAT_AL::instance()
 }
 
 EtherCAT_AL::EtherCAT_AL()
-:
-    m_num_slaves(0), m_ready(false)
+  :
+  m_num_slaves(0), m_ready(false)
 {
   m_dll_instance = EtherCAT_DataLinkLayer::instance();
   m_slave_db = EtherCAT_SlaveDb::instance();
@@ -154,7 +152,7 @@ EtherCAT_AL::scan_slaves(void)
   uint32_t revision = 0x00000000;
   uint32_t serial = 0x00000000;
   const uint16_t SII_datalen = EC_Slave_RD[SII_ControlStatus].size + EC_Slave_RD[SII_Address].size
-      + EC_Slave_RD[SII_Data].size;
+    + EC_Slave_RD[SII_Data].size;
   unsigned char data[SII_datalen];
   const EtherCAT_SlaveConfig * sconf;
   for (unsigned i = 0; i < SII_datalen; i++)
@@ -217,7 +215,7 @@ EtherCAT_AL::scan_slaves(void)
       ec_log(EC_LOG_INFO,
              "AL creating SlaveHandler: pos=%d, adr=0x%x, Prod. Code=0x%x, rev=0x%x, Serial=%d\n",
              adp2ringpos(adp),
-             (uint16_t ) sconf->get_station_address(), productcode, revision, serial);
+             (uint16_t) sconf->get_station_address(), productcode, revision, serial);
     }
     else
     { // No such slave found...
@@ -329,7 +327,7 @@ EtherCAT_AL::put_slaves_in_init(void)
         AL_status_telegram.set_idx(m_logic_instance->get_idx());
       }
       else
-      ec_log(EC_LOG_ERROR, "EtherCAT_AL: Error sending AL_Status_frame for slave %d\n", ringpos);
+        ec_log(EC_LOG_ERROR, "EtherCAT_AL: Error sending AL_Status_frame for slave %d\n", ringpos);
     }
     else
     {
@@ -357,7 +355,7 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
 
   // Indicate we want to read from the E2PROM
   const uint16_t SII_control_datalen = EC_Slave_RD[SII_ControlStatus].size
-      + EC_Slave_RD[SII_Address].size;
+    + EC_Slave_RD[SII_Address].size;
   unsigned char SII_control_data[SII_control_datalen];
   EC_SIIControlStatus siics(false, false, true, false, false, false, false);
   unsigned char * ptr = siics.dump(SII_control_data);
@@ -406,7 +404,7 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
 
   // The actual read
   const uint16_t SII_datalen = EC_Slave_RD[SII_ControlStatus].size + EC_Slave_RD[SII_Address].size
-      + EC_Slave_RD[SII_Data].size;
+    + EC_Slave_RD[SII_Data].size;
   APRD_Telegram SII_data_tg(m_logic_instance->get_idx(),
                             slave_adp,
                             EC_Slave_RD[SII_ControlStatus].ado,

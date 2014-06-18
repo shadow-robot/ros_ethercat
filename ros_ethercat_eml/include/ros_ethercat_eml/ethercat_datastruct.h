@@ -30,12 +30,11 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
-// fixme include copyright notice
-
 #ifndef __ethercat_ds_h
 #define __ethercat_ds_h
 
 /// Base class for all EtherCAT register area data structs
+
 /** The main purpose of this class is to serialize and deserialize
  data.
  */
@@ -46,14 +45,10 @@ public:
   /** @param a_data_length data length expressed as a number of bytes
    */
   EC_DataStruct(size_t a_data_length) :
-      m_data_length(a_data_length)
-  {
-  }
+    m_data_length(a_data_length){ }
 
   /// Destructor
-  virtual ~EC_DataStruct()
-  {
-  }
+  virtual ~EC_DataStruct(){ }
 
   // default copy constructor will do...
 

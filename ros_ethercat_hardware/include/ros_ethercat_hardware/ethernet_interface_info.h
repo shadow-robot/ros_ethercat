@@ -54,9 +54,7 @@ struct EthtoolStats
 struct InterfaceState
 {
   InterfaceState() :
-      up_(false), running_(false)
-  {
-  }
+    up_(false), running_(false){ }
   bool up_;
   bool running_;
 };

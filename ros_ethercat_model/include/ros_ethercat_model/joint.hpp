@@ -62,14 +62,11 @@ class JointStatistics
 {
 public:
   JointStatistics() :
-      min_position_(0), max_position_(0),
-          max_abs_velocity_(0.0), max_abs_effort_(0.0),
-          violated_limits_(false), initialized_(false)
-  {
-  }
+    min_position_(0), max_position_(0),
+    max_abs_velocity_(0.0), max_abs_effort_(0.0),
+    violated_limits_(false), initialized_(false){ }
 
   void update(JointState *jnt);
-
   void reset()
   {
     double tmp = min_position_;
@@ -101,8 +98,7 @@ public:
     getLimits(effort_low, effort_high);
 
     // limit the commanded effort based on position, velocity and effort limits
-    commanded_effort_ =
-        std::min(std::max(commanded_effort_, effort_low), effort_high);
+    commanded_effort_ = std::min(std::max(commanded_effort_, effort_low), effort_high);
   }
 
   /// Returns the safety effort limits given the current position and velocity.
@@ -122,19 +118,16 @@ public:
     effort_low = -joint_->limits->effort;
 
     // enforce position bounds on rotary and prismatic joints that are calibrated
-    if (calibrated_
-        && (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC))
+    if (calibrated_ && (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC))
     {
       // Computes the velocity bounds based on the absolute limit and the
       // proximity to the joint limit.
-      vel_high = std::max(
-          -joint_->limits->velocity,
-          std::min(joint_->limits->velocity,
-                   -joint_->safety->k_position * (position_ - joint_->safety->soft_upper_limit)));
-      vel_low = std::min(
-          joint_->limits->velocity,
-          std::max(-joint_->limits->velocity,
-                   -joint_->safety->k_position * (position_ - joint_->safety->soft_lower_limit)));
+      vel_high = std::max(-joint_->limits->velocity,
+                          std::min(joint_->limits->velocity,
+                                   -joint_->safety->k_position * (position_ - joint_->safety->soft_upper_limit)));
+      vel_low = std::min(joint_->limits->velocity,
+                         std::max(-joint_->limits->velocity,
+                                  -joint_->safety->k_position * (position_ - joint_->safety->soft_lower_limit)));
     }
 
     // Computes the effort bounds based on the velocity and effort bounds.
@@ -164,7 +157,7 @@ public:
   /// The effort the joint should apply in Nm or N (write-to variable)
   double commanded_effort_;
 
-  /// Bool to indicate if the joint has been calibrated or not
+  /// Indicates if the joint has been calibrated or not
   bool calibrated_;
 
   /// The position of the optical flag that was used to calibrate this joint
@@ -172,12 +165,9 @@ public:
 
   /// Constructor
   JointState() :
-      position_(0.0), velocity_(0.0), measured_effort_(0.0),
-          commanded_effort_(0.0), calibrated_(false), reference_position_(0.0)
-  {
-  }
+    position_(0.0), velocity_(0.0), measured_effort_(0.0),
+    commanded_effort_(0.0), calibrated_(false), reference_position_(0.0){ }
 };
-
 inline void JointStatistics::update(JointState *jnt)
 {
   if (initialized_)

@@ -30,7 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
+
 #ifndef __ethercat_log_h__
 #define __ethercat_log_h__
 

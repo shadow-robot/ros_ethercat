@@ -42,22 +42,20 @@
 #include <sys/ioctl.h>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
-
 EthercatHardwareDiagnostics::EthercatHardwareDiagnostics() :
 
-    txandrx_errors_(0),
-        device_count_(0),
-        pd_error_(false),
-        halt_after_reset_(false),
-        reset_motors_service_count_(0),
-        halt_motors_service_count_(0),
-        halt_motors_error_count_(0),
-        motors_halted_(false),
-        motors_halted_reason_("")
+  txandrx_errors_(0),
+  device_count_(0),
+  pd_error_(false),
+  halt_after_reset_(false),
+  reset_motors_service_count_(0),
+  halt_motors_service_count_(0),
+  halt_motors_error_count_(0),
+  motors_halted_(false),
+  motors_halted_reason_("")
 {
   resetMaxTiming();
 }
-
 void EthercatHardwareDiagnostics::resetMaxTiming()
 {
   max_pack_command_ = 0.0;
@@ -65,31 +63,29 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
   max_unpack_state_ = 0.0;
   max_publish_ = 0.0;
 }
-
 EthercatHardware::EthercatHardware(const std::string& name,
                                    hardware_interface::HardwareInterface *hw,
                                    const std::string& eth, bool allow_unprogrammed) :
-    hw_(hw),
-        node_(ros::NodeHandle(name)),
-        ni_(0),
-        interface_(eth),
-        this_buffer_(0),
-        prev_buffer_(0),
-        buffer_size_(0),
-        halt_motors_(true),
-        reset_state_(0),
-        max_pd_retries_(10),
-        diagnostics_publisher_(node_),
-        motor_publisher_(node_, "motors_halted", 1, true),
-        device_loader_("ros_ethercat_hardware", "EthercatDevice"),
-        allow_unprogrammed_(allow_unprogrammed)
+  hw_(hw),
+  node_(ros::NodeHandle(name)),
+  ni_(0),
+  interface_(eth),
+  this_buffer_(0),
+  prev_buffer_(0),
+  buffer_size_(0),
+  halt_motors_(true),
+  reset_state_(0),
+  max_pd_retries_(10),
+  diagnostics_publisher_(node_),
+  motor_publisher_(node_, "motors_halted", 1, true),
+  device_loader_("ros_ethercat_hardware", "EthercatDevice"),
+  allow_unprogrammed_(allow_unprogrammed)
 {
   if (!interface_.empty())
     init();
   else
     ROS_DEBUG("No ethercat interface given. EthercatHardware will not be initialized");
 }
-
 EthercatHardware::~EthercatHardware()
 {
   diagnostics_publisher_.stop();
@@ -108,7 +104,6 @@ EthercatHardware::~EthercatHardware()
   delete oob_com_;
   motor_publisher_.stop();
 }
-
 void EthercatHardware::changeState(EtherCAT_SlaveHandler *sh, EC_State new_state)
 {
   unsigned product_code = sh->get_product_code();
@@ -119,15 +114,14 @@ void EthercatHardware::changeState(EtherCAT_SlaveHandler *sh, EC_State new_state
   if (!sh->to_state(new_state))
   {
     ROS_FATAL(
-        "Cannot goto state %d for slave #%d, product code: %u (0x%X), serial: %u (0x%X), revision: %d (0x%X)",
-        new_state,
-        slave, product_code, product_code, serial, serial, revision, revision);
+              "Cannot goto state %d for slave #%d, product code: %u (0x%X), serial: %u (0x%X), revision: %d (0x%X)",
+              new_state,
+              slave, product_code, product_code, serial, serial, revision, revision);
     if ((product_code == 0xbaddbadd) || (serial == 0xbaddbadd) || (revision == 0xbaddbadd))
       ROS_FATAL("Note: 0xBADDBADD indicates that the value was not read correctly from device.");
     exit(EXIT_FAILURE);
   }
 }
-
 void EthercatHardware::init()
 {
   // open temporary socket to use with ioctl
@@ -223,36 +217,40 @@ void EthercatHardware::init()
 
   // Configure EtherCAT slaves
   BOOST_FOREACH(EtherCAT_SlaveHandler *sh, slave_handles)
-  { unsigned slave = sh->get_station_address()-1;
-  if ((slaves_[slave] = configSlave(sh)) == NULL)
   {
-    ROS_FATAL("Unable to configure slave #%d", slave);
-    sleep(1);
-    exit(EXIT_FAILURE);
+    unsigned slave = sh->get_station_address() - 1;
+    if ((slaves_[slave] = configSlave(sh)) == NULL)
+    {
+      ROS_FATAL("Unable to configure slave #%d", slave);
+      sleep(1);
+      exit(EXIT_FAILURE);
+    }
+    buffer_size_ += slaves_[slave]->command_size_ + slaves_[slave]->status_size_;
   }
-  buffer_size_ += slaves_[slave]->command_size_ + slaves_[slave]->status_size_;
-}
 
-// Configure any non-ethercat slaves (appends devices to slaves_ vector)
+  // Configure any non-ethercat slaves (appends devices to slaves_ vector)
   loadNonEthercatDevices();
 
   // Move slave from INIT to PREOP
   BOOST_FOREACH(EtherCAT_SlaveHandler *sh, slave_handles)
-  { changeState(sh,EC_PREOP_STATE);
-}
+  {
+    changeState(sh, EC_PREOP_STATE);
+  }
 
-// Move slave from PREOP to SAFEOP
+  // Move slave from PREOP to SAFEOP
   BOOST_FOREACH(EtherCAT_SlaveHandler *sh, slave_handles)
-  { changeState(sh,EC_SAFEOP_STATE);
-}
+  {
+    changeState(sh, EC_SAFEOP_STATE);
+  }
 
-// Move slave from SAFEOP to OP
-// TODO : move to OP after initializing slave process data
+  // Move slave from SAFEOP to OP
+  // TODO : move to OP after initializing slave process data
   BOOST_FOREACH(EtherCAT_SlaveHandler *sh, slave_handles)
-  { changeState(sh,EC_OP_STATE);
-}
+  {
+    changeState(sh, EC_OP_STATE);
+  }
 
-// Allocate buffers to send and receive commands
+  // Allocate buffers to send and receive commands
   buffers_ = new unsigned char[2 * buffer_size_];
   this_buffer_ = buffers_;
   prev_buffer_ = buffers_ + buffer_size_;
@@ -294,9 +292,9 @@ void EthercatHardware::init()
   }
 
   { // Initialization is now complete. Reduce timeout of EtherCAT txandrx for better realtime performance
-    // Allow timeout to be configured at program load time with rosparam.  
+    // Allow timeout to be configured at program load time with rosparam.
     // This will allow tweaks for systems with different realtime performace
-    static const int MAX_TIMEOUT = 100000;   // 100ms = 100,000us
+    static const int MAX_TIMEOUT = 100000; // 100ms = 100,000us
     static const int DEFAULT_TIMEOUT = 20000; // default to timeout to 20000us = 20ms
     int timeout;
     if (!node_.getParam("realtime_socket_timeout", timeout))
@@ -317,16 +315,16 @@ void EthercatHardware::init()
     }
     timeout_ = timeout;
 
-    // When packet constaining process data is does not return after a given timeout, it is 
+    // When packet constaining process data is does not return after a given timeout, it is
     // assumed to be dropped and the process data will automatically get re-sent.
     // After a number of retries, the driver will halt motors as a safety precaution.
-    // 
-    // The following code allows the number of process data retries to be changed with a rosparam. 
-    // This is needed because lowering the txandrx timeout makes it more likely that a 
+    //
+    // The following code allows the number of process data retries to be changed with a rosparam.
+    // This is needed because lowering the txandrx timeout makes it more likely that a
     // performance hickup in network or OS causes will cause the motors to halt.
     //
     // If number of retries is not specified, use a formula that allows 100ms of dropped packets
-    int max_pd_retries = MAX_TIMEOUT / timeout;  // timeout is in nanoseconds : 20msec = 20000usec 
+    int max_pd_retries = MAX_TIMEOUT / timeout; // timeout is in nanoseconds : 20msec = 20000usec
     static const int MAX_RETRIES = 50, MIN_RETRIES = 1;
     node_.getParam("max_pd_retries", max_pd_retries);
     // Make sure motor halt due to dropped packet takes less than 1/10 of a second
@@ -349,28 +347,23 @@ void EthercatHardware::init()
                                     timeout_,
                                     max_pd_retries_);
 }
-
 EthercatHardwareDiagnosticsPublisher::EthercatHardwareDiagnosticsPublisher(ros::NodeHandle &node) :
-    node_(node),
-        diagnostics_ready_(false),
-        publisher_(node_.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1)),
-        diagnostics_buffer_(NULL),
-        last_dropped_packet_count_(0),
-        last_dropped_packet_time_(0)
-{
-}
-
+  node_(node),
+  diagnostics_ready_(false),
+  publisher_(node_.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1)),
+  diagnostics_buffer_(NULL),
+  last_dropped_packet_count_(0),
+  last_dropped_packet_time_(0){ }
 EthercatHardwareDiagnosticsPublisher::~EthercatHardwareDiagnosticsPublisher()
 {
   delete[] diagnostics_buffer_;
 }
-
 void EthercatHardwareDiagnosticsPublisher::initialize(
-    const string &interface, unsigned int buffer_size,
-    const std::vector<boost::shared_ptr<EthercatDevice> > &slaves,
-    unsigned int num_ethercat_devices,
-    unsigned timeout,
-    unsigned max_pd_retries)
+                                                      const string &interface, unsigned int buffer_size,
+                                                      const std::vector<boost::shared_ptr<EthercatDevice> > &slaves,
+                                                      unsigned int num_ethercat_devices,
+                                                      unsigned timeout,
+                                                      unsigned max_pd_retries)
 {
   interface_ = interface;
   buffer_size_ = buffer_size;
@@ -388,9 +381,8 @@ void EthercatHardwareDiagnosticsPublisher::initialize(
   ethernet_interface_info_.initialize(interface);
 
   diagnostics_thread_ = boost::thread(
-      boost::bind(&EthercatHardwareDiagnosticsPublisher::diagnosticsThreadFunc, this));
+                                      boost::bind(&EthercatHardwareDiagnosticsPublisher::diagnosticsThreadFunc, this));
 }
-
 void EthercatHardwareDiagnosticsPublisher::publish(
                                                    const unsigned char *buffer,
                                                    const EthercatHardwareDiagnostics &diagnostics)
@@ -407,14 +399,12 @@ void EthercatHardwareDiagnosticsPublisher::publish(
     diagnostics_cond_.notify_one();
   }
 }
-
 void EthercatHardwareDiagnosticsPublisher::stop()
 {
   diagnostics_thread_.interrupt();
   diagnostics_thread_.join();
   publisher_.shutdown();
 }
-
 void EthercatHardwareDiagnosticsPublisher::diagnosticsThreadFunc()
 {
   try
@@ -435,18 +425,16 @@ void EthercatHardwareDiagnosticsPublisher::diagnosticsThreadFunc()
     return;
   }
 }
-
 void EthercatHardwareDiagnosticsPublisher::timingInformation(
-    diagnostic_updater::DiagnosticStatusWrapper &status,
-    const string &key,
-    const accumulator_set<double, stats<tag::max, tag::mean> > &acc,
-    double max)
+                                                             diagnostic_updater::DiagnosticStatusWrapper &status,
+                                                             const string &key,
+                                                             const accumulator_set<double, stats<tag::max, tag::mean> > &acc,
+                                                             double max)
 {
   status.addf(key + " Avg (us)", "%5.4f", extract_result<tag::mean>(acc) * 1e6); // Average over last 1 second
   status.addf(key + " 1 Sec Max (us)", "%5.4f", extract_result<tag::max>(acc) * 1e6); // Max over last 1 second
-  status.addf(key + " Max (us)", "%5.4f", max * 1e6);                            // Max since start
+  status.addf(key + " Max (us)", "%5.4f", max * 1e6); // Max since start
 }
-
 void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
 {
   ros::Time now(ros::Time::now());
@@ -510,33 +498,33 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   status_.addf("Halt motors service count", "%d", diagnostics_.halt_motors_service_count_);
   status_.addf("Halt motors error count", "%d", diagnostics_.halt_motors_error_count_);
 
-  { // Publish ethercat network interface counters 
+  { // Publish ethercat network interface counters
     const struct netif_counters *c = &diagnostics_.counters_;
     status_.add("Input Thread", (diagnostics_.input_thread_is_stopped_ ? "Stopped" : "Running"));
-    status_.addf("Sent Packets", "%llu", (unsigned long long)c->sent);
-    status_.addf("Received Packets", "%llu", (unsigned long long)c->received);
-    status_.addf("Collected Packets", "%llu", (unsigned long long)c->collected);
-    status_.addf("Dropped Packets", "%llu", (unsigned long long)c->dropped);
-    status_.addf("TX Errors", "%llu", (unsigned long long)c->tx_error);
-    status_.addf("TX Network Down", "%llu", (unsigned long long)c->tx_net_down);
-    status_.addf("TX Would Block", "%llu", (unsigned long long)c->tx_would_block);
-    status_.addf("TX No Buffers", "%llu", (unsigned long long)c->tx_no_bufs);
-    status_.addf("TX Queue Full", "%llu", (unsigned long long)c->tx_full);
-    status_.addf("RX Runt Packet", "%llu", (unsigned long long)c->rx_runt_pkt);
-    status_.addf("RX Not EtherCAT", "%llu", (unsigned long long)c->rx_not_ecat);
-    status_.addf("RX Other EML", "%llu", (unsigned long long)c->rx_other_eml);
-    status_.addf("RX Bad Index", "%llu", (unsigned long long)c->rx_bad_index);
-    status_.addf("RX Bad Sequence", "%llu", (unsigned long long)c->rx_bad_seqnum);
-    status_.addf("RX Duplicate Sequence", "%llu", (unsigned long long)c->rx_dup_seqnum);
-    status_.addf("RX Duplicate Packet", "%llu", (unsigned long long)c->rx_dup_pkt);
-    status_.addf("RX Bad Order", "%llu", (unsigned long long)c->rx_bad_order);
-    status_.addf("RX Late Packet", "%llu", (unsigned long long)c->rx_late_pkt);
-    status_.addf("RX Late Packet RTT", "%llu", (unsigned long long)c->rx_late_pkt_rtt_us);
+    status_.addf("Sent Packets", "%llu", (unsigned long long) c->sent);
+    status_.addf("Received Packets", "%llu", (unsigned long long) c->received);
+    status_.addf("Collected Packets", "%llu", (unsigned long long) c->collected);
+    status_.addf("Dropped Packets", "%llu", (unsigned long long) c->dropped);
+    status_.addf("TX Errors", "%llu", (unsigned long long) c->tx_error);
+    status_.addf("TX Network Down", "%llu", (unsigned long long) c->tx_net_down);
+    status_.addf("TX Would Block", "%llu", (unsigned long long) c->tx_would_block);
+    status_.addf("TX No Buffers", "%llu", (unsigned long long) c->tx_no_bufs);
+    status_.addf("TX Queue Full", "%llu", (unsigned long long) c->tx_full);
+    status_.addf("RX Runt Packet", "%llu", (unsigned long long) c->rx_runt_pkt);
+    status_.addf("RX Not EtherCAT", "%llu", (unsigned long long) c->rx_not_ecat);
+    status_.addf("RX Other EML", "%llu", (unsigned long long) c->rx_other_eml);
+    status_.addf("RX Bad Index", "%llu", (unsigned long long) c->rx_bad_index);
+    status_.addf("RX Bad Sequence", "%llu", (unsigned long long) c->rx_bad_seqnum);
+    status_.addf("RX Duplicate Sequence", "%llu", (unsigned long long) c->rx_dup_seqnum);
+    status_.addf("RX Duplicate Packet", "%llu", (unsigned long long) c->rx_dup_pkt);
+    status_.addf("RX Bad Order", "%llu", (unsigned long long) c->rx_bad_order);
+    status_.addf("RX Late Packet", "%llu", (unsigned long long) c->rx_late_pkt);
+    status_.addf("RX Late Packet RTT", "%llu", (unsigned long long) c->rx_late_pkt_rtt_us);
 
     double rx_late_pkt_rtt_us_avg = 0.0;
     if (c->rx_late_pkt > 0)
     {
-      rx_late_pkt_rtt_us_avg = ((double)c->rx_late_pkt_rtt_us_sum) / ((double)c->rx_late_pkt);
+      rx_late_pkt_rtt_us_avg = ((double) c->rx_late_pkt_rtt_us_sum) / ((double) c->rx_late_pkt);
     }
     status_.addf("RX Late Packet Avg RTT", "%f", rx_late_pkt_rtt_us_avg);
 
@@ -571,7 +559,6 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   diagnostic_array_.header.stamp = ros::Time::now();
   publisher_.publish(diagnostic_array_);
 }
-
 void EthercatHardware::update(bool reset, bool halt)
 {
   // Update current time
@@ -589,7 +576,7 @@ void EthercatHardware::update(bool reset, bool halt)
   }
 
   // Resetting devices should clear device errors and release devices from halt.
-  // To reduce load on power system, release devices from halt, one at a time 
+  // To reduce load on power system, release devices from halt, one at a time
   const unsigned CYCLES_PER_HALT_RELEASE = 2; // Wait two cycles between releasing each device
   if (reset)
   {
@@ -624,7 +611,7 @@ void EthercatHardware::update(bool reset, bool halt)
   // Send/receive device proccess data
   bool success = txandrx_PD(buffer_size_, this_buffer_, max_pd_retries_);
 
-  ros::Time txandrx_end_time(ros::Time::now());  // Also begining of unpack_state 
+  ros::Time txandrx_end_time(ros::Time::now()); // Also begining of unpack_state
   diagnostics_.txandrx_acc_((txandrx_end_time - txandrx_start_time).toSec());
 
   if (!success)
@@ -659,7 +646,7 @@ void EthercatHardware::update(bool reset, bool halt)
   ros::Time unpack_end_time;
   if (diagnostics_.collect_extra_timing_)
   {
-    unpack_end_time = ros::Time::now();  // also start of publish time                            
+    unpack_end_time = ros::Time::now(); // also start of publish time
     diagnostics_.unpack_state_acc_((unpack_end_time - txandrx_end_time).toSec());
   }
 
@@ -678,7 +665,6 @@ void EthercatHardware::update(bool reset, bool halt)
     diagnostics_.publish_acc_((publish_end_time - unpack_end_time).toSec());
   }
 }
-
 void EthercatHardware::haltMotors(bool error, const char* reason)
 {
   if (!halt_motors_)
@@ -703,13 +689,11 @@ void EthercatHardware::haltMotors(bool error, const char* reason)
   diagnostics_.motors_halted_ = true;
   halt_motors_ = true;
 }
-
 void EthercatHardware::updateAccMax(double &max,
                                     const accumulator_set<double, stats<tag::max, tag::mean> > &acc)
 {
   max = std::max(max, extract_result<tag::max>(acc));
 }
-
 void EthercatHardware::publishDiagnostics()
 {
   // Update max timing values
@@ -734,7 +718,6 @@ void EthercatHardware::publishDiagnostics()
   diagnostics_.unpack_state_acc_ = blank;
   diagnostics_.publish_acc_ = blank;
 }
-
 boost::shared_ptr<EthercatDevice>
 EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 {
@@ -746,7 +729,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
   unsigned slave = sh->get_station_address() - 1;
 
   // The point of this code to find a class whose name matches the EtherCAT
-  // product ID for a given device.  
+  // product ID for a given device.
   // Thus device plugins would register themselves with PLUGINLIB_EXPORT_CLASS
   //
   //    PLUGINLIB_EXPORT_CLASS(class_type, base_class_type)
@@ -756,7 +739,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
   //    <class name="package/serial"
   //           base_class_type="ethercat_hardware::EthercatDevice" />
   //
-  // 
+  //
   // For the WG05 driver (productID = 6805005), this statement would look
   // something like:
   //
@@ -774,26 +757,26 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
   //
   // Unfortunately, we don't know which ROS package that a particular driver is defined in.
   // To account for this, we search through the list of class names, one-by-one and find string where
-  // last part of string matches product ID of device.  
+  // last part of string matches product ID of device.
   stringstream class_name_regex_str;
   class_name_regex_str << "(.*/)?" << product_code;
   boost::regex class_name_regex(class_name_regex_str.str(), boost::regex::extended);
 
   std::vector<std::string> classes = device_loader_.getDeclaredClasses();
   std::string matching_class_name;
-
   BOOST_FOREACH(const std::string &class_name, classes)
-  { if (regex_match(class_name, class_name_regex))
   {
-    if (matching_class_name.size() != 0)
+    if (regex_match(class_name, class_name_regex))
     {
-      ROS_ERROR("Found more than 1 EtherCAT driver for device with product code : %d", product_code);
-      ROS_ERROR("First class name = '%s'.  Second class name = '%s'",
-          class_name.c_str(), matching_class_name.c_str());
+      if (matching_class_name.size() != 0)
+      {
+        ROS_ERROR("Found more than 1 EtherCAT driver for device with product code : %d", product_code);
+        ROS_ERROR("First class name = '%s'.  Second class name = '%s'",
+                  class_name.c_str(), matching_class_name.c_str());
+      }
+      matching_class_name = class_name;
     }
-    matching_class_name = class_name;
   }
-}
 
   if (matching_class_name.size() != 0)
   {
@@ -808,9 +791,9 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
     {
       p.reset();
       ROS_FATAL(
-          "Unable to load plugin for slave #%d, product code: %u (0x%X), serial: %u (0x%X), revision: %d (0x%X)",
-          slave,
-          product_code, product_code, serial, serial, revision, revision);
+                "Unable to load plugin for slave #%d, product code: %u (0x%X), serial: %u (0x%X), revision: %d (0x%X)",
+                slave,
+                product_code, product_code, serial, serial, revision, revision);
       ROS_FATAL("%s", e.what());
     }
   }
@@ -824,18 +807,19 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
     else
     {
       ROS_ERROR(
-          "Unable to load plugin for slave #%d, product code: %u (0x%X), serial: %u (0x%X), revision: %d (0x%X)",
-          slave,
-          product_code, product_code, serial, serial, revision, revision);
+                "Unable to load plugin for slave #%d, product code: %u (0x%X), serial: %u (0x%X), revision: %d (0x%X)",
+                slave,
+                product_code, product_code, serial, serial, revision, revision);
       ROS_ERROR("Possible classes:");
       BOOST_FOREACH(const std::string &class_name, classes)
-      { ROS_ERROR("  %s", class_name.c_str());
-    }
+      {
+        ROS_ERROR("  %s", class_name.c_str());
+      }
 
-    // TODO, use default plugin for ethercat devices that have no driver.
-    // This way, the EtherCAT chain still works.
+      // TODO, use default plugin for ethercat devices that have no driver.
+      // This way, the EtherCAT chain still works.
+    }
   }
-}
 
   if (p != NULL)
   {
@@ -844,7 +828,6 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   return p;
 }
-
 boost::shared_ptr<EthercatDevice>
 EthercatHardware::configNonEthercatDevice(const std::string &name, const std::string &type)
 {
@@ -870,19 +853,17 @@ EthercatHardware::configNonEthercatDevice(const std::string &name, const std::st
 }
 
 // Do this to get access to Struct (std::map) element of XmlRpcValue
+
 class MyXmlRpcValue : public XmlRpc::XmlRpcValue
 {
 public:
   MyXmlRpcValue(XmlRpc::XmlRpcValue &value) :
-      XmlRpc::XmlRpcValue(value)
-  {
-  }
+    XmlRpc::XmlRpcValue(value){ }
   XmlRpcValue::ValueStruct &getMap()
   {
     return *_value.asStruct;
   }
 };
-
 void EthercatHardware::loadNonEthercatDevices()
 {
   // non-EtherCAT device drivers are descibed via struct named "non_ethercat_devices"
@@ -923,49 +904,49 @@ void EthercatHardware::loadNonEthercatDevices()
   MyXmlRpcValue my_devices(devices);
   typedef XmlRpc::XmlRpcValue::ValueStruct::value_type map_item_t;
   BOOST_FOREACH(map_item_t &item, my_devices.getMap())
-  { const std::string &name(item.first);
-  XmlRpc::XmlRpcValue &device_info(item.second);
-
-  if (device_info.getType() != XmlRpc::XmlRpcValue::TypeStruct)
   {
-    ROS_ERROR("non_ethercat_devices/%s is not a struct type", name.c_str());
-    continue;
-  }
+    const std::string & name(item.first);
+    XmlRpc::XmlRpcValue & device_info(item.second);
 
-  if (!device_info.hasMember("type"))
-  {
-    ROS_ERROR("non_ethercat_devices/%s 'type' element", name.c_str());
-    continue;
-  }
+    if (device_info.getType() != XmlRpc::XmlRpcValue::TypeStruct)
+    {
+      ROS_ERROR("non_ethercat_devices/%s is not a struct type", name.c_str());
+      continue;
+    }
 
-  std::string type(static_cast<std::string>(device_info["type"]));
+    if (!device_info.hasMember("type"))
+    {
+      ROS_ERROR("non_ethercat_devices/%s 'type' element", name.c_str());
+      continue;
+    }
 
-  boost::shared_ptr<EthercatDevice> new_device =
-  configNonEthercatDevice(name,type);
-  if (new_device != NULL)
-  {
-    slaves_.push_back(new_device);
+    std::string type(static_cast<std::string> (device_info["type"]));
+
+    boost::shared_ptr<EthercatDevice> new_device =
+      configNonEthercatDevice(name, type);
+    if (new_device != NULL)
+    {
+      slaves_.push_back(new_device);
+    }
   }
 }
-}
-
 void EthercatHardware::collectDiagnostics()
 {
   if (NULL == oob_com_)
     return;
 
-  { // Count number of devices 
+  { // Count number of devices
     EC_Logic *logic = EC_Logic::instance();
     unsigned char p[1];
-    uint16_t length = sizeof(p);
+    uint16_t length = sizeof (p);
 
     // Build read telegram, use slave position
     APRD_Telegram status(logic->get_idx(), // Index
-        0, // Slave position on ethercat chain (auto increment address)
-        0, // ESC physical memory address (start address)
-        logic->get_wkc(), // Working counter
-        length, // Data Length,
-        p); // Buffer to put read result into
+                         0, // Slave position on ethercat chain (auto increment address)
+                         0, // ESC physical memory address (start address)
+                         logic->get_wkc(), // Working counter
+                         length, // Data Length,
+                         p); // Buffer to put read result into
 
     // Put read telegram in ros_ethercat_eml/ethernet frame
     EC_Ethernet_Frame frame(&status);
@@ -985,28 +966,27 @@ void EthercatHardware::collectDiagnostics()
 // Prints (error) counter infomation of network interface driver
 void EthercatHardware::printCounters(std::ostream &os)
 {
-  const struct netif_counters &c(ni_->counters);
+  const struct netif_counters & c(ni_->counters);
   os << "netif counters :" << endl
-      << " sent          = " << c.sent << endl
-      << " received      = " << c.received << endl
-      << " collected     = " << c.collected << endl
-      << " dropped       = " << c.dropped << endl
-      << " tx_error      = " << c.tx_error << endl
-      << " tx_net_down   = " << c.tx_net_down << endl
-      << " tx_would_block= " << c.tx_would_block << endl
-      << " tx_no_bufs    = " << c.tx_no_bufs << endl
-      << " tx_full       = " << c.tx_full << endl
-      << " rx_runt_pkt   = " << c.rx_runt_pkt << endl
-      << " rx_not_ecat   = " << c.rx_not_ecat << endl
-      << " rx_other_eml  = " << c.rx_other_eml << endl
-      << " rx_bad_index  = " << c.rx_bad_index << endl
-      << " rx_bad_seqnum = " << c.rx_bad_seqnum << endl
-      << " rx_dup_seqnum = " << c.rx_dup_seqnum << endl
-      << " rx_dup_pkt    = " << c.rx_dup_pkt << endl
-      << " rx_bad_order  = " << c.rx_bad_order << endl
-      << " rx_late_pkt   = " << c.rx_late_pkt << endl;
+    << " sent          = " << c.sent << endl
+    << " received      = " << c.received << endl
+    << " collected     = " << c.collected << endl
+    << " dropped       = " << c.dropped << endl
+    << " tx_error      = " << c.tx_error << endl
+    << " tx_net_down   = " << c.tx_net_down << endl
+    << " tx_would_block= " << c.tx_would_block << endl
+    << " tx_no_bufs    = " << c.tx_no_bufs << endl
+    << " tx_full       = " << c.tx_full << endl
+    << " rx_runt_pkt   = " << c.rx_runt_pkt << endl
+    << " rx_not_ecat   = " << c.rx_not_ecat << endl
+    << " rx_other_eml  = " << c.rx_other_eml << endl
+    << " rx_bad_index  = " << c.rx_bad_index << endl
+    << " rx_bad_seqnum = " << c.rx_bad_seqnum << endl
+    << " rx_dup_seqnum = " << c.rx_dup_seqnum << endl
+    << " rx_dup_pkt    = " << c.rx_dup_pkt << endl
+    << " rx_bad_order  = " << c.rx_bad_order << endl
+    << " rx_late_pkt   = " << c.rx_late_pkt << endl;
 }
-
 bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, unsigned tries)
 {
   // Try multiple times to get proccess data to device
@@ -1024,11 +1004,10 @@ bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, u
   }
   return success;
 }
-
 bool EthercatHardware::publishTrace(int position, const string &reason, unsigned level,
                                     unsigned delay)
 {
-  if (position >= (int)slaves_.size())
+  if (position >= (int) slaves_.size())
   {
     ROS_WARN("Invalid device position %d.  Use 0-%d, or -1.", position, int(slaves_.size()) - 1);
     return false;

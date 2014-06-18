@@ -64,7 +64,6 @@ using ros_ethercat_model::RobotState;
 class MechStatsPublisher
 {
 public:
-
   MechStatsPublisher(NodeHandle &nh, RobotState &state) :
     state_(state),
     pub_mech_stats_(nh, "mechanism_statistics", 1),
@@ -75,9 +74,8 @@ public:
 
     double publish_rate_mechanism_stats;
     nh.param("mechanism_statistics_publish_rate", publish_rate_mechanism_stats, 1.0);
-    publish_period_mechanism_stats_ = Duration(1.0/fmax(0.000001, publish_rate_mechanism_stats));
+    publish_period_mechanism_stats_ = Duration(1.0 / fmax(0.000001, publish_rate_mechanism_stats));
   }
-
   void publish()
   {
     Time now = Time::now();
@@ -88,27 +86,27 @@ public:
         while (last_published_mechanism_stats_ + publish_period_mechanism_stats_ < now)
           last_published_mechanism_stats_ = last_published_mechanism_stats_ + publish_period_mechanism_stats_;
 
-        unordered_map<string, JointState>::iterator jin = state_.joint_states_.begin();
+        ptr_unordered_map<string, JointState>::iterator jin = state_.joint_states_.begin();
         vector<JointStatistics>::iterator jout = pub_mech_stats_.msg_.joint_statistics.begin();
         while (jin != state_.joint_states_.end() &&
-              jout != pub_mech_stats_.msg_.joint_statistics.end())
+               jout != pub_mech_stats_.msg_.joint_statistics.end())
         {
-          int type = jin->second.joint_->type;
+          int type = jin->second->joint_->type;
           if (type != urdf::Joint::REVOLUTE && type != urdf::Joint::CONTINUOUS && type != urdf::Joint::PRISMATIC)
             continue;
           jout->timestamp = now;
-          jout->name = jin->second.joint_->name;
-          jout->position = jin->second.position_;
-          jout->velocity = jin->second.velocity_;
-          jout->measured_effort = jin->second.measured_effort_;
-          jout->commanded_effort = jin->second.commanded_effort_;
-          jout->is_calibrated = jin->second.calibrated_;
-          jout->violated_limits = jin->second.joint_statistics_.violated_limits_;
-          jout->min_position = jin->second.joint_statistics_.min_position_;
-          jout->max_position = jin->second.joint_statistics_.max_position_;
-          jout->max_abs_velocity = jin->second.joint_statistics_.max_abs_velocity_;
-          jout->max_abs_effort = jin->second.joint_statistics_.max_abs_effort_;
-          jin->second.joint_statistics_.reset();
+          jout->name = jin->second->joint_->name;
+          jout->position = jin->second->position_;
+          jout->velocity = jin->second->velocity_;
+          jout->measured_effort = jin->second->measured_effort_;
+          jout->commanded_effort = jin->second->commanded_effort_;
+          jout->is_calibrated = jin->second->calibrated_;
+          jout->violated_limits = jin->second->joint_statistics_.violated_limits_;
+          jout->min_position = jin->second->joint_statistics_.min_position_;
+          jout->max_position = jin->second->joint_statistics_.max_position_;
+          jout->max_abs_velocity = jin->second->joint_statistics_.max_abs_velocity_;
+          jout->max_abs_effort = jin->second->joint_statistics_.max_abs_effort_;
+          jin->second->joint_statistics_.reset();
           ++jin;
           ++jout;
         }
@@ -116,7 +114,7 @@ public:
         ptr_unordered_map<string, Actuator>::iterator ain = state_.actuators_.begin();
         vector<ActuatorStatistics>::iterator aout = pub_mech_stats_.msg_.actuator_statistics.begin();
         while (ain != state_.actuators_.end() &&
-              aout != pub_mech_stats_.msg_.actuator_statistics.end())
+               aout != pub_mech_stats_.msg_.actuator_statistics.end())
         {
           aout->timestamp = now;
           aout->name = ain->first;

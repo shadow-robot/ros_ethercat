@@ -30,7 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
- 
+
 #include "ros_ethercat_eml/ethercat_FSM.h"
 #include "ros_ethercat_eml/ethercat_AL.h"
 #include "ros_ethercat_eml/ethercat_slave_handler.h"
@@ -61,55 +61,59 @@ EC_ESM_Ops::EC_ESM_Ops(EtherCAT_SlaveHandler * a_SH)
 static const unsigned int EC_ESM_OPS_MAX_RETRIES = 10;
 
 bool
-		EC_ESM_Ops::set_state(EC_State a_state)
+EC_ESM_Ops::set_state(EC_State a_state)
 {
-	static const uint16_t AL_Control_Size = EC_Slave_RD[AL_Control].size;
-	EC_ALControl al_control(a_state,false);
-	unsigned char AL_Control_data[AL_Control_Size];
-	al_control.dump(AL_Control_data);
-	NPWR_Telegram AL_control_telegram(m_logic_instance->get_idx(),
-												 m_SH->get_station_address(),
-												 EC_Slave_RD[AL_Control].ado,
-												 m_logic_instance->get_wkc(),
-												 AL_Control_Size,
-												 AL_Control_data);
-	EC_Ethernet_Frame AL_control_frame(&AL_control_telegram);
+  static const uint16_t AL_Control_Size = EC_Slave_RD[AL_Control].size;
+  EC_ALControl al_control(a_state, false);
+  unsigned char AL_Control_data[AL_Control_Size];
+  al_control.dump(AL_Control_data);
+  NPWR_Telegram AL_control_telegram(m_logic_instance->get_idx(),
+                                    m_SH->get_station_address(),
+                                    EC_Slave_RD[AL_Control].ado,
+                                    m_logic_instance->get_wkc(),
+                                    AL_Control_Size,
+                                    AL_Control_data);
+  EC_Ethernet_Frame AL_control_frame(&AL_control_telegram);
 
-	bool succeed;
-	unsigned int tries = 0;
+  bool succeed;
+  unsigned int tries = 0;
 
-	while (tries < EC_ESM_OPS_MAX_RETRIES){
-		succeed = m_dll_instance->txandrx(&AL_control_frame);
-		if (succeed == true){
-			static const uint16_t AL_Status_Size = EC_Slave_RD[AL_Status].size;
-			unsigned char AL_Status_data[AL_Status_Size];
-                        for (unsigned i=0; i<AL_Status_Size; ++i)
-                          AL_Status_data[i] = 0;
-			NPRD_Telegram AL_status_telegram(m_logic_instance->get_idx(),
-														m_SH->get_station_address(),
-														EC_Slave_RD[AL_Status].ado,
-														m_logic_instance->get_wkc(),AL_Status_Size,AL_Status_data);
-			EC_Ethernet_Frame AL_status_frame(&AL_status_telegram);
-			struct timespec sleept;
-			sleept.tv_sec = 0;
-			sleept.tv_nsec = 10*1000*1000; //10ms
-			nanosleep( &sleept, 0);
-			succeed = m_dll_instance->txandrx(&AL_status_frame);
-			if (succeed == true){
-				EC_ALStatus status(AL_Status_data);
-				if ((status.State == a_state ) && (status.Change == false))
-					return true;
-				else 
-					ec_log(EC_LOG_WARNING, "EC_ESM_Ops::set_state() Warning: State trans. failed (try %d), desired=%x, status=%x\n",tries,a_state,status.State);
-			}
-		}
-		else {
-			ec_log(EC_LOG_WARNING, "EC_ESM_Ops::set_state() Warning: Error sending control frame (try %d)\n", tries);
-			struct timespec sleept;
-			sleept.tv_sec = 0;
-			sleept.tv_nsec = 10*1000*1000; //10ms
-			nanosleep( &sleept, 0);
-		}
+  while (tries < EC_ESM_OPS_MAX_RETRIES)
+  {
+    succeed = m_dll_instance->txandrx(&AL_control_frame);
+    if (succeed == true)
+    {
+      static const uint16_t AL_Status_Size = EC_Slave_RD[AL_Status].size;
+      unsigned char AL_Status_data[AL_Status_Size];
+      for (unsigned i = 0; i < AL_Status_Size; ++i)
+        AL_Status_data[i] = 0;
+      NPRD_Telegram AL_status_telegram(m_logic_instance->get_idx(),
+                                       m_SH->get_station_address(),
+                                       EC_Slave_RD[AL_Status].ado,
+                                       m_logic_instance->get_wkc(), AL_Status_Size, AL_Status_data);
+      EC_Ethernet_Frame AL_status_frame(&AL_status_telegram);
+      struct timespec sleept;
+      sleept.tv_sec = 0;
+      sleept.tv_nsec = 10 * 1000 * 1000; //10ms
+      nanosleep(&sleept, 0);
+      succeed = m_dll_instance->txandrx(&AL_status_frame);
+      if (succeed == true)
+      {
+        EC_ALStatus status(AL_Status_data);
+        if ((status.State == a_state) && (status.Change == false))
+          return true;
+        else
+          ec_log(EC_LOG_WARNING, "EC_ESM_Ops::set_state() Warning: State trans. failed (try %d), desired=%x, status=%x\n", tries, a_state, status.State);
+      }
+    }
+    else
+    {
+      ec_log(EC_LOG_WARNING, "EC_ESM_Ops::set_state() Warning: Error sending control frame (try %d)\n", tries);
+      struct timespec sleept;
+      sleept.tv_sec = 0;
+      sleept.tv_nsec = 10 * 1000 * 1000; //10ms
+      nanosleep(&sleept, 0);
+    }
 
     AL_control_telegram.set_idx(m_logic_instance->get_idx());
     AL_control_telegram.set_wkc(m_logic_instance->get_wkc());
@@ -131,48 +135,51 @@ EC_ESM_Ops::start_mbx_comm()
   // FIXME Check PDI.  Or is this slave specific and should this be
   // passed in via slave specific init commands? Configure all other
   // DLL registers here...
-  
+
   // Set station address
   static const uint16_t address_datalen = EC_Slave_RD[ECAT_Station_Address].size;
   unsigned char address_data[address_datalen];
   (m_SH->get_station_address()).dump(address_data);
   APWR_Telegram address_tg(m_logic_instance->get_idx(),
-			   ringpos2adp(m_SH->get_ring_position()),
-			   EC_Slave_RD[ECAT_Station_Address].ado,
-			   (m_logic_instance->get_wkc()),
-			   address_datalen,
-			   address_data);
+                           ringpos2adp(m_SH->get_ring_position()),
+                           EC_Slave_RD[ECAT_Station_Address].ado,
+                           (m_logic_instance->get_wkc()),
+                           address_datalen,
+                           address_data);
   EC_Ethernet_Frame address_frame(&address_tg);
   bool succeed = m_dll_instance->txandrx(&address_frame);
-  if (succeed == false){
+  if (succeed == false)
+  {
     ec_log(EC_LOG_ERROR, "Error setting Fixed Station Address\n");
     return succeed;
   }
   struct timespec sleept;
   sleept.tv_sec = 0;
-  sleept.tv_nsec = 10*1000*1000; //10ms
-  nanosleep( &sleept, 0);
+  sleept.tv_nsec = 10 * 1000 * 1000; //10ms
+  nanosleep(&sleept, 0);
 
   // From here on, we can use NP telegrams
 
   // MBX initialisation for complex slaves
-  if (m_SH->is_complex()){
+  if (m_SH->is_complex())
+  {
     // Write MBX configuration to slave
     unsigned char mbx_conf_data[EC_Slave_RD[Sync_Manager_0].size];
     (m_SH->get_mbx_config()->SM0).dump(mbx_conf_data);
     NPWR_Telegram mbx_conf_tg(m_logic_instance->get_idx(),
-			      m_SH->get_station_address(),
-			      EC_Slave_RD[Sync_Manager_0].ado,
-			      m_logic_instance->get_wkc(),
-			      EC_Slave_RD[Sync_Manager_0].size,
-			      mbx_conf_data);
+                              m_SH->get_station_address(),
+                              EC_Slave_RD[Sync_Manager_0].ado,
+                              m_logic_instance->get_wkc(),
+                              EC_Slave_RD[Sync_Manager_0].size,
+                              mbx_conf_data);
     EC_Ethernet_Frame mbx_conf_frame(&mbx_conf_tg);
     succeed = m_dll_instance->txandrx(&mbx_conf_frame);
-    if (succeed == false){
+    if (succeed == false)
+    {
       ec_log(EC_LOG_ERROR, "Error setting SM0 conf for mbx\n");
       return succeed;
     }
-	 nanosleep( &sleept, 0);
+    nanosleep(&sleept, 0);
 
     // Do the same for the second mbx
     (m_SH->get_mbx_config()->SM1).dump(mbx_conf_data);
@@ -180,11 +187,12 @@ EC_ESM_Ops::start_mbx_comm()
     mbx_conf_tg.set_ado(EC_Slave_RD[Sync_Manager_1].ado);
     mbx_conf_tg.set_wkc(m_logic_instance->get_wkc());
     succeed = m_dll_instance->txandrx(&mbx_conf_frame);
-    if (succeed == false){
+    if (succeed == false)
+    {
       ec_log(EC_LOG_ERROR, "Error setting SM1 conf for mbx\n");
       return succeed;
     }
-	 nanosleep( &sleept, 0);
+    nanosleep(&sleept, 0);
 
     // Start mbx communication via router...
     m_router_instance->start();
@@ -199,86 +207,87 @@ EC_ESM_Ops::stop_mbx_comm()
 {
   return set_state(EC_INIT_STATE);
 
-  if (m_SH->is_complex()){
+  if (m_SH->is_complex())
+  {
     // Stop mbx communication via router...
     m_router_instance->stop();
   }
   return true;
 }
 
-
 bool
 EC_ESM_Ops::start_input_update()
 {
   bool succeed = true;
-  
+
   // Write FMMU channels
   static const uint16_t fmmu_data_len = EC_Slave_RD[FMMU_0].size;
   unsigned char fmmu_data[fmmu_data_len];
   uint16_t adp = m_SH->get_station_address();
   uint16_t ado = 0x0000;
-  
-  NPWR_Telegram fmmu_tg(m_logic_instance->get_idx(),adp,ado,(m_logic_instance->get_wkc()),fmmu_data_len,fmmu_data);
+
+  NPWR_Telegram fmmu_tg(m_logic_instance->get_idx(), adp, ado, (m_logic_instance->get_wkc()), fmmu_data_len, fmmu_data);
   EC_Ethernet_Frame fmmu_frame(&fmmu_tg);
   unsigned int i = 0;
-  
+
   assert(m_SH->get_fmmu_config() != NULL);
   while ((succeed == true) && (i < m_SH->get_fmmu_config()->get_num_used_fmmus()))
-    {
-      (*(m_SH->get_fmmu_config()))[i].dump(fmmu_data);
-      ado =  EC_Slave_RD[FMMUx(i)].ado;
-      fmmu_tg.set_ado(ado);
-      succeed = m_dll_instance->txandrx(&fmmu_frame);
+  {
+    (*(m_SH->get_fmmu_config()))[i].dump(fmmu_data);
+    ado = EC_Slave_RD[FMMUx(i)].ado;
+    fmmu_tg.set_ado(ado);
+    succeed = m_dll_instance->txandrx(&fmmu_frame);
 
-      // increase idx and reset wkc
-      fmmu_tg.set_idx(m_logic_instance->get_idx());
-      fmmu_tg.set_wkc((m_logic_instance->get_wkc()));
-      i++;
-    }
+    // increase idx and reset wkc
+    fmmu_tg.set_idx(m_logic_instance->get_idx());
+    fmmu_tg.set_wkc((m_logic_instance->get_wkc()));
+    i++;
+  }
 
-  if (succeed == false) 
-    {
-      ec_log(EC_LOG_ERROR, "error writing fmmu config\n");
-      return false;
-    }
-  
+  if (succeed == false)
+  {
+    ec_log(EC_LOG_ERROR, "error writing fmmu config\n");
+    return false;
+  }
+
   unsigned int j;
   // Part two: write Sync Managers
   if (m_SH->is_complex() == true) // write sync managers starting from 2
     j = 2;
   else // write sync managers starting from 0
     j = 0;
-  
+
   static const uint16_t sm_data_len = EC_Slave_RD[Sync_Manager_0].size;
   unsigned char sm_data[sm_data_len];
-  NPWR_Telegram sm_tg(m_logic_instance->get_idx(),adp,ado,(m_logic_instance->get_wkc()),sm_data_len,sm_data);
+  NPWR_Telegram sm_tg(m_logic_instance->get_idx(), adp, ado, (m_logic_instance->get_wkc()), sm_data_len, sm_data);
   EC_Ethernet_Frame sm_frame(&sm_tg);
-  i=0;
+  i = 0;
   while ((succeed == true) && (i < m_SH->get_pd_config()->get_num_used_sms()))
-    {
-      (*(m_SH->get_pd_config()))[i].dump(sm_data);
-      ado =  EC_Slave_RD[Sync_Managerx(j)].ado;
-      sm_tg.set_ado(ado);
-      succeed = m_dll_instance->txandrx(&sm_frame);
+  {
+    (*(m_SH->get_pd_config()))[i].dump(sm_data);
+    ado = EC_Slave_RD[Sync_Managerx(j)].ado;
+    sm_tg.set_ado(ado);
+    succeed = m_dll_instance->txandrx(&sm_frame);
 
-      // increase idx and reset wkc
-      sm_tg.set_idx(m_logic_instance->get_idx());
-      sm_tg.set_wkc((m_logic_instance->get_wkc()));
-      i++;j++;
-    }
-  if (succeed == false) 
-    {
-      ec_log(EC_LOG_ERROR, "error writing SM config\n");
-      return false;
-    }
-  
+    // increase idx and reset wkc
+    sm_tg.set_idx(m_logic_instance->get_idx());
+    sm_tg.set_wkc((m_logic_instance->get_wkc()));
+    i++;
+    j++;
+  }
+  if (succeed == false)
+  {
+    ec_log(EC_LOG_ERROR, "error writing SM config\n");
+    return false;
+  }
+
   // Note:  In case of complex slaves, check if SDO-Download services
   // to be sent to slave and send them if necessary...
 
   succeed = set_state(EC_SAFEOP_STATE);
   if (succeed)
     m_pdbuf_instance->start();
-    // Ask for start PD transmission in master
+  // Ask for start PD transmission in master
   return succeed;
 
 }
@@ -301,7 +310,7 @@ EC_ESM_Ops::start_output_update()
      (slave)), the slave has to receive the al control indication
      first and then starts writing valid output data , so this is contrary to
      what is told in the master.
-  */
+   */
   return set_state(EC_OP_STATE);
 }
 
@@ -314,14 +323,14 @@ EC_ESM_Ops::stop_output_update()
 
 EC_ESM::EC_ESM(EtherCAT_SlaveHandler * a_SH)
   : EC_ESM_Ops(a_SH)
-    {
-      m_esm_state = &EC_ESM_State::initState;
-    }
+{
+  m_esm_state = &EC_ESM_State::initState;
+}
 
 // ==================================================
 
 EC_State
-EC_ESM_InitState::get_state( ) const
+EC_ESM_InitState::get_state() const
 {
   return EC_INIT_STATE;
 }
@@ -330,37 +339,41 @@ bool
 EC_ESM_InitState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
-  switch(a_state){
-  case EC_INIT_STATE: 
-    succeed = true;
-    break;
-  case EC_PREOP_STATE: 
-    succeed = a_ESM->start_mbx_comm();
-    if (succeed) a_ESM->setState(&preopState);
-    break;
-  case EC_SAFEOP_STATE:
-    succeed = a_ESM->start_mbx_comm();
-    if (succeed){
-      a_ESM->setState(&preopState);
-      succeed = a_ESM->to_state(EC_SAFEOP_STATE);
-    }
-    break;
-  case EC_OP_STATE:
-    succeed = a_ESM->start_mbx_comm();
-    if (succeed){
-      a_ESM->setState(&preopState);
-      succeed = a_ESM->to_state(EC_OP_STATE);
-    }
-    break;
-  default:
-    succeed = false; break;
-    // FIXME implement bootstrap state...
+  switch (a_state)
+  {
+    case EC_INIT_STATE:
+      succeed = true;
+      break;
+    case EC_PREOP_STATE:
+      succeed = a_ESM->start_mbx_comm();
+      if (succeed) a_ESM->setState(&preopState);
+      break;
+    case EC_SAFEOP_STATE:
+      succeed = a_ESM->start_mbx_comm();
+      if (succeed)
+      {
+        a_ESM->setState(&preopState);
+        succeed = a_ESM->to_state(EC_SAFEOP_STATE);
+      }
+      break;
+    case EC_OP_STATE:
+      succeed = a_ESM->start_mbx_comm();
+      if (succeed)
+      {
+        a_ESM->setState(&preopState);
+        succeed = a_ESM->to_state(EC_OP_STATE);
+      }
+      break;
+    default:
+      succeed = false;
+      break;
+      // FIXME implement bootstrap state...
   }
   return succeed;
 }
 
 EC_State
-EC_ESM_PreOpState::get_state( ) const
+EC_ESM_PreOpState::get_state() const
 {
   return EC_PREOP_STATE;
 }
@@ -369,34 +382,37 @@ bool
 EC_ESM_PreOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
-  switch(a_state){
-  case EC_INIT_STATE: 
-    succeed = a_ESM->stop_mbx_comm();
-    if (succeed) a_ESM->setState(&initState);
-    break;
-  case EC_PREOP_STATE: 
-    succeed = true;
-    break;
-  case EC_SAFEOP_STATE:
-    succeed = a_ESM->start_input_update();
-    if (succeed) a_ESM->setState(&safeopState);
-    break;
-  case EC_OP_STATE:
-    succeed = a_ESM->start_input_update();
-    if (succeed){
-      a_ESM->setState(&safeopState);
-      succeed = a_ESM->to_state(EC_OP_STATE);
-    }
-    break;
-  default:
-    succeed = false; break;
-    // FIXME implement bootstrap state...
+  switch (a_state)
+  {
+    case EC_INIT_STATE:
+      succeed = a_ESM->stop_mbx_comm();
+      if (succeed) a_ESM->setState(&initState);
+      break;
+    case EC_PREOP_STATE:
+      succeed = true;
+      break;
+    case EC_SAFEOP_STATE:
+      succeed = a_ESM->start_input_update();
+      if (succeed) a_ESM->setState(&safeopState);
+      break;
+    case EC_OP_STATE:
+      succeed = a_ESM->start_input_update();
+      if (succeed)
+      {
+        a_ESM->setState(&safeopState);
+        succeed = a_ESM->to_state(EC_OP_STATE);
+      }
+      break;
+    default:
+      succeed = false;
+      break;
+      // FIXME implement bootstrap state...
   }
   return succeed;
 }
 
 EC_State
-EC_ESM_SafeOpState::get_state( ) const
+EC_ESM_SafeOpState::get_state() const
 {
   return EC_SAFEOP_STATE;
 }
@@ -405,71 +421,78 @@ bool
 EC_ESM_SafeOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
-  switch(a_state){
-  case EC_INIT_STATE: 
-    succeed = a_ESM->stop_input_update();
-    if (succeed){
-      succeed = a_ESM->stop_mbx_comm();
-      if (succeed) a_ESM->setState(&initState);
-    }
-    break;
-  case EC_PREOP_STATE: 
+  switch (a_state)
+  {
+    case EC_INIT_STATE:
+      succeed = a_ESM->stop_input_update();
+      if (succeed)
+      {
+        succeed = a_ESM->stop_mbx_comm();
+        if (succeed) a_ESM->setState(&initState);
+      }
+      break;
+    case EC_PREOP_STATE:
       succeed = a_ESM->stop_input_update();
       if (succeed) a_ESM->setState(&preopState);
-    break;
-  case EC_SAFEOP_STATE:
-    succeed = true;
-    break;
-  case EC_OP_STATE:
-    succeed = a_ESM->start_output_update();
-    if (succeed) a_ESM->setState(&opState);
-    break;
-  default:
-    succeed = false; break;
-    // FIXME implement bootstrap state...
+      break;
+    case EC_SAFEOP_STATE:
+      succeed = true;
+      break;
+    case EC_OP_STATE:
+      succeed = a_ESM->start_output_update();
+      if (succeed) a_ESM->setState(&opState);
+      break;
+    default:
+      succeed = false;
+      break;
+      // FIXME implement bootstrap state...
   }
   return succeed;
 }
 
 EC_State
-EC_ESM_OpState::get_state( ) const
+EC_ESM_OpState::get_state() const
 {
   return EC_OP_STATE;
 }
-
 
 bool
 EC_ESM_OpState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
-  switch(a_state){
-  case EC_INIT_STATE: 
-    succeed = a_ESM->stop_output_update();
-    if (succeed){ 
-      succeed = a_ESM->stop_input_update();
-      if (succeed){
-	succeed = a_ESM->stop_mbx_comm();
-	if (succeed) a_ESM->setState(&initState);
+  switch (a_state)
+  {
+    case EC_INIT_STATE:
+      succeed = a_ESM->stop_output_update();
+      if (succeed)
+      {
+        succeed = a_ESM->stop_input_update();
+        if (succeed)
+        {
+          succeed = a_ESM->stop_mbx_comm();
+          if (succeed) a_ESM->setState(&initState);
+        }
       }
-    }
-    break;
-  case EC_PREOP_STATE: 
-    succeed = a_ESM->stop_output_update();
-    if (succeed){ 
-      succeed = a_ESM->stop_input_update();
-      if (succeed) a_ESM->setState(&preopState);
-    }
-    break;
-  case EC_SAFEOP_STATE:
-    succeed = a_ESM->stop_output_update();
-    if (succeed) a_ESM->setState(&safeopState);
-    break;
-  case EC_OP_STATE:
-    succeed = true;
-    break;
-  default:
-    succeed = false; break;
-    // FIXME implement bootstrap state...
+      break;
+    case EC_PREOP_STATE:
+      succeed = a_ESM->stop_output_update();
+      if (succeed)
+      {
+        succeed = a_ESM->stop_input_update();
+        if (succeed) a_ESM->setState(&preopState);
+      }
+      break;
+    case EC_SAFEOP_STATE:
+      succeed = a_ESM->stop_output_update();
+      if (succeed) a_ESM->setState(&safeopState);
+      break;
+    case EC_OP_STATE:
+      succeed = true;
+      break;
+    default:
+      succeed = false;
+      break;
+      // FIXME implement bootstrap state...
   }
   return succeed;
 }

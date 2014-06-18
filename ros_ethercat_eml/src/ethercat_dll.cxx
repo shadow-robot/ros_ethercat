@@ -44,10 +44,8 @@
 EtherCAT_DataLinkLayer * EtherCAT_DataLinkLayer::m_instance = 0;
 
 EtherCAT_DataLinkLayer::EtherCAT_DataLinkLayer()
-:
-    m_if(0)
-{
-}
+  :
+  m_if(0){ }
 
 EtherCAT_DataLinkLayer * EtherCAT_DataLinkLayer::instance(void)
 {

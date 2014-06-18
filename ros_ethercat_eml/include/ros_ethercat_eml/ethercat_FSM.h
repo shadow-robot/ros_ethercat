@@ -50,6 +50,7 @@ class EtherCAT_PD_Buffer;
 #include "ros_ethercat_eml/ethercat_slave_memory.h"
 
 /// EtherCAT State Machine Operations
+
 class EC_ESM_Ops
 {
 protected:
@@ -66,7 +67,7 @@ protected:
   /// Stop Output update
   bool stop_output_update();
 
-  protected:
+protected:
   /// Constructor
   /** @param a_SH pointer to slave handler
    */
@@ -94,6 +95,7 @@ class EC_ESM_SafeOpState;
 class EC_ESM_OpState;
 
 /// ESM State Interface class
+
 /** @todo The bootstrap state is currently not implemented
  */
 class EC_ESM_State
@@ -101,9 +103,7 @@ class EC_ESM_State
   friend class EC_ESM;
 
 public:
-  virtual ~EC_ESM_State()
-  {
-  }
+  virtual ~EC_ESM_State(){ }
 
   /// Change the state of an EtherCAT state machine
   /** @param a_ESM pointer to the EtherCAT state machine
@@ -116,7 +116,7 @@ public:
    */
   virtual bool to_state(EC_ESM * a_ESM, EC_State a_state) = 0;
   virtual EC_State get_state() const = 0;
-  protected:
+protected:
   static EC_ESM_InitState initState;
   static EC_ESM_PreOpState preopState;
   static EC_ESM_SafeOpState safeopState;
@@ -124,6 +124,7 @@ public:
 };
 
 /// EtherCAT State Machine
+
 /** @todo Unexpected transitions in the state of the slave (via slaves
  application, only for complex slaves) are not dealt with for
  now...  This should probably be fixed using a special mailbox msg or a polling
@@ -151,7 +152,6 @@ public:
   {
     return (m_esm_state->to_state(this, a_state));
   }
-
   EC_State get_state()
   {
     return m_esm_state->get_state();

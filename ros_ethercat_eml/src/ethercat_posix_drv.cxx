@@ -77,13 +77,13 @@
 
 #define NSEC_PER_SEC 1000000000
 
-// Size of buffer that holds message from strerror 
+// Size of buffer that holds message from strerror
 #define ERRBUF_LEN 60
 
 static char* my_strerror(int errnum, char *buf, size_t buflen)
 {
   assert(buflen > 0);
-  assert(buf!=NULL);
+  assert(buf != NULL);
   buf[0] = '\0';
   if (strerror_r(errnum, buf, buflen) != 0)
   {
@@ -102,7 +102,7 @@ static void my_usleep(uint32_t usec)
   while (nanosleep(&req, &rem) != 0)
   {
     int error = errno;
-    ec_log(EC_LOG_ERROR, "%s : Error : %s\n", __func__, my_strerror(error, errbuf, sizeof(errbuf)));
+    ec_log(EC_LOG_ERROR, "%s : Error : %s\n", __func__, my_strerror(error, errbuf, sizeof (errbuf)));
     if (error != EINTR)
     {
       break;
@@ -113,14 +113,15 @@ static void my_usleep(uint32_t usec)
 }
 
 // No longer set socket timeout, but insteads set timeout variable used by pthread_cond_timedwait.
-// Produces the simular semantics as setting socket timeout in non-threaded posix driver 
+// Produces the simular semantics as setting socket timeout in non-threaded posix driver
 // Timeout value it on microseconds
+
 int set_socket_timeout(struct netif* ni, int64_t timeout)
 {
   if ((timeout * 1000) >= NSEC_PER_SEC)
   {
     ec_log(EC_LOG_FATAL, "%s: timeout is too large : %ld\n", __func__, timeout);
-    assert(timeout*1000 < NSEC_PER_SEC);
+    assert(timeout * 1000 < NSEC_PER_SEC);
     return -1;
   }
   ni->timeout_us = timeout;
@@ -141,7 +142,7 @@ static int init_socket(const char* interface)
     int error = errno;
     fprintf(stderr, "Couldn't open raw socket for interface %s : %s\n",
             interface,
-            my_strerror(error, errbuf, sizeof(errbuf)));
+            my_strerror(error, errbuf, sizeof (errbuf)));
     sleep(1);
     tries++;
   }
@@ -181,9 +182,9 @@ static int init_socket(const char* interface)
   //printf("Got interface: index: %d for %s\n", index_ioctl, ifr.ifr_name);
 
   struct timeval tv;
-  tv.tv_sec = ( SOCKET_TIMEOUT_USEC) / 1000000;
-  tv.tv_usec = ( SOCKET_TIMEOUT_USEC) % 1000000;
-  if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof(tv)) != 0)
+  tv.tv_sec = (SOCKET_TIMEOUT_USEC) / 1000000;
+  tv.tv_usec = (SOCKET_TIMEOUT_USEC) % 1000000;
+  if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (void*) &tv, sizeof (tv)) != 0)
   {
     perror("Aborting: Cannot set timeout");
     return -1;
@@ -193,12 +194,12 @@ static int init_socket(const char* interface)
     //printf("Input thread recv timeout has been set to %u usecs.\n", SOCKET_TIMEOUT_USEC);
   }
 
-  memset(&addr, 0, sizeof(addr));
+  memset(&addr, 0, sizeof (addr));
   addr.sll_family = AF_PACKET;
   addr.sll_protocol = htons(0x88A4);
   addr.sll_ifindex = ifr.ifr_ifindex;
 
-  if ((bind(sock, (struct sockaddr *)&addr, sizeof(addr))) < 0)
+  if ((bind(sock, (struct sockaddr *) &addr, sizeof (addr))) < 0)
   {
     perror("Cannot bind to local ip/port");
     close(sock);
@@ -210,7 +211,7 @@ static int init_socket(const char* interface)
 
 int close_socket(struct netif *ni)
 {
-  assert(ni!=NULL);
+  assert(ni != NULL);
   char errbuf[ERRBUF_LEN];
 
   // If sock is < 0, things have not been started
@@ -242,7 +243,7 @@ int close_socket(struct netif *ni)
     if (error != 0)
     {
       ec_log(EC_LOG_ERROR, "%s: error cancelling input thread : %s\n", __func__,
-             my_strerror(error, errbuf, sizeof(errbuf)));
+             my_strerror(error, errbuf, sizeof (errbuf)));
       return -1;
     }
     my_usleep(SOCKET_TIMEOUT_USEC);
@@ -277,14 +278,15 @@ struct eth_msg
   unsigned char data[MAX_ETH_DATA];
 };
 
-// Send packet, if successfull add handle to list of packet awaiting a response. 
+// Send packet, if successfull add handle to list of packet awaiting a response.
 // Returns postive handle to packet list for success.
 // Returns negative value for errors
 // Assumes txandrx_mut is held when this function is called
+
 static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
 {
   struct netif *ni = netif;
-  assert(ni!=NULL);
+  assert(ni != NULL);
   assert(pthread_mutex_lock(&ni->txandrx_mut) == EDEADLK);
 
   char errbuf[ERRBUF_LEN];
@@ -350,7 +352,7 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
   msg_to_send.ether_shost[4] = ((ni->tx_seqnum) >> 8) & 0xFF;
   msg_to_send.ether_shost[5] = ((ni->tx_seqnum) >> 0) & 0xFF;
 
-  // EtherType is ethercat 
+  // EtherType is ethercat
   msg_to_send.ether_type[0] = 0x88;
   msg_to_send.ether_type[1] = 0xA4;
 
@@ -358,19 +360,19 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
   // This prevents wireshark from complianing about parsing errors
   int pkt_len = (msg_len < 60) ? 60 : msg_len;
 
-  // Get send time 
+  // Get send time
   if (clock_gettime(CLOCK_REALTIME, &pkt->tx_time) != 0)
   {
     int error = errno;
     ec_log(EC_LOG_FATAL, "%s: Could not get send_time : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     ++ni->counters.tx_error;
     return -1;
   }
 
   // Send packet - sending should not block.
-  int len_send = send(sock, (unsigned char *)&msg_to_send, pkt_len, MSG_DONTWAIT);
+  int len_send = send(sock, (unsigned char *) &msg_to_send, pkt_len, MSG_DONTWAIT);
   if (len_send < 0)
   {
     int error = errno;
@@ -381,8 +383,8 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
       {
         ec_log(EC_LOG_FATAL, "%s: %llu times : %s\n",
                __func__,
-               (unsigned long long ) ni->counters.tx_net_down,
-               my_strerror(error, errbuf, sizeof(errbuf)));
+               (unsigned long long) ni->counters.tx_net_down,
+               my_strerror(error, errbuf, sizeof (errbuf)));
       }
     }
     else if ((error == EWOULDBLOCK) || (error == EAGAIN))
@@ -393,7 +395,7 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
       {
         ec_log(EC_LOG_FATAL, "%s: %llu times : Cannot Send : would block\n",
                __func__,
-               (unsigned long long ) ni->counters.tx_would_block);
+               (unsigned long long) ni->counters.tx_would_block);
       }
     }
     else if (error == ENOBUFS)
@@ -403,8 +405,8 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
       {
         ec_log(EC_LOG_FATAL, "%s: %llu times : Cannot Send : %s\n",
                __func__,
-               (unsigned long long ) ni->counters.tx_no_bufs,
-               my_strerror(error, errbuf, sizeof(errbuf)));
+               (unsigned long long) ni->counters.tx_no_bufs,
+               my_strerror(error, errbuf, sizeof (errbuf)));
       }
     }
     else
@@ -415,8 +417,8 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
       {
         ec_log(EC_LOG_FATAL, "%s: %llu times : Cannot Send : %s\n",
                __func__,
-               (unsigned long long ) ni->counters.tx_error,
-               my_strerror(error, errbuf, sizeof(errbuf)));
+               (unsigned long long) ni->counters.tx_error,
+               my_strerror(error, errbuf, sizeof (errbuf)));
       }
       last_error = error;
     }
@@ -439,9 +441,9 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
 
   // Generate handle for sent packet
   int handle = 0xFFFFFF &
-      ((pkt->ether_shost[3] << 16) |
-          (pkt->ether_shost[4] << 8) |
-          (pkt->ether_shost[5] << 0));
+    ((pkt->ether_shost[3] << 16) |
+    (pkt->ether_shost[4] << 8) |
+    (pkt->ether_shost[5] << 0));
 
   // Start searching when picking next open packet slot
   ni->next_pkt_index = (ni->next_pkt_index + 1) % PKT_LIST_SIZE;
@@ -452,11 +454,12 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
 }
 
 //  Last two bytes of src MAC address lets us determine seqnum of packet
+
 static unsigned parse_seqnum(uint8_t ether_shost[MAC_ADDRESS_SIZE])
 {
   unsigned seqnum =
-      (((unsigned)ether_shost[4]) << 8) |
-          (((unsigned)ether_shost[5]) << 0);
+    (((unsigned) ether_shost[4]) << 8) |
+    (((unsigned) ether_shost[5]) << 0);
   return seqnum;
 }
 
@@ -470,9 +473,10 @@ enum input_retcode
 // Returns -1 for unrecoverable errors (socket problem, not enough input buffers)
 // Returns 0 for a timeout (no packet ready), or recoverable error (invalid packet received, bad packet format)
 // Assumes txandrx_mut is held when this function is called
+
 static enum input_retcode low_level_input(struct netif * ni)
 {
-  assert(ni!=NULL);
+  assert(ni != NULL);
   assert(pthread_mutex_lock(&ni->txandrx_mut) == EDEADLK);
 
   char errbuf[ERRBUF_LEN];
@@ -494,12 +498,12 @@ static enum input_retcode low_level_input(struct netif * ni)
 
   if (buf == NULL)
   {
-    // No buffer to hold incoming packet      
+    // No buffer to hold incoming packet
     ec_log(EC_LOG_FATAL, "%s : EtherCAT fatal: packet buffer list if full\n", __func__);
     return UNRECOVERABLE_ERROR;
   }
-  assert(sizeof(struct eth_msg) < sizeof(buf->data)); //Const assert?
-  struct eth_msg *msg_received = (struct eth_msg *)buf->data;
+  assert(sizeof (struct eth_msg) < sizeof (buf->data)); //Const assert?
+  struct eth_msg *msg_received = (struct eth_msg *) buf->data;
 
   // Try to receive message from socket
   // Don't hold mutex while blocking on recv, also mark buffer as
@@ -507,7 +511,7 @@ static enum input_retcode low_level_input(struct netif * ni)
   int sock = ni->socket_private;
   buf->is_free = false;
   pthread_mutex_unlock(&ni->txandrx_mut);
-  int len_recv = recv(sock, msg_received, sizeof(*msg_received), 0);
+  int len_recv = recv(sock, msg_received, sizeof (*msg_received), 0);
   pthread_mutex_lock(&ni->txandrx_mut);
   buf->is_free = true;
 
@@ -518,7 +522,7 @@ static enum input_retcode low_level_input(struct netif * ni)
     { // log error, for anthing other than a timeout
       ec_log(EC_LOG_ERROR, "%s: Cannot receive msg: %s\n",
              __func__,
-             my_strerror(error, errbuf, sizeof(errbuf)));
+             my_strerror(error, errbuf, sizeof (errbuf)));
       if (error == EINTR)
       {
         return RECOVERABLE_ERROR;
@@ -531,7 +535,7 @@ static enum input_retcode low_level_input(struct netif * ni)
     return RECOVERABLE_ERROR;
   }
 
-  if (len_recv <= sizeof(ETH_ALEN + ETH_ALEN + 2))
+  if (len_recv <= sizeof (ETH_ALEN + ETH_ALEN + 2))
   {
     ec_log(EC_LOG_ERROR, "%s: recieved runt packet: %d\n", __func__, len_recv);
     ++ni->counters.rx_runt_pkt;
@@ -555,7 +559,7 @@ static enum input_retcode low_level_input(struct netif * ni)
     {
       ec_log(EC_LOG_WARNING,
              "%s: received %llu packets sent out from another EML instance\n",
-             __func__, (unsigned long long ) ni->counters.rx_other_eml);
+             __func__, (unsigned long long) ni->counters.rx_other_eml);
     }
     return RECOVERABLE_ERROR;
   }
@@ -574,7 +578,7 @@ static enum input_retcode low_level_input(struct netif * ni)
 
   // Print warning if this packet is a repeat or is recieved out-of-order
   //  This shouldn't happen with normal setup... It may be worthwhile
-  //  know about this odd situation if it occurs. 
+  //  know about this odd situation if it occurs.
   int16_t diff = (rx_seqnum - ni->rx_seqnum) & 0xFFFF;
   // diff == 1 : Good: this is the next expected packet..
   // diff == 0 : Bad: seems like a duplicate packet has been recieved,
@@ -598,7 +602,7 @@ static enum input_retcode low_level_input(struct netif * ni)
            "low_level_input: warning : got packet in incorrect order: got %d, expected %d\n",
            rx_seqnum, (ni->rx_seqnum + 1) & 0xFFFF);
     ++ni->counters.rx_bad_order;
-    // Don't drop packet might still be uncollected -- 
+    // Don't drop packet might still be uncollected --
     // Allow following to filter it out.
   }
 
@@ -616,7 +620,7 @@ static enum input_retcode low_level_input(struct netif * ni)
     return RECOVERABLE_ERROR;
   }
 
-  // Make sure packet has not arrived already 
+  // Make sure packet has not arrived already
   if ((pkt->buf != NULL))
   {
     ec_log(EC_LOG_ERROR, "low_level_input: got duplicate packet?\n");
@@ -627,7 +631,7 @@ static enum input_retcode low_level_input(struct netif * ni)
   // Record most recently received seqnum
   ni->rx_seqnum = rx_seqnum;
 
-  // Make sure packet has not been collected with rx 
+  // Make sure packet has not been collected with rx
   if ((pkt->is_free == true))
   {
     ec_log(EC_LOG_ERROR,
@@ -641,13 +645,13 @@ static enum input_retcode low_level_input(struct netif * ni)
       int error = errno;
       ec_log(EC_LOG_FATAL, "%s: Could not get recv time for late packet : %s\n",
              __func__,
-             my_strerror(error, errbuf, sizeof(errbuf)));
+             my_strerror(error, errbuf, sizeof (errbuf)));
     }
     else
     {
       unsigned round_trip_time_us =
-          (rx_time.tv_sec - pkt->tx_time.tv_sec) * 1000000 +
-              (rx_time.tv_nsec - pkt->tx_time.tv_nsec) / 1000;
+        (rx_time.tv_sec - pkt->tx_time.tv_sec) * 1000000 +
+        (rx_time.tv_nsec - pkt->tx_time.tv_nsec) / 1000;
       ni->counters.rx_late_pkt_rtt_us = round_trip_time_us;
       ni->counters.rx_late_pkt_rtt_us_sum += round_trip_time_us;
       ec_log(EC_LOG_ERROR,
@@ -668,7 +672,7 @@ static enum input_retcode low_level_input(struct netif * ni)
   {
     ec_log(EC_LOG_FATAL, "%s: cond broadcast : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     return UNRECOVERABLE_ERROR;
   }
 
@@ -677,6 +681,7 @@ static enum input_retcode low_level_input(struct netif * ni)
 }
 
 // Thread that continuously polls input and puts it into queue
+
 void* low_level_input_thread_func(void* data)
 {
   char errbuf[ERRBUF_LEN];
@@ -690,10 +695,10 @@ void* low_level_input_thread_func(void* data)
   {
     ec_log(EC_LOG_FATAL, "%s : Setting thread sched : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
   }
 
-  struct netif * ni = (struct netif *)data;
+  struct netif * ni = (struct netif *) data;
   ec_log(EC_LOG_INFO, "INFO: Starting input thread\n");
   bool stop = false;
   while (stop == false)
@@ -727,7 +732,7 @@ static bool init_pkt(struct outstanding_pkt *pkt)
   pkt->is_free = true;
   pkt->buf = NULL;
   pkt->frame = NULL;
-  memset(pkt->ether_shost, 0, sizeof(pkt->ether_shost));
+  memset(pkt->ether_shost, 0, sizeof (pkt->ether_shost));
 
   int error;
   char errbuf[ERRBUF_LEN];
@@ -737,7 +742,7 @@ static bool init_pkt(struct outstanding_pkt *pkt)
   {
     ec_log(EC_LOG_FATAL, "%s : Initializing rx condition var failed : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     return false;
   }
 
@@ -747,11 +752,12 @@ static bool init_pkt(struct outstanding_pkt *pkt)
 // Tries lookup of packet from queue using handle
 // returns NULL if handle is stall/invalid, or pointer to outstanding pkt otherwise;
 // Assumes txandrx mutex is already held
+
 static struct outstanding_pkt *low_level_lookup(struct EtherCAT_Frame * frame, struct netif * ni,
                                                 int handle)
 {
-  assert(frame!=NULL);
-  assert(ni!=NULL);
+  assert(frame != NULL);
+  assert(ni != NULL);
   assert(pthread_mutex_lock(&ni->txandrx_mut) == EDEADLK);
 
   // Make sure handle makes sense, also make sure it is not a negative number
@@ -770,7 +776,7 @@ static struct outstanding_pkt *low_level_lookup(struct EtherCAT_Frame * frame, s
   ether_shost[4] = (handle >> 8) & 0xFF;
   ether_shost[5] = (handle >> 0) & 0xFF;
 
-  // 3th byte of source MAC address tells us where outstanding packet should be in queue    
+  // 3th byte of source MAC address tells us where outstanding packet should be in queue
   unsigned pkt_index = 0xFF & ether_shost[3];
   if (pkt_index >= PKT_LIST_SIZE)
   {
@@ -807,6 +813,7 @@ static struct outstanding_pkt *low_level_lookup(struct EtherCAT_Frame * frame, s
 // Drop packet from queue of outstanding packets.
 // Returns false if packet d/n seem to exist
 // Assumes txandrx mutex is already held
+
 bool low_level_release(struct EtherCAT_Frame * frame, struct netif * ni, int handle)
 {
   assert(pthread_mutex_lock(&ni->txandrx_mut) == EDEADLK);
@@ -818,7 +825,7 @@ bool low_level_release(struct EtherCAT_Frame * frame, struct netif * ni, int han
     return false;
   }
 
-  // Mark packet buffer as availible  
+  // Mark packet buffer as availible
   if (pkt->buf != NULL)
   {
     init_buf(pkt->buf);
@@ -849,6 +856,7 @@ enum dequeue_retcode
 // Tries retrieving packet from queue using handle
 // returns negative values for error, 0 if no packet is in queue, or postive value if packet is found
 // Assumes txandrx mutex is already held
+
 static int low_level_dequeue(struct EtherCAT_Frame * frame, struct netif * ni, int handle)
 {
   assert(pthread_mutex_lock(&ni->txandrx_mut) == EDEADLK);
@@ -871,10 +879,10 @@ static int low_level_dequeue(struct EtherCAT_Frame * frame, struct netif * ni, i
   // Response packet has been received...
 
   // Get pointer to ethernet packet payout
-  assert(sizeof(struct eth_msg) < sizeof(pkt->buf->data)); //Const assert?
-  struct eth_msg *msg_received = (struct eth_msg *)pkt->buf->data;
+  assert(sizeof (struct eth_msg) < sizeof (pkt->buf->data)); //Const assert?
+  struct eth_msg *msg_received = (struct eth_msg *) pkt->buf->data;
 
-  // Mark packet buffer as availible  
+  // Mark packet buffer as availible
   init_buf(pkt->buf);
 
   // Mare outstanding pkt as unused
@@ -896,9 +904,10 @@ static int low_level_dequeue(struct EtherCAT_Frame * frame, struct netif * ni, i
   return DEQUEUE_SUCCESS; // Good
 }
 
-// Transmits a packet.  
+// Transmits a packet.
 // Returns a negative value for errors, or positive integer handle
 //  handle and frame* should be used to get response with ec_posix_rx()
+
 static int ec_posix_tx(struct EtherCAT_Frame * frame, struct netif * ni)
 {
   assert(ni != NULL);
@@ -913,6 +922,7 @@ static int ec_posix_tx(struct EtherCAT_Frame * frame, struct netif * ni)
 
 // Receives a packet that has been sent with ec_posix_tx()
 // Returns true for success, false for errors or timeout.
+
 static bool ec_posix_rx_common(struct EtherCAT_Frame * frame, struct netif * ni, int handle,
                                bool mayblock)
 {
@@ -928,7 +938,7 @@ static bool ec_posix_rx_common(struct EtherCAT_Frame * frame, struct netif * ni,
   {
     ec_log(EC_LOG_FATAL, "%s: error locking mutex : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     return false;
   }
   pkt = low_level_lookup(frame, ni, handle);
@@ -960,27 +970,27 @@ static bool ec_posix_rx_common(struct EtherCAT_Frame * frame, struct netif * ni,
     // Put loop around pthread_cond_timedwait to handle spurious wakeups
     while (result == DEQUEUE_NOT_FOUND)
     {
-      // Wait on recv condition from input thread 
+      // Wait on recv condition from input thread
       error = pthread_cond_timedwait(&pkt->rx_cond, &ni->txandrx_mut, &timeout);
       if (error != 0)
       {
         if (error == ETIMEDOUT)
         {
-          // Timeout 
+          // Timeout
         }
         else
         {
           ec_log(EC_LOG_FATAL, "%s: error waiting on timed condition : %s\n",
                  __func__,
-                 my_strerror(error, errbuf, sizeof(errbuf)));
+                 my_strerror(error, errbuf, sizeof (errbuf)));
         }
         break;
       }
       else
       {
         result = low_level_dequeue(frame, ni, handle);
-        // dequeue should always return 1 (since we know the packet is there) 
-        // ... unless there was a spurious wakeup. 
+        // dequeue should always return 1 (since we know the packet is there)
+        // ... unless there was a spurious wakeup.
         if (result == DEQUEUE_NOT_FOUND)
         {
           ec_log(EC_LOG_FATAL, "%s: spurious wakeup : dequeue result=%d\n",
@@ -1002,13 +1012,14 @@ static bool ec_posix_rx_common(struct EtherCAT_Frame * frame, struct netif * ni,
   {
     ec_log(EC_LOG_FATAL, "%s: error unlocking mutex : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
   }
   return (result == DEQUEUE_SUCCESS) ? true : false;
 }
 
 // Drops a packet that has been sent with ec_posix_tx()
 // Returns true for success, false for errors
+
 static bool ec_posix_drop(struct EtherCAT_Frame * frame, struct netif * ni, int handle)
 {
   assert(ni != NULL);
@@ -1040,7 +1051,7 @@ static bool ec_posix_drop(struct EtherCAT_Frame * frame, struct netif * ni, int 
   {
     ec_log(EC_LOG_FATAL, "%s: error unlocking mutex : %s\n",
            __func__,
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
   }
 
   return success;
@@ -1048,6 +1059,7 @@ static bool ec_posix_drop(struct EtherCAT_Frame * frame, struct netif * ni, int 
 
 // Receives a packet that has been sent with ec_posix_tx()
 // Returns true for success, false for errors or timeout.
+
 static bool ec_posix_rx(struct EtherCAT_Frame * frame, struct netif * ni, int handle)
 {
   return ec_posix_rx_common(frame, ni, handle, true);
@@ -1055,12 +1067,14 @@ static bool ec_posix_rx(struct EtherCAT_Frame * frame, struct netif * ni, int ha
 
 // Receives a packet that has been sent with ec_posix_tx(), doesn't wait
 // Returns true for success, false for errors or timeout.
+
 static bool ec_posix_rx_nowait(struct EtherCAT_Frame * frame, struct netif * ni, int handle)
 {
   return ec_posix_rx_common(frame, ni, handle, false);
 }
 
-// Only attempt to send one packet 
+// Only attempt to send one packet
+
 static bool ec_posix_txandrx_once(struct EtherCAT_Frame * frame, struct netif * ni)
 {
   assert(ni != NULL);
@@ -1075,6 +1089,7 @@ static bool ec_posix_txandrx_once(struct EtherCAT_Frame * frame, struct netif * 
 }
 
 // Normal txandrx, try sending packet multiple times before giving up.
+
 static bool ec_rtdm_txandrx(struct EtherCAT_Frame * frame, struct netif * netif)
 {
   struct netif *ni = netif;
@@ -1115,7 +1130,7 @@ struct netif* init_ec(const char * interface)
     return 0;
   }
 
-  struct netif* ni = (struct netif*)malloc(sizeof(struct netif));
+  struct netif* ni = (struct netif*) malloc(sizeof (struct netif));
   if (ni == NULL)
   {
     ec_log(EC_LOG_FATAL, "Allocating netif struct failed\n");
@@ -1125,7 +1140,7 @@ struct netif* init_ec(const char * interface)
   if (error != 0)
   {
     ec_log(EC_LOG_FATAL, "Initializing txandrx mutex attr failed : %s\n",
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     free(ni);
     return NULL;
   }
@@ -1134,7 +1149,7 @@ struct netif* init_ec(const char * interface)
   if (error != 0)
   {
     ec_log(EC_LOG_FATAL, "Setting type of mutex attr failed : %s\n",
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     free(ni);
     return NULL;
   }
@@ -1143,7 +1158,7 @@ struct netif* init_ec(const char * interface)
   if (error != 0)
   {
     ec_log(EC_LOG_FATAL, "Initializing txandrx mutex failed : %s\n",
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     free(ni);
     return NULL;
   }
@@ -1172,7 +1187,7 @@ struct netif* init_ec(const char * interface)
   ni->rx_nowait = ec_posix_rx_nowait;
 
   ni->socket_private = sock;
-  memset(&ni->counters, 0, sizeof(ni->counters));
+  memset(&ni->counters, 0, sizeof (ni->counters));
   ni->next_pkt_index = 0;
   ni->tx_seqnum = 0;
   ni->rx_seqnum = 0xffff;
@@ -1181,13 +1196,13 @@ struct netif* init_ec(const char * interface)
 
   ni->unclaimed_packets = 0;
 
-  // To differentiate between different implemenations of EML library, 
+  // To differentiate between different implemenations of EML library,
   // Use a random-ish value for 2nd and 3rd bytes src MAC address
   struct timeval tv;
   if (gettimeofday(&tv, NULL) != 0)
   {
     ec_log(EC_LOG_ERROR, "Gettimeofday : %s\n",
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
   }
   int r = tv.tv_sec ^ tv.tv_usec;
 
@@ -1206,7 +1221,7 @@ struct netif* init_ec(const char * interface)
   if (error != 0)
   {
     ec_log(EC_LOG_FATAL, "Starting input thread failed : %s\n",
-           my_strerror(error, errbuf, sizeof(errbuf)));
+           my_strerror(error, errbuf, sizeof (errbuf)));
     free(ni);
     return NULL;
   }

@@ -46,6 +46,7 @@ class EtherCAT_DataLinkLayer;
 #include "ros_ethercat_eml/ethercat_slave_memory.h"
 
 /// EtherCAT Master instance
+
 class EtherCAT_Master
 {
 public:

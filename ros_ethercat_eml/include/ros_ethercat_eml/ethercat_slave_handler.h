@@ -40,6 +40,7 @@
 class EtherCAT_AL;
 
 /// EtherCAT Slave Handler
+
 class EtherCAT_SlaveHandler : public EC_ESM, public EtherCAT_SlaveConfig
 {
   // Being friendly
@@ -87,7 +88,7 @@ public:
 
   /// Returns and increments sequence number used for duplication mailbox write dectition
   uint8_t get_mbx_counter();
-  protected:
+protected:
 
   /// Position in the EtherCAT logical Ring
   uint16_t m_ring_position;

@@ -4,16 +4,13 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <errno.h>
-
 EthtoolStats::EthtoolStats() :
-    rx_errors_(0),
-        rx_crc_errors_(0),
-        rx_frame_errors_(0),
-        rx_align_errors_(0)
-{
+  rx_errors_(0),
+  rx_crc_errors_(0),
+  rx_frame_errors_(0),
+  rx_align_errors_(0){
   //empty
 }
-
 EthtoolStats& EthtoolStats::operator-=(const EthtoolStats& right)
 {
   this->rx_errors_ -= right.rx_errors_;
@@ -22,18 +19,14 @@ EthtoolStats& EthtoolStats::operator-=(const EthtoolStats& right)
   this->rx_align_errors_ -= right.rx_align_errors_;
   return *this;
 }
-
 EthernetInterfaceInfo::EthernetInterfaceInfo() :
-    sock_(-1),
-        n_stats_(0),
-        ethtool_stats_buf_(NULL),
-        rx_error_index_(-1),
-        rx_crc_error_index_(-1),
-        rx_frame_error_index_(-1),
-        rx_align_error_index_(-1)
-{
-}
-
+  sock_(-1),
+  n_stats_(0),
+  ethtool_stats_buf_(NULL),
+  rx_error_index_(-1),
+  rx_crc_error_index_(-1),
+  rx_frame_error_index_(-1),
+  rx_align_error_index_(-1){ }
 EthernetInterfaceInfo::~EthernetInterfaceInfo()
 {
   delete[] ethtool_stats_buf_;
@@ -41,7 +34,6 @@ EthernetInterfaceInfo::~EthernetInterfaceInfo()
   if (sock_ >= 0)
     close(sock_);
 }
-
 void EthernetInterfaceInfo::initialize(const std::string &interface)
 {
   interface_ = interface;
@@ -58,13 +50,13 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
   getInterfaceState(last_state_);
 
   struct ifreq ifr;
-  memset(&ifr, 0, sizeof(ifr));
-  strncpy(ifr.ifr_name, interface_.c_str(), sizeof(ifr.ifr_name));
+  memset(&ifr, 0, sizeof (ifr));
+  strncpy(ifr.ifr_name, interface_.c_str(), sizeof (ifr.ifr_name));
 
   // Determine number of statictics available from network interface
   struct ethtool_drvinfo drvinfo;
   drvinfo.cmd = ETHTOOL_GDRVINFO;
-  ifr.ifr_data = (caddr_t)&drvinfo;
+  ifr.ifr_data = (caddr_t) & drvinfo;
   int result = ioctl(sock_, SIOCETHTOOL, &ifr);
   if (result < 0)
   {
@@ -78,15 +70,15 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
     return;
   }
 
-  unsigned strings_len = sizeof(ethtool_gstrings) + n_stats_ * ETH_GSTRING_LEN;
+  unsigned strings_len = sizeof (ethtool_gstrings) + n_stats_ * ETH_GSTRING_LEN;
   char *strings_buf = new char[strings_len];
   memset(strings_buf, 0, strings_len);
-  ethtool_gstrings* strings = (ethtool_gstrings*)strings_buf;
+  ethtool_gstrings* strings = (ethtool_gstrings*) strings_buf;
 
   strings->cmd = ETHTOOL_GSTRINGS;
   strings->string_set = ETH_SS_STATS;
   strings->len = n_stats_;
-  ifr.ifr_data = (caddr_t)strings;
+  ifr.ifr_data = (caddr_t) strings;
   result = ioctl(sock_, SIOCETHTOOL, &ifr);
   if (result < 0)
   {
@@ -100,11 +92,11 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
     if (false)
     {
       char s[ETH_GSTRING_LEN + 1];
-      strncpy(s, (const char*)&strings->data[i * ETH_GSTRING_LEN], ETH_GSTRING_LEN);
+      strncpy(s, (const char*) &strings->data[i * ETH_GSTRING_LEN], ETH_GSTRING_LEN);
       s[ETH_GSTRING_LEN] = '\0';
       ROS_WARN("Stat %i : %s", i, s);
     }
-    const char *stat_name = (const char*)&strings->data[i * ETH_GSTRING_LEN];
+    const char *stat_name = (const char*) &strings->data[i * ETH_GSTRING_LEN];
     if (strncmp("rx_errors", stat_name, ETH_GSTRING_LEN) == 0)
     {
       rx_error_index_ = i;
@@ -124,9 +116,9 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
   }
 
   // Everything is complete, allocate memory for ethtool_stats_ buffer
-  // Since not all NICs provide ethtool statistics, use the presence of 
+  // Since not all NICs provide ethtool statistics, use the presence of
   // ethtool_stats_ buffer to indicate initialization was a success.
-  unsigned ethtool_stats_buf_len = sizeof(struct ethtool_stats) + n_stats_ * sizeof(uint64_t);
+  unsigned ethtool_stats_buf_len = sizeof (struct ethtool_stats) +n_stats_ * sizeof (uint64_t);
   ethtool_stats_buf_ = new char[ethtool_stats_buf_len];
 
   if (!getEthtoolStats(orig_stats_))
@@ -137,12 +129,11 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
     ethtool_stats_buf_ = NULL;
   }
 }
-
 bool EthernetInterfaceInfo::getInterfaceState(InterfaceState &state)
 {
   struct ifreq ifr;
-  memset(&ifr, 0, sizeof(ifr));
-  strncpy(ifr.ifr_name, interface_.c_str(), sizeof(ifr.ifr_name));
+  memset(&ifr, 0, sizeof (ifr));
+  strncpy(ifr.ifr_name, interface_.c_str(), sizeof (ifr.ifr_name));
 
   if (ioctl(sock_, SIOCGIFFLAGS, &ifr) < 0)
   {
@@ -154,20 +145,19 @@ bool EthernetInterfaceInfo::getInterfaceState(InterfaceState &state)
   state.running_ = bool(ifr.ifr_flags & IFF_RUNNING);
   return true;
 }
-
 bool EthernetInterfaceInfo::getEthtoolStats(EthtoolStats &s)
 {
   if (!ethtool_stats_buf_)
     return false;
 
   struct ifreq ifr;
-  memset(&ifr, 0, sizeof(ifr));
-  strncpy(ifr.ifr_name, interface_.c_str(), sizeof(ifr.ifr_name));
+  memset(&ifr, 0, sizeof (ifr));
+  strncpy(ifr.ifr_name, interface_.c_str(), sizeof (ifr.ifr_name));
 
-  struct ethtool_stats *stats = (struct ethtool_stats *)ethtool_stats_buf_;
+  struct ethtool_stats *stats = (struct ethtool_stats *) ethtool_stats_buf_;
   stats->cmd = ETHTOOL_GSTATS;
   stats->n_stats = n_stats_;
-  ifr.ifr_data = (caddr_t)stats;
+  ifr.ifr_data = (caddr_t) stats;
   if (ioctl(sock_, SIOCETHTOOL, &ifr) < 0)
   {
     ROS_WARN("Cannot get NIC stats information for %s : %s", interface_.c_str(), strerror(errno));
@@ -193,7 +183,6 @@ bool EthernetInterfaceInfo::getEthtoolStats(EthtoolStats &s)
 
   return true;
 }
-
 void EthernetInterfaceInfo::publishDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &d)
 {
   d.add("Interface", interface_);
@@ -228,7 +217,7 @@ void EthernetInterfaceInfo::publishDiagnostics(diagnostic_updater::DiagnosticSta
 
   EthtoolStats stats;
   bool have_stats = getEthtoolStats(stats);
-  stats -= orig_stats_;  //subtract off orignal counter values
+  stats -= orig_stats_; //subtract off orignal counter values
 
   if (have_stats && (rx_error_index_ >= 0))
     d.addf("RX Errors", "%llu", stats.rx_errors_);

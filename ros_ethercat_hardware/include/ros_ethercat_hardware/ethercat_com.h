@@ -44,19 +44,18 @@
 class EthercatCom
 {
 protected:
-  EthercatCom() {}
+  EthercatCom(){ }
 
 public:
-  virtual bool txandrx(struct EtherCAT_Frame * frame)=0;
-  virtual bool txandrx_once(struct EtherCAT_Frame * frame)=0;
-
-  virtual ~EthercatCom() {}
+  virtual bool txandrx(struct EtherCAT_Frame * frame) = 0;
+  virtual bool txandrx_once(struct EtherCAT_Frame * frame) = 0;
+  virtual ~EthercatCom(){ }
 };
 
 class EthercatDirectCom : public EthercatCom
 {
 public:
-  EthercatDirectCom(EtherCAT_DataLinkLayer *dll) : dll_(dll) {}
+  EthercatDirectCom(EtherCAT_DataLinkLayer *dll) : dll_(dll){ }
 
   bool txandrx(struct EtherCAT_Frame * frame);
   bool txandrx_once(struct EtherCAT_Frame * frame);
@@ -74,7 +73,7 @@ public:
   bool txandrx_once(struct EtherCAT_Frame * frame);
 
   void tx();
-  protected:
+protected:
   bool lock(unsigned line);
   bool trylock(unsigned line);
   bool unlock(unsigned line);
@@ -83,6 +82,7 @@ public:
   pthread_mutex_t mutex_;
   pthread_cond_t share_cond_;
   pthread_cond_t busy_cond_;
+
   enum
   {
     IDLE = 0, READY_TO_SEND = 1, WAITING_TO_RECV = 2

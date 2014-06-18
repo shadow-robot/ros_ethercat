@@ -38,6 +38,7 @@ struct netif;
 class EtherCAT_Frame;
 
 /// Abstract representation of the EtherCAT DLL
+
 class EtherCAT_DataLinkLayer
 {
 public:
@@ -52,7 +53,7 @@ public:
    */
   void attach(struct netif * netif);
 
-  /// transmit and receive EtherCAT frame (blocking call!)  
+  /// transmit and receive EtherCAT frame (blocking call!)
   /** @param a_frame ethercat frame to be sent
    *  NOTE that txandrx will retry sending lost frames.
    */
@@ -60,7 +61,7 @@ public:
 
   /// transmit an EtherCAT frame (non-blocking call)
   /** @param a_frame ethercat frame to be sent
-   *  @return positive or zero handle on success, negative value for error 
+   *  @return positive or zero handle on success, negative value for error
    *  Successfull tx MUST be followed by rx call.
    */
   int tx(EtherCAT_Frame * a_frame);

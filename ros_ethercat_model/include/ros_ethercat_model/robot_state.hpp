@@ -51,6 +51,7 @@
 
 namespace ros_ethercat_model
 {
+
 /** \brief This class provides the controllers with an interface to the robot state
  *
  * Most controllers that need the robot state should use the joint states, to get
@@ -68,7 +69,6 @@ public:
     if (root)
       initXml(root);
   }
-
   void initXml(TiXmlElement *root)
   {
     try
@@ -76,7 +76,9 @@ public:
       if (!robot_model_.initXml(root))
         throw std::runtime_error("Failed to load robot_model_");
 
-      for (TiXmlElement *xit = root->FirstChildElement("transmission"); xit; xit = xit->NextSiblingElement("transmission"))
+      for (TiXmlElement *xit = root->FirstChildElement("transmission");
+           xit;
+           xit = xit->NextSiblingElement("transmission"))
       {
         std::string type(xit->Attribute("type"));
 
@@ -86,22 +88,32 @@ public:
         transmissions_.push_back(t);
 
         std::vector<Actuator*> acts;
-        for (std::vector<std::string>::iterator it = t->actuator_names_.begin(); it != t->actuator_names_.end(); ++it)
+        for (std::vector<std::string>::iterator it = t->actuator_names_.begin();
+             it != t->actuator_names_.end();
+             ++it)
         {
           Actuator *act = getActuator(*it);
           if (!act)
-            throw std::runtime_error(std::string("Transmission ") + t->name_ + " contains undefined actuator " + *it);
+            throw std::runtime_error(std::string("Transmission ") +
+                                     t->name_ +
+                                     " contains undefined actuator " +
+                                     *it);
           acts.push_back(act);
         }
         transmissions_in_.push_back(acts);
 
         std::vector<JointState*> stats;
-        for (std::vector<std::string>::iterator it = t->joint_names_.begin(); it != t->joint_names_.end(); ++it)
+        for (std::vector<std::string>::iterator it = t->joint_names_.begin();
+             it != t->joint_names_.end();
+             ++it)
         {
-          if (!robot_model_.getJoint(*it))
-            throw std::runtime_error(std::string("Failed to find in robot model transmission's joint named: ") + type);
+          JointState *jnt = getJointState(*it);
+          if (!jnt)
+            throw std::runtime_error(std::string("Couldn't find joint named: ") +
+                                     type +
+                                     " in robot model transmission's");
           joint_states_[*it].joint_ = robot_model_.getJoint(*it);
-          stats.push_back(&joint_states_[*it]);
+          stats.push_back(jnt);
         }
         transmissions_out_.push_back(stats);
       }
@@ -112,14 +124,14 @@ public:
     }
   }
 
-  /// Propagete the actuator positions, through the transmissions, to the joint positions
+  /// Propagate the actuator positions, through the transmissions, to the joint positions
   void propagateActuatorPositionToJointPosition()
   {
     for (size_t i = 0; i < transmissions_.size(); ++i)
       transmissions_[i].propagatePosition(transmissions_in_[i], transmissions_out_[i]);
   }
 
-  /// Propagete the joint efforts, through the transmissions, to the actuator efforts
+  /// Propagate the joint efforts, through the transmissions, to the actuator efforts
   void propagateJointEffortToActuatorEffort()
   {
     for (size_t i = 0; i < transmissions_.size(); ++i)
@@ -143,7 +155,6 @@ public:
   {
     return joint_states_.count(name) ? &joint_states_[name] : NULL;
   }
-
   ros::Time getTime()
   {
     return current_time_;
@@ -157,7 +168,7 @@ public:
   std::vector<std::vector<JointState*> > transmissions_out_;
 
   /// The joint states mapped to the joint names
-  boost::unordered_map<std::string, JointState> joint_states_;
+  boost::ptr_unordered_map<std::string, JointState> joint_states_;
 
   /// The actuators mapped to their names
   boost::ptr_unordered_map<std::string, Actuator> actuators_;
