@@ -64,7 +64,9 @@ public:
   JointStatistics() :
     min_position_(0), max_position_(0),
     max_abs_velocity_(0.0), max_abs_effort_(0.0),
-    violated_limits_(false), initialized_(false){ }
+    violated_limits_(false), initialized_(false)
+  {
+  }
 
   void update(JointState *jnt);
   void reset()
@@ -165,8 +167,14 @@ public:
 
   /// Constructor
   JointState() :
-    position_(0.0), velocity_(0.0), measured_effort_(0.0),
-    commanded_effort_(0.0), calibrated_(false), reference_position_(0.0){ }
+    position_(0.0),
+    velocity_(0.0),
+    measured_effort_(0.0),
+    commanded_effort_(0.0),
+    calibrated_(false),
+    reference_position_(0.0)
+  {
+  }
 };
 inline void JointStatistics::update(JointState *jnt)
 {

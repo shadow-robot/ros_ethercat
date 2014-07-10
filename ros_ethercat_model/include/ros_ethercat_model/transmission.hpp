@@ -38,6 +38,7 @@
 #define ROS_ETHERCAT_MODEL_TRANSMISSION_H
 
 #include <tinyxml.h>
+#include <algorithm>
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
 
@@ -51,7 +52,9 @@ class Transmission
 public:
 
   /// Destructor
-  virtual ~Transmission(){ }
+  virtual ~Transmission()
+  {
+  }
 
   /// Initializes the transmission from XML data
   virtual bool initXml(TiXmlElement *config, RobotState *robot)
@@ -59,17 +62,21 @@ public:
     const char *name = config->Attribute("name");
     name_ = name ? name : "";
 
-    //reading the joint name
+    //reading the joint names
     TiXmlElement *jel = config->FirstChildElement("joint");
-    const char *joint_name = jel ? jel->Attribute("name") : NULL;
-    if (!joint_name)
+    while (jel)
     {
-      ROS_ERROR("Transmission did not specify joint name");
-      return false;
+      const char *joint_name = jel ? jel->Attribute("name") : NULL;
+      if (!joint_name)
+      {
+        ROS_ERROR_STREAM("Joint name not specified in transmission" << name_);
+        return false;
+      }
+
+      joint_names_.push_back(joint_name);
+      jel = config->NextSiblingElement("joint");
     }
-
-    joint_names_.push_back(joint_name);
-
+    std::sort(joint_names_.begin(), joint_names_.end());
     return true;
   }
 

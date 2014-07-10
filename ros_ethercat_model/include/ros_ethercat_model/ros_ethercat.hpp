@@ -83,8 +83,10 @@ public:
     model_(config),
     ec_(name, static_cast<hardware_interface::HardwareInterface*> (&model_), eth, allow)
   {
-    boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
-    while (it != model_.joint_states_.end())
+
+    for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+         it != model_.joint_states_.end();
+         ++it)
     {
       hardware_interface::JointStateHandle jsh(it->first,
                                                &it->second->position_,
@@ -97,7 +99,6 @@ public:
       joint_command_interface_.registerHandle(jh);
       effort_joint_interface_.registerHandle(jh);
       position_joint_interface_.registerHandle(jh);
-      ++it;
     }
 
     if (!model_.joint_states_.empty())
@@ -109,7 +110,9 @@ public:
     registerInterface(&effort_joint_interface_);
     registerInterface(&position_joint_interface_);
   }
-  virtual ~RosEthercat(){ }
+  virtual ~RosEthercat()
+  {
+  }
 
   /// propagate position actuator -> joint and set commands to zero
   void read()
@@ -118,12 +121,12 @@ public:
     model_.current_time_ = ros::Time::now();
     model_.propagateActuatorPositionToJointPosition();
 
-    boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
-    while (it != model_.joint_states_.end())
+    for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+         it != model_.joint_states_.end();
+         ++it)
     {
       it->second->joint_statistics_.update(it->second);
       it->second->commanded_effort_ = 0;
-      ++it;
     }
   }
 
@@ -131,24 +134,25 @@ public:
   void write()
   {
     /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
-    boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
-    while (it != model_.joint_states_.end())
+    for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+         it != model_.joint_states_.end();
+         ++it)
     {
       it->second->enforceLimits();
-      ++it;
     }
+
     model_.propagateJointEffortToActuatorEffort();
     if (!model_.joint_states_.empty())
       mech_stats_publisher_->publish();
   }
   void shutdown()
   {
-    boost::ptr_unordered_map<string, Actuator>::iterator it = model_.actuators_.begin();
-    while (it != model_.actuators_.end())
+    for (boost::ptr_unordered_map<string, Actuator>::iterator it = model_.actuators_.begin();
+         it != model_.actuators_.end();
+         ++it)
     {
       it->second->command_.enable_ = false;
       it->second->command_.effort_ = 0;
-      ++it;
     }
   }
 

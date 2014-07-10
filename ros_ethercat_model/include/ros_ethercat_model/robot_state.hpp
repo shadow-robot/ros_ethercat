@@ -80,7 +80,7 @@ public:
            xit;
            xit = xit->NextSiblingElement("transmission"))
       {
-        std::string type(xit->Attribute("type"));
+        std::string type = xit->Attribute("type");
 
         Transmission *t = transmission_loader_.createUnmanagedInstance(type);
         if (!t || !t->initXml(xit, this))
@@ -101,18 +101,17 @@ public:
           acts.push_back(act);
         }
         transmissions_in_.push_back(acts);
-
         std::vector<JointState*> stats;
         for (std::vector<std::string>::iterator it = t->joint_names_.begin();
              it != t->joint_names_.end();
              ++it)
         {
-          JointState *jnt = getJointState(*it);
-          if (!jnt)
+          if (!robot_model_.getJoint(*it))
             throw std::runtime_error(std::string("Couldn't find joint named: ") +
-                                     type +
-                                     " in robot model transmission's");
+                                     *it +
+                                     " in robot model transmission's " + t->name_);
           joint_states_[*it].joint_ = robot_model_.getJoint(*it);
+          JointState *jnt = getJointState(*it);
           stats.push_back(jnt);
         }
         transmissions_out_.push_back(stats);
