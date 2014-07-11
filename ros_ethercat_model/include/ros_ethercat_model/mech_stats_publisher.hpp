@@ -48,6 +48,7 @@
 using std::string;
 using std::vector;
 using boost::unordered_map;
+using boost::ptr_vector;
 using boost::ptr_unordered_map;
 using ros::Duration;
 using ros::Time;
@@ -60,6 +61,7 @@ using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::ActuatorState;
 using ros_ethercat_model::RobotState;
+using ros_ethercat_model::Transmission;
 
 class MechStatsPublisher
 {
@@ -70,7 +72,7 @@ public:
     last_published_mechanism_stats_(Time::now())
   {
     pub_mech_stats_.msg_.joint_statistics.resize(state_.joint_states_.size());
-    pub_mech_stats_.msg_.actuator_statistics.resize(state_.actuators_.size());
+    pub_mech_stats_.msg_.actuator_statistics.resize(state_.transmissions_.size());
 
     double publish_rate_mechanism_stats;
     nh.param("mechanism_statistics_publish_rate", publish_rate_mechanism_stats, 1.0);
@@ -111,23 +113,23 @@ public:
           ++jout;
         }
 
-        ptr_unordered_map<string, Actuator>::iterator ain = state_.actuators_.begin();
+        ptr_vector<Transmission>::iterator tin = state_.transmissions_.begin();
         vector<ActuatorStatistics>::iterator aout = pub_mech_stats_.msg_.actuator_statistics.begin();
-        while (ain != state_.actuators_.end() &&
+        while (tin != state_.transmissions_.end() &&
                aout != pub_mech_stats_.msg_.actuator_statistics.end())
         {
           aout->timestamp = now;
-          aout->name = ain->first;
-          aout->position = ain->second->state_.position_;
-          aout->device_id = ain->second->state_.device_id_;
-          aout->velocity = ain->second->state_.velocity_;
+          aout->name = tin->actuator_->name_;
+          aout->position = tin->actuator_->state_.position_;
+          aout->device_id = tin->actuator_->state_.device_id_;
+          aout->velocity = tin->actuator_->state_.velocity_;
           aout->is_enabled = true;
-          aout->last_commanded_current = ain->second->state_.last_commanded_current_;
-          aout->last_measured_current = ain->second->state_.last_measured_current_;
-          aout->last_commanded_effort = ain->second->state_.last_commanded_effort_;
-          aout->last_measured_effort = ain->second->state_.last_measured_effort_;
-          aout->motor_voltage = ain->second->state_.motor_voltage_;
-          ++ain;
+          aout->last_commanded_current = tin->actuator_->state_.last_commanded_current_;
+          aout->last_measured_current = tin->actuator_->state_.last_measured_current_;
+          aout->last_commanded_effort = tin->actuator_->state_.last_commanded_effort_;
+          aout->last_measured_effort = tin->actuator_->state_.last_measured_effort_;
+          aout->motor_voltage = tin->actuator_->state_.motor_voltage_;
+          ++tin;
           ++aout;
         }
 

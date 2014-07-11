@@ -76,6 +76,13 @@ public:
       if (!robot_model_.initXml(root))
         throw std::runtime_error("Failed to load robot_model_");
 
+      for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::const_iterator it = robot_model_.joints_.begin();
+           it != robot_model_.joints_.end();
+           ++it)
+      {
+        joint_states_[it->first].joint_ = it->second;
+      }
+
       for (TiXmlElement *xit = root->FirstChildElement("transmission");
            xit;
            xit = xit->NextSiblingElement("transmission"))
@@ -86,29 +93,6 @@ public:
         if (!t || !t->initXml(xit, this))
           throw std::runtime_error(std::string("Failed to initialize transmission type: ") + type);
         transmissions_.push_back(t);
-
-        Actuator *act = getActuator(t->actuator_name_);
-        if (!act)
-          throw std::runtime_error(std::string("Transmission ") +
-                                   t->name_ +
-                                   " contains undefined actuator " +
-                                   t->actuator_name_);
-        transmissions_in_.push_back(act);
-
-        std::vector<JointState*> stats;
-        for (std::vector<std::string>::iterator it = t->joint_names_.begin();
-             it != t->joint_names_.end();
-             ++it)
-        {
-          if (!robot_model_.getJoint(*it))
-            throw std::runtime_error(std::string("Couldn't find joint named: ") +
-                                     *it +
-                                     " in robot model transmission's " + t->name_);
-          joint_states_[*it].joint_ = robot_model_.getJoint(*it);
-          JointState *jnt = getJointState(*it);
-          stats.push_back(jnt);
-        }
-        transmissions_out_.push_back(stats);
       }
     }
     catch (const std::runtime_error &ex)
@@ -121,20 +105,23 @@ public:
   void propagateActuatorPositionToJointPosition()
   {
     for (size_t i = 0; i < transmissions_.size(); ++i)
-      transmissions_[i].propagatePosition(transmissions_in_[i], transmissions_out_[i]);
+      transmissions_[i].propagatePosition();
   }
 
   /// Propagate the joint efforts, through the transmissions, to the actuator efforts
   void propagateJointEffortToActuatorEffort()
   {
     for (size_t i = 0; i < transmissions_.size(); ++i)
-      transmissions_[i].propagateEffort(transmissions_out_[i], transmissions_in_[i]);
+      transmissions_[i].propagateEffort();
   }
 
   /// get an actuator by actuator name or NULL on failure
   Actuator* getActuator(const std::string &name)
   {
-    return actuators_.count(name) ? &actuators_[name] : NULL;
+    for (size_t i = 0; i < transmissions_.size(); ++i)
+      if (transmissions_[i].actuator_->name_ == name)
+        return transmissions_[i].actuator_;
+    return NULL;
   }
 
   /// Get Custom Hardware device by name or NULL on failure
@@ -156,15 +143,8 @@ public:
   /// The time at which the commands were sent to the hardware
   ros::Time current_time_;
 
-  // for each transmission cache pointers to the actuator and the joints that it connects
-  std::vector<Actuator*> transmissions_in_;
-  std::vector<std::vector<JointState*> > transmissions_out_;
-
   /// The joint states mapped to the joint names
   boost::ptr_unordered_map<std::string, JointState> joint_states_;
-
-  /// The actuators mapped to their names
-  boost::ptr_unordered_map<std::string, Actuator> actuators_;
 
   /// Custom hardware structures mapped to their names
   boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;

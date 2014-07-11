@@ -72,6 +72,7 @@
 using std::string;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
+using ros_ethercat_model::Transmission;
 
 static const string name = "ros_ethercat";
 
@@ -145,14 +146,16 @@ public:
     if (!model_.joint_states_.empty())
       mech_stats_publisher_->publish();
   }
+
+  /// stop all actuators
   void shutdown()
   {
-    for (boost::ptr_unordered_map<string, Actuator>::iterator it = model_.actuators_.begin();
-         it != model_.actuators_.end();
+    for (boost::ptr_vector<Transmission>::iterator it =  model_.transmissions_.begin();
+         it != model_.transmissions_.end();
          ++it)
     {
-      it->second->command_.enable_ = false;
-      it->second->command_.effort_ = 0;
+      it->actuator_->command_.enable_ = false;
+      it->actuator_->command_.effort_ = 0;
     }
   }
 

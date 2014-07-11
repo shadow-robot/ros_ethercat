@@ -54,6 +54,7 @@ public:
   /// Destructor
   virtual ~Transmission()
   {
+    delete actuator_;
   }
 
   /// Initializes the transmission from XML data
@@ -61,46 +62,20 @@ public:
   {
     const char *name = config->Attribute("name");
     name_ = name ? name : "";
-
-    //reading the joint names
-    TiXmlElement *jel = config->FirstChildElement("joint");
-    while (jel)
-    {
-      const char *joint_name = jel ? jel->Attribute("name") : NULL;
-      if (!joint_name)
-      {
-        ROS_ERROR_STREAM("Joint name not specified in transmission" << name_);
-        return false;
-      }
-
-      joint_names_.push_back(joint_name);
-      jel = config->NextSiblingElement("joint");
-    }
-    std::sort(joint_names_.begin(), joint_names_.end());
     return true;
   }
 
   /// Uses encoder data to fill out joint position and velocities
-  virtual void propagatePosition(Actuator*, std::vector<JointState*>&) = 0;
+  virtual void propagatePosition() = 0;
 
   /// Uses commanded joint efforts to fill out commanded motor currents
-  virtual void propagateEffort(std::vector<JointState*>&, Actuator*) = 0;
+  virtual void propagateEffort() = 0;
 
   /// the name of the transmission
   std::string name_;
 
-  /**
-   * Specifies the name of the actuator that this transmission uses.
-   */
-  std::string actuator_name_;
-
-  /**
-   * Specifies the names of the joints that this transmission uses.
-   * In the propagate* methods, the order of actuators and joints in
-   * the parameters matches the order in actuator_names_ and in
-   * joint_names_.
-   */
-  std::vector<std::string> joint_names_;
+  JointState *joint_;
+  Actuator *actuator_;
 };
 
 } // namespace ros_ethercat_model
