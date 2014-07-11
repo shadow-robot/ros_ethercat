@@ -87,20 +87,14 @@ public:
           throw std::runtime_error(std::string("Failed to initialize transmission type: ") + type);
         transmissions_.push_back(t);
 
-        std::vector<Actuator*> acts;
-        for (std::vector<std::string>::iterator it = t->actuator_names_.begin();
-             it != t->actuator_names_.end();
-             ++it)
-        {
-          Actuator *act = getActuator(*it);
-          if (!act)
-            throw std::runtime_error(std::string("Transmission ") +
-                                     t->name_ +
-                                     " contains undefined actuator " +
-                                     *it);
-          acts.push_back(act);
-        }
-        transmissions_in_.push_back(acts);
+        Actuator *act = getActuator(t->actuator_name_);
+        if (!act)
+          throw std::runtime_error(std::string("Transmission ") +
+                                   t->name_ +
+                                   " contains undefined actuator " +
+                                   t->actuator_name_);
+        transmissions_in_.push_back(act);
+
         std::vector<JointState*> stats;
         for (std::vector<std::string>::iterator it = t->joint_names_.begin();
              it != t->joint_names_.end();
@@ -162,8 +156,8 @@ public:
   /// The time at which the commands were sent to the hardware
   ros::Time current_time_;
 
-  // for each transmission cache pointers to actuators and joints that it connects
-  std::vector<std::vector<Actuator*> > transmissions_in_;
+  // for each transmission cache pointers to the actuator and the joints that it connects
+  std::vector<Actuator*> transmissions_in_;
   std::vector<std::vector<JointState*> > transmissions_out_;
 
   /// The joint states mapped to the joint names

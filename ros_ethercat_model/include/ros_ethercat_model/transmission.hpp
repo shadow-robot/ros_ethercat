@@ -81,21 +81,18 @@ public:
   }
 
   /// Uses encoder data to fill out joint position and velocities
-  virtual void propagatePosition(std::vector<Actuator*>&, std::vector<JointState*>&) = 0;
+  virtual void propagatePosition(Actuator*, std::vector<JointState*>&) = 0;
 
   /// Uses commanded joint efforts to fill out commanded motor currents
-  virtual void propagateEffort(std::vector<JointState*>&, std::vector<Actuator*>&) = 0;
+  virtual void propagateEffort(std::vector<JointState*>&, Actuator*) = 0;
 
   /// the name of the transmission
   std::string name_;
 
   /**
-   * Specifies the names of the actuators that this transmission uses.
-   * In the propagate* methods, the order of actuators and joints in
-   * the parameters matches the order in actuator_names_ and in
-   * joint_names_.
+   * Specifies the name of the actuator that this transmission uses.
    */
-  std::vector<std::string> actuator_names_;
+  std::string actuator_name_;
 
   /**
    * Specifies the names of the joints that this transmission uses.
