@@ -66,15 +66,35 @@ public:
   }
 
   /// Uses encoder data to fill out joint position and velocities
-  virtual void propagatePosition() = 0;
+  virtual void propagatePosition()
+  {
+  };
 
   /// Uses commanded joint efforts to fill out commanded motor currents
-  virtual void propagateEffort() = 0;
+  virtual void propagateEffort()
+  {
+  };
+
+  /// Uses the joint position to fill out the actuator's encoder
+  virtual void propagatePositionBackwards()
+  {
+  };
+
+  /// Uses the actuator's commanded effort to fill out the torque on the joint
+  virtual void propagateEffortBackwards()
+  {
+  };
 
   /// the name of the transmission
   std::string name_;
 
+  /// The state of the main joint that this transmission handles.
+  /// Child classes may add more joints if they need them.
+  /// JointState object owned by RobotState object.
   JointState *joint_;
+
+  /// The actuator that this transmission handles.
+  /// Child classes may add more actuators if they need them.
   Actuator *actuator_;
 };
 

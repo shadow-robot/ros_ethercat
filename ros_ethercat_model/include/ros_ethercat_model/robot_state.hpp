@@ -57,8 +57,6 @@ namespace ros_ethercat_model
  * Most controllers that need the robot state should use the joint states, to get
  * access to the joint position/velocity/effort, and to command the effort a joint
  * should apply. Controllers can get access to the hard realtime clock through current_time_
- *
- * A CustomHW class to add arbitrary hardware devices
  */
 class RobotState : public hardware_interface::HardwareInterface
 {
@@ -80,7 +78,9 @@ public:
            it != robot_model_.joints_.end();
            ++it)
       {
-        joint_states_[it->first].joint_ = it->second;
+        // we are only loading joints that can be controlled
+        if (it->second->type == urdf::Joint::PRISMATIC || it->second->type == urdf::Joint::REVOLUTE)
+          joint_states_[it->first].joint_ = it->second;
       }
 
       for (TiXmlElement *xit = root->FirstChildElement("transmission");
@@ -115,6 +115,20 @@ public:
       transmissions_[i].propagateEffort();
   }
 
+  /// Propagate the joint positions, through the transmissions, to the actuator positions
+  void propagateJointPositionToActuatorPosition()
+  {
+    for (size_t i = 0; i < transmissions_.size(); ++i)
+      transmissions_[i].propagatePositionBackwards();
+  }
+
+  /// Propagate the actuator efforts, through the transmissions, to the joint efforts
+  void propagateActuatorEffortToJointEffort()
+  {
+    for (size_t i = 0; i < transmissions_.size(); ++i)
+      transmissions_[i].propagateEffortBackwards();
+  }
+
   /// get an actuator by actuator name or NULL on failure
   Actuator* getActuator(const std::string &name)
   {
@@ -135,6 +149,8 @@ public:
   {
     return joint_states_.count(name) ? &joint_states_[name] : NULL;
   }
+
+  /// return the current time of the control loop
   ros::Time getTime()
   {
     return current_time_;
@@ -152,7 +168,10 @@ public:
   /// The kinematic/dynamic model of the robot
   urdf::Model robot_model_;
 
+  /// the robot's transmissions
   boost::ptr_vector<Transmission> transmissions_;
+
+  /// the transmission's loader
   pluginlib::ClassLoader<Transmission> transmission_loader_;
 };
 }
