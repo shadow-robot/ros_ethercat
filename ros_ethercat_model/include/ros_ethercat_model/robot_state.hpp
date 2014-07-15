@@ -115,20 +115,6 @@ public:
       transmissions_[i].propagateEffort();
   }
 
-  /// Propagate the joint positions, through the transmissions, to the actuator positions
-  void propagateJointPositionToActuatorPosition()
-  {
-    for (size_t i = 0; i < transmissions_.size(); ++i)
-      transmissions_[i].propagatePositionBackwards();
-  }
-
-  /// Propagate the actuator efforts, through the transmissions, to the joint efforts
-  void propagateActuatorEffortToJointEffort()
-  {
-    for (size_t i = 0; i < transmissions_.size(); ++i)
-      transmissions_[i].propagateEffortBackwards();
-  }
-
   /// get an actuator by actuator name or NULL on failure
   Actuator* getActuator(const std::string &name)
   {
