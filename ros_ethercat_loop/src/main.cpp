@@ -313,7 +313,7 @@ void *controlLoop(void *)
   // Publish one-time before entering real-time to pre-allocate message vectors
   publishDiagnostics(publisher);
 
-  //Start Non-realtime diagonostic thread
+  //Start Non-realtime diagnostic thread
   static pthread_t diagnosticThread;
   int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ec_);
   if (rv != 0)

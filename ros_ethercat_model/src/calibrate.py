@@ -34,20 +34,14 @@
 
 # Author: Stuart Glaser
 
-from __future__ import with_statement
-
-import roslib
-import copy
 import threading
-import sys, os
+import sys
 from time import sleep
 
 # Loads interface with the robot.
 import rospy
-from std_msgs.msg import *
 import controller_manager_msgs.srv as controller_manager_srvs
-import controller_manager_msgs.msg as controller_manager_msgs
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Empty
 
 load_controller = rospy.ServiceProxy('controller_manager/load_controller', controller_manager_srvs.LoadController)
 unload_controller = rospy.ServiceProxy('controller_manager/unload_controller', controller_manager_srvs.UnloadController)
@@ -70,7 +64,7 @@ def calibrate(controllers):
                 success = False
             else:
                 launched.append(c)
-        print "Launched: %s" % ', '.join(launched)
+        print("Launched: %s" % ', '.join(launched))
 
         # Starts the launched controllers
         switch_controller(launched, [], controller_manager_srvs.SwitchControllerRequest.BEST_EFFORT)
@@ -85,7 +79,7 @@ def calibrate(controllers):
 
         # Waits until all the controllers have calibrated
         while waiting_for and not rospy.is_shutdown():
-            print "Waiting for: %s" % ', '.join(waiting_for)
+            print("Waiting for: %s" % ', '.join(waiting_for))
             sleep(0.5)
     finally:
         for name in launched:
@@ -123,7 +117,7 @@ def calibrate_imu():
                 self.sub.unregister()
             return self.is_calibrated
 
-    print "Waiting up to 20s for IMU calibration to complete."
+    print("Waiting up to 20s for IMU calibration to complete")
     helper = is_calibrated_helper()
     if not helper.wait_for_calibrated("torso_lift_imu/is_calibrated", 20):
         rospy.logerr("IMU took too long to calibrate.")
@@ -131,11 +125,12 @@ def calibrate_imu():
     return True
 
 def main():
-    pub_calibrated = rospy.Publisher('calibrated', Bool, latch=True)
+    pub_calibrated = rospy.Publisher('calibrated', Bool, queue_size=1, latch=True)
     rospy.wait_for_service('controller_manager/load_controller')
     rospy.wait_for_service('controller_manager/switch_controller')
     rospy.wait_for_service('controller_manager/unload_controller')
-    if  rospy.is_shutdown(): return
+    if  rospy.is_shutdown():
+        return
 
     rospy.init_node('calibration', anonymous=True)
     pub_calibrated.publish(False)
@@ -145,10 +140,8 @@ def main():
 
     if cal_imu:
         imustatus = calibrate_imu()
-    else: 
+    else:
         imustatus = True
-
-    xml = ''
 
     controllers = rospy.myargv()[1:]
 
@@ -158,9 +151,9 @@ def main():
     pub_calibrated.publish(True)
 
     if not imustatus:
-        print "Mechanism calibration complete, but IMU calibration failed."
+        print("Mechanism calibration complete, but IMU calibration failed")
     else:
-        print "Calibration complete"
+        print("Calibration complete")
 
     rospy.spin()
 
