@@ -75,16 +75,6 @@ public:
   {
   };
 
-  /// Uses the joint position to fill out the actuator's encoder
-  virtual void propagatePositionBackwards()
-  {
-  };
-
-  /// Uses the actuator's commanded effort to fill out the torque on the joint
-  virtual void propagateEffortBackwards()
-  {
-  };
-
   /// the name of the transmission
   std::string name_;
 
