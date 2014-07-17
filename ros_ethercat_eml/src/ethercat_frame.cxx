@@ -61,12 +61,16 @@ int framebuild(struct EtherCAT_Frame * frame,
 
 EC_Frame::EC_Frame()
   :
-  m_telegram(NULL){ }
+  m_telegram(NULL)
+{
+}
 ;
 
 EC_Frame::EC_Frame(EC_Telegram * a_telegram)
   :
-  m_telegram(a_telegram){ }
+  m_telegram(a_telegram)
+{
+}
 ;
 
 size_t
@@ -131,7 +135,9 @@ EC_Frame::build(const unsigned char * a_buffer)
 
 EC_Ethernet_Frame::EC_Ethernet_Frame(EC_Telegram * a_telegram)
   :
-  EC_Frame(a_telegram){ }
+  EC_Frame(a_telegram)
+{
+}
 
 unsigned char *
 EC_Ethernet_Frame::dump_header(unsigned char * a_buffer) const

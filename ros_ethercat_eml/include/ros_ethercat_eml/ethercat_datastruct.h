@@ -45,10 +45,14 @@ public:
   /** @param a_data_length data length expressed as a number of bytes
    */
   EC_DataStruct(size_t a_data_length) :
-    m_data_length(a_data_length){ }
+    m_data_length(a_data_length)
+  {
+  }
 
   /// Destructor
-  virtual ~EC_DataStruct(){ }
+  virtual ~EC_DataStruct()
+  {
+  }
 
   // default copy constructor will do...
 

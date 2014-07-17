@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <assert.h>
+
 bool EthercatDirectCom::txandrx_once(struct EtherCAT_Frame * frame)
 {
   assert(frame != NULL);
@@ -44,10 +45,12 @@ bool EthercatDirectCom::txandrx_once(struct EtherCAT_Frame * frame)
     return false;
   return dll_->rx(frame, handle);
 }
+
 bool EthercatDirectCom::txandrx(struct EtherCAT_Frame * frame)
 {
   return dll_->txandrx(frame);
 }
+
 EthercatOobCom::EthercatOobCom(struct netif *ni) :
   ni_(ni),
   state_(IDLE),
@@ -87,6 +90,7 @@ EthercatOobCom::EthercatOobCom(struct netif *ni) :
     fprintf(stderr, "%s : Initializing busy condition failed : %d\n", __func__, error);
   return;
 }
+
 bool EthercatOobCom::lock(unsigned line)
 {
   int error;
@@ -98,6 +102,7 @@ bool EthercatOobCom::lock(unsigned line)
   line_ = line;
   return true;
 }
+
 bool EthercatOobCom::trylock(unsigned line)
 {
   int error;
@@ -110,6 +115,7 @@ bool EthercatOobCom::trylock(unsigned line)
   line_ = line;
   return true;
 }
+
 bool EthercatOobCom::unlock(unsigned line)
 {
   int error;
@@ -124,6 +130,7 @@ bool EthercatOobCom::unlock(unsigned line)
 
 // OOB replacement for netif->txandrx()
 // Returns true for success, false for dropped packet
+
 bool EthercatOobCom::txandrx_once(struct EtherCAT_Frame * frame)
 {
   assert(frame != NULL);
@@ -161,6 +168,7 @@ bool EthercatOobCom::txandrx_once(struct EtherCAT_Frame * frame)
 
   return success;
 }
+
 bool EthercatOobCom::txandrx(struct EtherCAT_Frame * frame)
 {
   static const unsigned MAX_TRIES = 10;
@@ -173,6 +181,7 @@ bool EthercatOobCom::txandrx(struct EtherCAT_Frame * frame)
 }
 
 // Called by RT control loop to send oob data
+
 void EthercatOobCom::tx()
 {
   if (!trylock(__LINE__))

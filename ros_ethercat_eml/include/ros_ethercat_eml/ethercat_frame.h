@@ -65,7 +65,9 @@ int framebuild(struct EtherCAT_Frame * frame,
  */
 typedef struct EtherCAT_Frame
 {
-  virtual ~EtherCAT_Frame(){ }
+  virtual ~EtherCAT_Frame()
+  {
+  }
   /// Return the length of the whole frame
   virtual size_t length(void) const = 0;
 

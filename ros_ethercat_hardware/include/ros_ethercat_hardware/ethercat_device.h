@@ -140,7 +140,9 @@ public:
   virtual void construct(EtherCAT_SlaveHandler *sh, int &start_address);
 
   //!< Construct non-EtherCAT device
-  virtual void construct(ros::NodeHandle &nh){ }
+  virtual void construct(ros::NodeHandle &nh)
+  {
+  }
 
   EthercatDevice();
   virtual ~EthercatDevice()
@@ -156,7 +158,9 @@ public:
    * \param reset  when asserted this will clear diagnostic error conditions device safety disable
    * \param halt   while asserted will disable actuator, usually by disabling H-bridge
    */
-  virtual void packCommand(unsigned char *buffer, bool halt, bool reset){ }
+  virtual void packCommand(unsigned char *buffer, bool halt, bool reset)
+  {
+  }
   virtual bool unpackState(unsigned char *this_buffer, unsigned char *prev_buffer)
   {
     return true;

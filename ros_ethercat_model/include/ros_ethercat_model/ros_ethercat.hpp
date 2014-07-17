@@ -118,9 +118,30 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read()
   {
+    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
+         it != model_.transmissions_.end();
+         ++it)
+    {
+      ROS_INFO_STREAM("BEFORE actuator " << it->actuator_->name_ <<
+                      "  position " << it->actuator_->state_.position_ <<
+                      "  velocity " << it->actuator_->state_.velocity_ <<
+                      "  command " << it->actuator_->command_.effort_);
+    }
+
     ec_.update(false, false);
+
     model_.current_time_ = ros::Time::now();
     model_.propagateActuatorPositionToJointPosition();
+
+    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
+         it != model_.transmissions_.end();
+         ++it)
+    {
+      ROS_INFO_STREAM("AFTER actuator " << it->actuator_->name_ <<
+                      "  position " << it->actuator_->state_.position_ <<
+                      "  velocity " << it->actuator_->state_.velocity_ <<
+                      "  command " << it->actuator_->command_.effort_);
+    }
 
     for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
          it != model_.joint_states_.end();
@@ -150,7 +171,7 @@ public:
   /// stop all actuators
   void shutdown()
   {
-    for (boost::ptr_vector<Transmission>::iterator it =  model_.transmissions_.begin();
+    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
          it != model_.transmissions_.end();
          ++it)
     {

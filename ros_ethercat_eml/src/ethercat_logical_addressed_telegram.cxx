@@ -49,7 +49,9 @@ LA_TG::LA_TG(uint8_t a_idx, uint32_t a_adr,
              const unsigned char * a_data)
   :
   EC_Telegram(a_datalen, a_data, a_idx, a_wkc),
-  m_adr(a_adr){ }
+  m_adr(a_adr)
+{
+}
 
 unsigned char *
 LA_TG::dump_header_head(unsigned char * a_buffer) const
@@ -85,7 +87,9 @@ LRD_Telegram::LRD_Telegram(uint8_t a_idx, uint32_t a_adr,
                            uint16_t a_datalen,
                            const unsigned char * a_data)
   :
-  LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data){ }
+  LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
+{
+}
 
 unsigned char *
 LRD_Telegram::dump_command_field(unsigned char * a_buffer) const
@@ -109,7 +113,9 @@ LWR_Telegram::LWR_Telegram(uint8_t a_idx, uint32_t a_adr,
                            uint16_t a_datalen,
                            const unsigned char * a_data)
   :
-  LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data){ }
+  LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
+{
+}
 
 unsigned char *
 LWR_Telegram::dump_command_field(unsigned char * a_buffer) const
@@ -133,7 +139,9 @@ LRW_Telegram::LRW_Telegram(uint8_t a_idx, uint32_t a_adr,
                            uint16_t a_datalen,
                            const unsigned char * a_data)
   :
-  LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data){ }
+  LA_TG(a_idx, a_adr, a_wkc, a_datalen, a_data)
+{
+}
 
 unsigned char *
 LRW_Telegram::dump_command_field(unsigned char * a_buffer) const

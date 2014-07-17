@@ -103,7 +103,9 @@ class EC_ESM_State
   friend class EC_ESM;
 
 public:
-  virtual ~EC_ESM_State(){ }
+  virtual ~EC_ESM_State()
+  {
+  }
 
   /// Change the state of an EtherCAT state machine
   /** @param a_ESM pointer to the EtherCAT state machine

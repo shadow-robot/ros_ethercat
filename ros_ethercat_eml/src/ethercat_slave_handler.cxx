@@ -51,7 +51,9 @@ EtherCAT_SlaveHandler::EtherCAT_SlaveHandler(uint16_t a_ring_position,
                        a_mbx_config),
   m_ring_position(a_ring_position),
   m_serial(a_serial),
-  m_mbx_counter(0){ }
+  m_mbx_counter(0)
+{
+}
 
 EtherCAT_SlaveHandler::EtherCAT_SlaveHandler(uint16_t a_ring_position,
                                              const EtherCAT_SlaveConfig * a_sconf,
@@ -61,7 +63,9 @@ EtherCAT_SlaveHandler::EtherCAT_SlaveHandler(uint16_t a_ring_position,
   EtherCAT_SlaveConfig(*a_sconf),
   m_ring_position(a_ring_position),
   m_serial(a_serial),
-  m_mbx_counter(0){ }
+  m_mbx_counter(0)
+{
+}
 
 uint8_t EtherCAT_SlaveHandler::get_mbx_counter()
 {

@@ -60,7 +60,9 @@ public:
                              uint16_t a_wkc = 0x0000,
                              uint16_t a_datalen = 0x0000,
                              const unsigned char * a_data = NULL);
-  virtual ~Device_Addressing_Telegram(){ }
+  virtual ~Device_Addressing_Telegram()
+  {
+  }
 
   /// Set address pointer
   void set_adp(uint16_t a_adp)

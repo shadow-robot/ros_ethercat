@@ -4,13 +4,16 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+
 EthtoolStats::EthtoolStats() :
   rx_errors_(0),
   rx_crc_errors_(0),
   rx_frame_errors_(0),
-  rx_align_errors_(0){
+  rx_align_errors_(0)
+{
   //empty
 }
+
 EthtoolStats& EthtoolStats::operator-=(const EthtoolStats& right)
 {
   this->rx_errors_ -= right.rx_errors_;
@@ -19,6 +22,7 @@ EthtoolStats& EthtoolStats::operator-=(const EthtoolStats& right)
   this->rx_align_errors_ -= right.rx_align_errors_;
   return *this;
 }
+
 EthernetInterfaceInfo::EthernetInterfaceInfo() :
   sock_(-1),
   n_stats_(0),
@@ -26,7 +30,10 @@ EthernetInterfaceInfo::EthernetInterfaceInfo() :
   rx_error_index_(-1),
   rx_crc_error_index_(-1),
   rx_frame_error_index_(-1),
-  rx_align_error_index_(-1){ }
+  rx_align_error_index_(-1)
+{
+}
+
 EthernetInterfaceInfo::~EthernetInterfaceInfo()
 {
   delete[] ethtool_stats_buf_;
@@ -34,6 +41,7 @@ EthernetInterfaceInfo::~EthernetInterfaceInfo()
   if (sock_ >= 0)
     close(sock_);
 }
+
 void EthernetInterfaceInfo::initialize(const std::string &interface)
 {
   interface_ = interface;
@@ -129,6 +137,7 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
     ethtool_stats_buf_ = NULL;
   }
 }
+
 bool EthernetInterfaceInfo::getInterfaceState(InterfaceState &state)
 {
   struct ifreq ifr;
@@ -145,6 +154,7 @@ bool EthernetInterfaceInfo::getInterfaceState(InterfaceState &state)
   state.running_ = bool(ifr.ifr_flags & IFF_RUNNING);
   return true;
 }
+
 bool EthernetInterfaceInfo::getEthtoolStats(EthtoolStats &s)
 {
   if (!ethtool_stats_buf_)
@@ -183,6 +193,7 @@ bool EthernetInterfaceInfo::getEthtoolStats(EthtoolStats &s)
 
   return true;
 }
+
 void EthernetInterfaceInfo::publishDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &d)
 {
   d.add("Interface", interface_);

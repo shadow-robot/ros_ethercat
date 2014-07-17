@@ -226,7 +226,9 @@ public:
   RTLoopHistory(unsigned length, double default_value) :
     index_(0),
     length_(length),
-    history_(length, default_value){ }
+    history_(length, default_value)
+  {
+  }
 
   void sample(double value)
   {

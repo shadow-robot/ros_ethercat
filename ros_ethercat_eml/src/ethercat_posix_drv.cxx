@@ -442,8 +442,8 @@ static int low_level_output(struct EtherCAT_Frame * frame, struct netif * netif)
   // Generate handle for sent packet
   int handle = 0xFFFFFF &
     ((pkt->ether_shost[3] << 16) |
-    (pkt->ether_shost[4] << 8) |
-    (pkt->ether_shost[5] << 0));
+     (pkt->ether_shost[4] << 8) |
+     (pkt->ether_shost[5] << 0));
 
   // Start searching when picking next open packet slot
   ni->next_pkt_index = (ni->next_pkt_index + 1) % PKT_LIST_SIZE;

@@ -37,6 +37,7 @@
 #include <tinyxml.h>
 
 #include <iomanip>
+
 bool et1x00_error_counters::isGreaterThan(unsigned value) const
 {
   if ((pdi_error > value) || (epu_error > value))
@@ -56,6 +57,7 @@ bool et1x00_error_counters::isGreaterThan(unsigned value) const
   }
   return false;
 }
+
 bool et1x00_error_counters::isGreaterThan(const et1x00_error_counters &v) const
 {
   if ((pdi_error > v.pdi_error) || (epu_error > v.epu_error))
@@ -75,25 +77,30 @@ bool et1x00_error_counters::isGreaterThan(const et1x00_error_counters &v) const
   }
   return false;
 }
+
 bool et1x00_dl_status::hasLink(unsigned port)
 {
   assert(port < 4);
   return status & (1 << (4 + port));
 }
+
 bool et1x00_dl_status::hasCommunication(unsigned port)
 {
   assert(port < 4);
   return status & (1 << (9 + port * 2));
 }
+
 bool et1x00_dl_status::isClosed(unsigned port)
 {
   assert(port < 4);
   return status & (1 << (8 + port * 2));
 }
+
 void et1x00_error_counters::zero()
 {
   memset(this, 0, sizeof (et1x00_error_counters));
 }
+
 EthercatPortDiagnostics::EthercatPortDiagnostics() :
   hasLink(false),
   isClosed(false),
@@ -101,6 +108,7 @@ EthercatPortDiagnostics::EthercatPortDiagnostics() :
 {
   zeroTotals();
 }
+
 void EthercatPortDiagnostics::zeroTotals()
 {
   rxErrorTotal = 0;
@@ -108,6 +116,7 @@ void EthercatPortDiagnostics::zeroTotals()
   forwardedRxErrorTotal = 0;
   lostLinkTotal = 0;
 }
+
 EthercatDeviceDiagnostics::EthercatDeviceDiagnostics() :
   errorCountersMayBeCleared_(false),
   diagnosticsFirst_(true),
@@ -118,6 +127,7 @@ EthercatDeviceDiagnostics::EthercatDeviceDiagnostics() :
   zeroTotals();
   errorCountersPrev_.zero();
 }
+
 void EthercatDeviceDiagnostics::zeroTotals()
 {
   pdiErrorTotal_ = 0;
@@ -127,6 +137,7 @@ void EthercatDeviceDiagnostics::zeroTotals()
   portDiagnostics_[2].zeroTotals();
   portDiagnostics_[3].zeroTotals();
 }
+
 void EthercatDeviceDiagnostics::accumulate(const et1x00_error_counters &n, const et1x00_error_counters &p)
 {
   pdiErrorTotal_ += n.pdi_error - p.pdi_error;
@@ -140,6 +151,7 @@ void EthercatDeviceDiagnostics::accumulate(const et1x00_error_counters &n, const
     pt.invalidFrameTotal += n.port[i].invalid_frame - p.port[i].invalid_frame;
   }
 }
+
 void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler *sh)
 {
   diagnosticsValid_ = false;
@@ -266,6 +278,7 @@ void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler 
 end:
   return;
 }
+
 void EthercatDeviceDiagnostics::publish(diagnostic_updater::DiagnosticStatusWrapper &d, unsigned numPorts) const
 {
   if (numPorts > 4)
@@ -333,12 +346,14 @@ void EthercatDeviceDiagnostics::publish(diagnostic_updater::DiagnosticStatusWrap
     }
   }
 }
+
 void EthercatDevice::construct(EtherCAT_SlaveHandler *sh, int &start_address)
 {
   sh_ = sh;
   sh->set_fmmu_config(new EtherCAT_FMMU_Config(0));
   sh->set_pd_config(new EtherCAT_PD_Config(0));
 }
+
 EthercatDevice::EthercatDevice() : use_ros_(true)
 {
   sh_ = NULL;
@@ -362,6 +377,7 @@ EthercatDevice::EthercatDevice() : use_ros_(true)
     exit(EXIT_FAILURE);
   }
 }
+
 void EthercatDevice::collectDiagnostics(EthercatCom *com)
 {
   // Really, should not need this lock, since there should only be one thread updating diagnostics.
@@ -389,6 +405,7 @@ void EthercatDevice::collectDiagnostics(EthercatCom *com)
   // Done, unlock
   pthread_mutex_unlock(&diagnosticsLock_);
 }
+
 int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *) buffer;
@@ -441,6 +458,7 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, u
 
   return 0;
 }
+
 int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *) buffer;
@@ -493,6 +511,7 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16
 
   return 0;
 }
+
 int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char const *p = (unsigned char const*) buffer;
@@ -544,6 +563,7 @@ int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint1
 
   return 0;
 }
+
 void EthercatDevice::ethercatDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &d, unsigned numPorts)
 {
   if (numPorts > 4)
@@ -562,6 +582,7 @@ void EthercatDevice::ethercatDiagnostics(diagnostic_updater::DiagnosticStatusWra
 
   pthread_mutex_unlock(&newDiagnosticsIndexLock_);
 }
+
 void EthercatDevice::diagnostics(diagnostic_updater::DiagnosticStatusWrapper &d, unsigned char *buffer)
 {
   stringstream str;
@@ -582,6 +603,7 @@ void EthercatDevice::diagnostics(diagnostic_updater::DiagnosticStatusWrapper &d,
 
   this->ethercatDiagnostics(d, 4); //assume unknown device has 4 ports
 }
+
 void EthercatDevice::multiDiagnostics(vector<diagnostic_msgs::DiagnosticStatus> &vec, unsigned char *buffer)
 {
   // Clean up recycled status object before reusing it.

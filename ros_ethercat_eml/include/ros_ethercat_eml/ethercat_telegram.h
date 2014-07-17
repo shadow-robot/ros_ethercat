@@ -89,8 +89,8 @@ public:
   size_t get_datalen(void) const
   {
     return (length() -
-      ETHERCAT_TELEGRAM_HEADER_SIZE -
-      ETHERCAT_TELEGRAM_WKC_SIZE);
+            ETHERCAT_TELEGRAM_HEADER_SIZE -
+            ETHERCAT_TELEGRAM_WKC_SIZE);
   }
   /// Set data length
   void set_datalen(size_t len)

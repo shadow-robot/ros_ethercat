@@ -47,7 +47,9 @@ EC_Logic * EC_Logic::m_instance = NULL;
 
 EC_Logic::EC_Logic()
   :
-  m_wkc(0), m_idx(0){ }
+  m_wkc(0), m_idx(0)
+{
+}
 
 EC_Logic *
 EC_Logic::instance()

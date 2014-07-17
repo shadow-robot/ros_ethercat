@@ -57,7 +57,9 @@ public:
    - EC_FoE (File Access over EtherCAT)
    */
   EC_MbxMsgType(ECMbxMsgType type = EC_CoE) :
-    msg_type(type){ }
+    msg_type(type)
+  {
+  }
 
   /// Cast operator
   operator uint8_t() const
@@ -127,7 +129,9 @@ public:
     :
     EC_DataStruct(EC_MBXMSG_HDR_SIZE),
     m_length(a_length), m_address(a_address),
-    m_priority(a_priority), m_type(a_type){ }
+    m_priority(a_priority), m_type(a_type)
+  {
+  }
 
   /// Constructor from data array
   EC_MbxMsgHdr(const unsigned char * a_buffer);
@@ -153,15 +157,21 @@ public:
   /// Constructor
   EtherCAT_MbxMsg(EC_MbxMsgHdr a_hdr, unsigned char * a_MbxMsgdata)
     :
-    m_hdr(a_hdr), m_MbxMsgdata(a_MbxMsgdata){ }
+    m_hdr(a_hdr), m_MbxMsgdata(a_MbxMsgdata)
+  {
+  }
   EtherCAT_MbxMsg(uint16_t a_length, uint16_t a_address,
                   EC_MbxMsgPriority a_priority,
                   EC_MbxMsgType a_type,
                   unsigned char * a_MbxMsgdata)
     :
-    m_hdr(a_length, a_address, a_priority, a_type), m_MbxMsgdata(a_MbxMsgdata){ }
+    m_hdr(a_length, a_address, a_priority, a_type), m_MbxMsgdata(a_MbxMsgdata)
+  {
+  }
   EtherCAT_MbxMsg(const unsigned char * a_buffer);
-  virtual ~EtherCAT_MbxMsg(){ }
+  virtual ~EtherCAT_MbxMsg()
+  {
+  }
 
   /// Dump msg to buffer for sending...
   virtual unsigned char * dump(unsigned char * a_buffer) const;
@@ -184,7 +194,9 @@ public:
   bool write(EtherCAT_MbxMsg * a_msg);
   /// Read a message from the mailbox
   bool read(EtherCAT_MbxMsg * a_msg);
-  EtherCAT_Mbx(){ }
+  EtherCAT_Mbx()
+  {
+  }
 };
 
 // ==================================================
@@ -221,7 +233,9 @@ public:
    */
   CANopen_Service(CANopenService a_service = CANopen_Emergency)
     :
-    m_service(a_service){ }
+    m_service(a_service)
+  {
+  }
 
   /// Cast operator
   operator uint8_t() const
@@ -245,7 +259,9 @@ public:
    */
   EC_CoE_Hdr(CANopen_Service a_service = CANopen_Emergency) :
     EC_DataStruct(EC_MBXMSG_COE_HDR_SIZE),
-    m_service(a_service){ }
+    m_service(a_service)
+  {
+  }
 
   EC_CoE_Hdr(const unsigned char * a_buffer);
 
@@ -267,14 +283,18 @@ public:
                       EC_CoE_Hdr a_CoE_hdr,
                       unsigned char * a_MbxMsgdata)
     :
-    EtherCAT_MbxMsg(a_hdr, a_MbxMsgdata), m_CoE_Hdr(a_CoE_hdr){ }
+    EtherCAT_MbxMsg(a_hdr, a_MbxMsgdata), m_CoE_Hdr(a_CoE_hdr)
+  {
+  }
   EtherCAT_CoE_MbxMsg(uint16_t a_length, uint16_t a_address,
                       EC_MbxMsgPriority a_priority,
                       EC_MbxMsgType a_type,
                       CANopen_Service a_service,
                       unsigned char * a_MbxMsgdata)
     :
-    EtherCAT_MbxMsg(a_length, a_address, a_priority, a_type, a_MbxMsgdata), m_CoE_Hdr(a_service){ }
+    EtherCAT_MbxMsg(a_length, a_address, a_priority, a_type, a_MbxMsgdata), m_CoE_Hdr(a_service)
+  {
+  }
   EtherCAT_CoE_MbxMsg(unsigned char * a_buffer);
 
   virtual unsigned char * dump(unsigned char * a_buffer) const;

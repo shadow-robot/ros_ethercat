@@ -47,7 +47,9 @@ EC_DLInformation::EC_DLInformation(uint8_t type,
   NoOfSuppFmmuChannels(no_of_supp_fmmu_channels),
   NoOfSuppSyncManChannels(no_of_supp_fmmu_channels),
   RamSize(ram_size),
-  FmmuBitOperationNotSupp(fmmu_bit_operation_not_supp){ }
+  FmmuBitOperationNotSupp(fmmu_bit_operation_not_supp)
+{
+}
 
 EC_DLInformation::EC_DLInformation(const unsigned char * a_buffer)
   :
@@ -89,7 +91,9 @@ EC_ALControl::EC_ALControl(EC_State state, bool ack)
   :
   EC_DataStruct(EC_Slave_RD[AL_Control].size),
   State(state),
-  Acknowledge(ack){ }
+  Acknowledge(ack)
+{
+}
 
 EC_ALControl::EC_ALControl(const unsigned char * a_buffer)
   :
@@ -114,7 +118,9 @@ EC_ALStatus::EC_ALStatus(EC_State state, bool change)
   :
   EC_DataStruct(EC_Slave_RD[AL_Status].size),
   State(state),
-  Change(change){ }
+  Change(change)
+{
+}
 
 EC_ALStatus::EC_ALStatus(const unsigned char * a_buffer)
   :
@@ -154,7 +160,9 @@ EC_SIIControlStatus::EC_SIIControlStatus(bool eeprom_write_access,
   ReloadOp(reload_op),
   WriteError(write_error),
   Busy(busy),
-  AcknowledgeError(false){ }
+  AcknowledgeError(false)
+{
+}
 
 EC_SIIControlStatus::EC_SIIControlStatus(const unsigned char * a_buffer)
   :
@@ -208,7 +216,9 @@ EC_FMMU::EC_FMMU(uint32_t logical_start_address,
   PhysicalStartBit(physical_start_bit),
   ReadEnable(read_enable),
   WriteEnable(write_enable),
-  ChannelEnable(channel_enable){ }
+  ChannelEnable(channel_enable)
+{
+}
 
 EC_FMMU::EC_FMMU(const unsigned char * a_buffer)
   :
@@ -265,7 +275,9 @@ EC_SyncMan::EC_SyncMan(uint16_t physical_start_address,
   WatchdogTrigger(watchdog_trigger),
   QueuedState(queued_state),
   BufferedState(buffered_state),
-  ChannelEnable(channel_enable){ }
+  ChannelEnable(channel_enable)
+{
+}
 
 EC_SyncMan::EC_SyncMan(const unsigned char * a_buffer)
   :

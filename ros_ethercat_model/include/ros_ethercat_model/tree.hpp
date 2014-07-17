@@ -54,7 +54,9 @@ class Tree
 {
 public:
   Tree() :
-    kdl_tree_(){ }
+    kdl_tree_()
+  {
+  }
   /**
    * \brief initializes the tree object
    * The initializer's most important functionality is to create a vector of joints.
