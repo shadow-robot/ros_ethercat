@@ -97,7 +97,7 @@ public:
  *
  * The ActuatorState class reports back on the state of the motor
  */
-struct Actuator
+class Actuator
 {
 public:
   std::string name_;
