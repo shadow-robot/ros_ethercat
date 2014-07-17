@@ -70,6 +70,7 @@
  */
 
 using std::string;
+using std::vector;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
@@ -118,7 +119,7 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read()
   {
-    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
+    for (vector<Transmission>::iterator it = model_.transmissions_.begin();
          it != model_.transmissions_.end();
          ++it)
     {
@@ -133,7 +134,7 @@ public:
     model_.current_time_ = ros::Time::now();
     model_.propagateActuatorPositionToJointPosition();
 
-    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
+    for (vector<Transmission>::iterator it = model_.transmissions_.begin();
          it != model_.transmissions_.end();
          ++it)
     {
@@ -171,7 +172,7 @@ public:
   /// stop all actuators
   void shutdown()
   {
-    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
+    for (vector<Transmission>::iterator it = model_.transmissions_.begin();
          it != model_.transmissions_.end();
          ++it)
     {

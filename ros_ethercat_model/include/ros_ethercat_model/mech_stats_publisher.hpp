@@ -113,7 +113,7 @@ public:
           ++jout;
         }
 
-        ptr_vector<Transmission>::iterator tin = state_.transmissions_.begin();
+        vector<Transmission>::iterator tin = state_.transmissions_.begin();
         vector<ActuatorStatistics>::iterator aout = pub_mech_stats_.msg_.actuator_statistics.begin();
         while (tin != state_.transmissions_.end() &&
                aout != pub_mech_stats_.msg_.actuator_statistics.end())
