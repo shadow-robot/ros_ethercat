@@ -70,7 +70,7 @@
  */
 
 using std::string;
-using std::vector;
+using boost::ptr_unordered_map;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
@@ -85,8 +85,7 @@ public:
     model_(config),
     ec_(name, static_cast<hardware_interface::HardwareInterface*> (&model_), eth, allow)
   {
-
-    for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+    for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
          it != model_.joint_states_.end();
          ++it)
     {
@@ -119,32 +118,12 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read()
   {
-    for (vector<Transmission>::iterator it = model_.transmissions_.begin();
-         it != model_.transmissions_.end();
-         ++it)
-    {
-      ROS_INFO_STREAM("BEFORE actuator " << it->actuator_->name_ <<
-                      "  position " << it->actuator_->state_.position_ <<
-                      "  velocity " << it->actuator_->state_.velocity_ <<
-                      "  command " << it->actuator_->command_.effort_);
-    }
-
     ec_.update(false, false);
 
     model_.current_time_ = ros::Time::now();
     model_.propagateActuatorPositionToJointPosition();
 
-    for (vector<Transmission>::iterator it = model_.transmissions_.begin();
-         it != model_.transmissions_.end();
-         ++it)
-    {
-      ROS_INFO_STREAM("AFTER actuator " << it->actuator_->name_ <<
-                      "  position " << it->actuator_->state_.position_ <<
-                      "  velocity " << it->actuator_->state_.velocity_ <<
-                      "  command " << it->actuator_->command_.effort_);
-    }
-
-    for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+    for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
          it != model_.joint_states_.end();
          ++it)
     {
@@ -157,7 +136,7 @@ public:
   void write()
   {
     /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
-    for (boost::ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
+    for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
          it != model_.joint_states_.end();
          ++it)
     {
@@ -172,7 +151,7 @@ public:
   /// stop all actuators
   void shutdown()
   {
-    for (vector<Transmission>::iterator it = model_.transmissions_.begin();
+    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
          it != model_.transmissions_.end();
          ++it)
     {

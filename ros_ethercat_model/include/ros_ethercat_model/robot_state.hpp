@@ -92,7 +92,7 @@ public:
         Transmission *t = transmission_loader_.createUnmanagedInstance(type);
         if (!t || !t->initXml(xit, this))
           throw std::runtime_error(std::string("Failed to initialize transmission type: ") + type);
-        transmissions_.push_back(*t);
+        transmissions_.push_back(t);
       }
     }
     catch (const std::runtime_error &ex)
@@ -155,7 +155,7 @@ public:
   urdf::Model robot_model_;
 
   /// the robot's transmissions
-  std::vector<Transmission> transmissions_;
+  boost::ptr_vector<Transmission> transmissions_;
 
   /// the transmission's loader
   pluginlib::ClassLoader<Transmission> transmission_loader_;
