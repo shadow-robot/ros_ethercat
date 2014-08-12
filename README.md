@@ -35,7 +35,7 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
 
  1. Replace `pr2_ethercat` with `ros_ethercat_loop` in launch files
  2. Since pr2_controller_manager is no longer used, joint_states or mechanism_statistics are no longer published by it. Joint states are now  published with the join_state_controller from ros_controllers. To start this controller this line need to be added in the main launch file <br> `<include file="$(find ros_ethercat_model)/launch/joint_state_publisher.launch"/>`
- 3. `calibrate.py` file from pr2_bringup is now included in ros_ethercat_model package. Launch files that execute `calibrate.py` should be modified to find it there.
+ 3. `calibrate.py` file from pr2_bringup is now included in ros_ethercat_model package and renamed to just `calibrate` according to ROS convention. Launch files that execute `calibrate.py` should be modified to find it there.
 
 *transmissions*
 
@@ -44,3 +44,4 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
  **New features**
  1. ros_ethercat accepts a new argument `--period` which is the period of main ethercat loop in msec. If not given the default value is 1ms.
  2. There is a helper bash script called ros_grant. This will grant to the ros_ethercat_loop executable the ability to be ran from a normal user without root privileges. E.g. of use<br>`rosrun ros_ethercat_loop ros_grant`
+
