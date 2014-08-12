@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ros_ethercat_model)
 
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
     roscpp
     hardware_interface
     pluginlib
