@@ -575,7 +575,7 @@ int main(int argc, char *argv[])
   // Keep the kernel from swapping us out
   if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
   {
-    perror("Failed to lock memory. It is recommended to do rosrun ros_ethercat_loop ros_grant");
+    perror("Failed to lock memory. It is recommended to do rosrun ros_ethercat_loop ros-grant");
     exit(EXIT_FAILURE);
   }
 
@@ -661,4 +661,3 @@ int main(int argc, char *argv[])
 
   return rv;
 }
-
