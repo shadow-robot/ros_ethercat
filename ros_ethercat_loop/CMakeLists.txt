@@ -34,13 +34,6 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} rt ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
-add_executable(ros-grant src/ros-grant.cpp)
-target_link_libraries(ros-grant cap)
-
-install(TARGETS ros-grant
-   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
-
 install(TARGETS ${PROJECT_NAME}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

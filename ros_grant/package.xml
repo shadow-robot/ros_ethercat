@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>ros_grant</name>
+  <version>0.0.0</version>
+  <description>Makes it possible to run the ros_ethercat_loop without using sudo. Forked from pr2-grant</description>
+  <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://www.shadowrobot.com/</url>
+
+  <author email="software@shadowrobot.com">Ugo Cupcic</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>libcap-dev</build_depend>
+  <run_depend>libcap-dev</run_depend>
+</package>
