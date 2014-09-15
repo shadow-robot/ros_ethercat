@@ -117,12 +117,19 @@ public:
   }
 
   /// propagate position actuator -> joint and set commands to zero
-  void read()
+  void read(const ros::Time &time)
   {
     ec_.update(false, false);
 
-    model_.current_time_ = ros::Time::now();
+    model_.current_time_ = time;
     model_.propagateActuatorPositionToJointPosition();
+
+    for (boost::ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
+         it != model_.custom_hws_.end();
+         ++it)
+    {
+      it->second->read(time);
+    }
 
     for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
          it != model_.joint_states_.end();
@@ -134,7 +141,7 @@ public:
   }
 
   /// propagate effort joint -> actuator and enforce safety limits
-  void write()
+  void write(const ros::Time &time)
   {
     /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
     for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -145,8 +152,16 @@ public:
     }
 
     model_.propagateJointEffortToActuatorEffort();
+
+    for (boost::ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
+         it != model_.custom_hws_.end();
+         ++it)
+    {
+      it->second->write(time);
+    }
+
     if (!model_.joint_states_.empty())
-      mech_stats_publisher_->publish();
+      mech_stats_publisher_->publish(time);
   }
 
   /// stop all actuators

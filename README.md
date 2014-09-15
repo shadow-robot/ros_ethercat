@@ -43,4 +43,5 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
 
  **New features**
  1. ros_ethercat accepts a new argument `--period` which is the period of main ethercat loop in msec. If not given the default value is 1ms.
- 2. There is a helper program called ros_grant. This will grant to the ros_ethercat_loop executable the ability to be ran from a normal user without root privileges. E.g. of use<br>`ros_grant`
+ 2. There is a helper bash script called ros_grant. This will grant to the ros_ethercat_loop executable the ability to be ran from a normal user without root privileges. E.g. of use<br>`rosrun ros_ethercat_loop ros_grant`
+

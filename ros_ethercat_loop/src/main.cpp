@@ -349,10 +349,10 @@ void *controlLoop(void *)
     double start = now();
 
     ros::Time this_moment(tick.tv_sec, tick.tv_nsec);
-    seth.read();
+    seth.read(this_moment);
     double after_ec = now();
     cm.update(this_moment, durp);
-    seth.write();
+    seth.write(this_moment);
     double end = now();
 
     g_stats.ec_acc(after_ec - start);
@@ -578,8 +578,6 @@ int main(int argc, char *argv[])
     perror("Failed to lock memory. It is recommended to do rosrun ros_ethercat_loop ros_grant");
     exit(EXIT_FAILURE);
   }
-  else
-    ROS_INFO("Locked memory");
 
   // Initialize ROS and parse command-line arguments
   ros::init(argc, argv, "realtime_loop");
@@ -638,8 +636,6 @@ int main(int argc, char *argv[])
   // EtherCAT lock for this interface (e.g. Ethernet port)
   if (setupPidFile(g_options.interface_) < 0)
     exit(EXIT_FAILURE);
-  else
-    ROS_INFO("Locked Ethernet port");
 
   ros::NodeHandle node(name);
 
@@ -665,3 +661,4 @@ int main(int argc, char *argv[])
 
   return rv;
 }
+
