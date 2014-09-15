@@ -74,6 +74,7 @@ using boost::ptr_unordered_map;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
+using ros_ethercat_model::CustomHW;
 
 static const string name = "ros_ethercat";
 
