@@ -166,7 +166,7 @@ public:
   {
     assert(efforts.rows() == joints_.size());
     for (unsigned int i = 0; i < joints_.size(); ++i)
-      efforts(i) = joints_[i]->measured_effort_;
+      efforts(i) = joints_[i]->effort_;
   }
 
   /// get the measured joint efforts of the tree's joints as any type with size() and [] lookup
@@ -175,7 +175,7 @@ public:
   {
     assert((int) v.size() == (int) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
-      v[i] = joints_[i]->measured_effort_;
+      v[i] = joints_[i]->effort_;
   }
 
   /// set the commanded joint efforts of the tree's joints from a KDL::JntArray
@@ -221,7 +221,7 @@ public:
     return true;
   }
 
-  /// get a KDL::Tree object that respresents the tree
+  /// get a KDL::Tree object that represents the tree
   void toKdl(KDL::Tree &tree) const
   {
     tree = kdl_tree_;

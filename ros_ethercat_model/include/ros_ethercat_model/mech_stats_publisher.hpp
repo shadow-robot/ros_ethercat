@@ -100,7 +100,7 @@ public:
           jout->name = jin->second->joint_->name;
           jout->position = jin->second->position_;
           jout->velocity = jin->second->velocity_;
-          jout->measured_effort = jin->second->measured_effort_;
+          jout->measured_effort = jin->second->effort_;
           jout->commanded_effort = jin->second->commanded_effort_;
           jout->is_calibrated = jin->second->calibrated_;
           jout->violated_limits = jin->second->joint_statistics_.violated_limits_;

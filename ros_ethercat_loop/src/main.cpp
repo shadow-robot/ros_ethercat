@@ -578,6 +578,8 @@ int main(int argc, char *argv[])
     perror("Failed to lock memory. It is recommended to do rosrun ros_ethercat_loop ros_grant");
     exit(EXIT_FAILURE);
   }
+  else
+    ROS_INFO("Locked memory");
 
   // Initialize ROS and parse command-line arguments
   ros::init(argc, argv, "realtime_loop");
@@ -636,6 +638,8 @@ int main(int argc, char *argv[])
   // EtherCAT lock for this interface (e.g. Ethernet port)
   if (setupPidFile(g_options.interface_) < 0)
     exit(EXIT_FAILURE);
+  else
+    ROS_INFO("Locked Ethernet port");
 
   ros::NodeHandle node(name);
 

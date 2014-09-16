@@ -92,14 +92,15 @@ public:
       hardware_interface::JointStateHandle jsh(it->first,
                                                &it->second->position_,
                                                &it->second->velocity_,
-                                               &it->second->measured_effort_);
+                                               &it->second->effort_);
       joint_state_interface_.registerHandle(jsh);
 
-      hardware_interface::JointHandle jh(joint_state_interface_.getHandle(it->first),
-                                         &it->second->commanded_effort_);
-      joint_command_interface_.registerHandle(jh);
-      effort_joint_interface_.registerHandle(jh);
-      position_joint_interface_.registerHandle(jh);
+      joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
+                                                                                       & it->second->commanded_position_));
+      joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
+                                                                                       & it->second->commanded_velocity_));
+      joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
+                                                                                     & it->second->commanded_effort_));
     }
 
     if (!model_.joint_states_.empty())
@@ -107,9 +108,9 @@ public:
 
     registerInterface(&model_);
     registerInterface(&joint_state_interface_);
-    registerInterface(&joint_command_interface_);
-    registerInterface(&effort_joint_interface_);
-    registerInterface(&position_joint_interface_);
+    registerInterface(&joint_position_command_interface_);
+    registerInterface(&joint_velocity_command_interface_);
+    registerInterface(&joint_effort_command_interface_);
   }
   virtual ~RosEthercat()
   {
@@ -165,10 +166,13 @@ public:
   EthercatHardware ec_;
   boost::scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
 
+  // state interface
   hardware_interface::JointStateInterface joint_state_interface_;
-  hardware_interface::JointCommandInterface joint_command_interface_;
-  hardware_interface::EffortJointInterface effort_joint_interface_;
-  hardware_interface::PositionJointInterface position_joint_interface_;
+
+  // command interface
+  hardware_interface::PositionJointInterface joint_position_command_interface_;
+  hardware_interface::VelocityJointInterface joint_velocity_command_interface_;
+  hardware_interface::EffortJointInterface joint_effort_command_interface_;
 };
 
 #endif

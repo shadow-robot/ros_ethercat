@@ -148,7 +148,7 @@ public:
   {
     efforts.clear();
     for (unsigned int i = 0; i < joints_.size(); ++i)
-      efforts.push_back(joints_[i]->measured_effort_);
+      efforts.push_back(joints_[i]->effort_);
   }
 
   /// get the measured joint efforts of the chain as a kdl jnt array
@@ -156,7 +156,7 @@ public:
   {
     assert(a.rows() == joints_.size());
     for (unsigned int i = 0; i < joints_.size(); ++i)
-      a(i) = joints_[i]->measured_effort_;
+      a(i) = joints_[i]->effort_;
   }
 
   /// set the commanded joint efforts of the chain as a std vector
