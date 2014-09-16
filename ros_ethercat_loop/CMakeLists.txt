@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ros_ethercat_loop)
 
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
-    controller_manager 
+    controller_manager
     ros_ethercat_hardware
     ros_ethercat_model
     realtime_tools
@@ -38,8 +38,4 @@ install(TARGETS ${PROJECT_NAME}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
-
-install(PROGRAMS scripts/${PROJECT_NAME}/ros_grant
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
