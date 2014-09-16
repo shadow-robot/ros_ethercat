@@ -78,9 +78,8 @@ public:
     nh.param("mechanism_statistics_publish_rate", publish_rate_mechanism_stats, 1.0);
     publish_period_mechanism_stats_ = Duration(1.0 / fmax(0.000001, publish_rate_mechanism_stats));
   }
-  void publish()
+  void publish(const ros::Time &now)
   {
-    Time now = Time::now();
     if (now > last_published_mechanism_stats_ + publish_period_mechanism_stats_)
     {
       if (pub_mech_stats_.trylock())

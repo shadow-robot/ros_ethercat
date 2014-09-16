@@ -109,9 +109,17 @@ public:
  * \class CustomHW
  * The CustomHW class provides an easy way to add more hardware to the HardwareInterface.
  * Inherit from that class to add a new type of hardware, containing the data you want.
+ * If the hardware doesn't use EtherCAT, constructor and destructor
+ * should initialize drivers to communicate with hardware and
+ * read and write functions must be implemented accordingly.
+ * The read and write functions will be called by RosEthercat functions with same names
  */
 class CustomHW
 {
+public:
+  virtual ~CustomHW() {}
+  virtual void read(const ros::Time &time) {}
+  virtual void write(const ros::Time &time) {}
 };
 
 }
