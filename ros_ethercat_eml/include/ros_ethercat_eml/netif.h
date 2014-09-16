@@ -42,7 +42,7 @@ struct netif;
 #include <stdlib.h>
 
 #define ETHERCAT_DEVICE_NAME_MAX_LENGTH 256
-// Size of MAC adresses expressed as a number of bytes
+// Size of MAC addresses expressed as a number of bytes
 #define MAC_ADDRESS_SIZE 6
 
 void if_attach(struct netif * netif);
@@ -52,13 +52,13 @@ int framebuild(struct EtherCAT_Frame * frame, const unsigned char * buffer);
 // Number of outstanding packets to keep track of
 #define PKT_LIST_SIZE 128
 
-// Number of buffers to hold recieved packets
+// Number of buffers to hold received packets
 #define BUF_LIST_SIZE 16
 
 // Should be < number of RX buffers
 #define MAX_UNCLAIMED_PACKETS (BUF_LIST_SIZE-1)
 
-// buffer to hold recieved packets
+// buffer to hold received packets
 
 struct pkt_buf
 {
@@ -128,7 +128,7 @@ struct netif_counters
 /// Generic ethercat interface towards lower level drivers.
 
 /** It should be readily re-implemented for different OSes such as
- RTAI, linux, ...     etc. (For the ease of porting the interface
+ RTAI, Linux, ...     etc. (For the ease of porting the interface
  is in C).
  */
 struct netif
@@ -150,8 +150,8 @@ struct netif
    */
   int (*tx)(struct EtherCAT_Frame * frame, struct netif * netif);
 
-  /// Recieve frame
-  /** May block, returns true if correct frame is recieved
+  /// Receive frame
+  /** May block, returns true if correct frame is received
    */
   bool (*rx)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
 
@@ -160,14 +160,14 @@ struct netif
    */
   bool (*drop)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
 
-  /// Recieve frame
-  /** Will not block, returns true if correct frame is recieved
+  /// Receive frame
+  /** Will not block, returns true if correct frame is received
    */
   bool (*rx_nowait)(struct EtherCAT_Frame * frame, struct netif * netif, int handle);
 
   /// The MAC address
   unsigned char hwaddr[MAC_ADDRESS_SIZE];
-  /// Filedescriptor of the socket
+  /// File descriptor of the socket
   int socket_private;
 
   /// Counters for certain types of events (packet drops, invalid packets, etc)
@@ -176,7 +176,7 @@ struct netif
   /// Sequence number to put on next sent packet
   unsigned tx_seqnum;
 
-  /// Secuence number of more recently recieved packet
+  /// Sequence number of more recently received packet
   unsigned rx_seqnum;
 
   /// Outstanding pkt slot to use from next tx
@@ -201,7 +201,7 @@ struct netif
   volatile bool stop;
   volatile bool is_stopped;
 
-  // Timeout for recieve in microseconds.
+  // Timeout for receive in microseconds.
   int timeout_us;
 
   // private variable

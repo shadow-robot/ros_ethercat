@@ -30,7 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
-
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_process_data.h"
 #include "ros_ethercat_eml/ethercat_slave_handler.h"
 #include "ros_ethercat_eml/ethercat_AL.h"
@@ -43,6 +43,8 @@ EtherCAT_PD_Buffer::EtherCAT_PD_Buffer(EC_Logic* _m_logic_instance,
   m_dll_instance(_m_dll_instance),
   m_is_running(false)
 {
+  ROS_ASSERT(m_logic_instance);
+  ROS_ASSERT(m_dll_instance);
   for (unsigned i = 0; i < MAX_CHUNKS; ++i)
   {
     m_lrw_telegram[i] = new LRW_Telegram(0x00, 0x00010000, 0x00, 0, NULL);

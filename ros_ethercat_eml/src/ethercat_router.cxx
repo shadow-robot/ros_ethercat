@@ -30,6 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_router.h"
 #include "ros_ethercat_eml/ethercat_mbx.h"
 #include "ros_ethercat_eml/ethercat_slave_handler.h"
@@ -47,6 +48,9 @@ EtherCAT_Router::EtherCAT_Router(EtherCAT_AL* _m_al_instance,
   m_dll_instance(_m_dll_instance),
   m_is_running(false)
 {
+  ROS_ASSERT(m_al_instance);
+  ROS_ASSERT(m_logic_instance);
+  ROS_ASSERT(m_dll_instance);
 }
 
 void EtherCAT_Router::start()

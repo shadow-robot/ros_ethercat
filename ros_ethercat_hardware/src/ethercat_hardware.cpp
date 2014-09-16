@@ -74,10 +74,6 @@ EthercatHardware::EthercatHardware(const std::string& name,
   ni_(NULL),
   interface_(eth),
   pd_buffer_(&m_logic_instance_, &m_dll_instance_),
-  application_layer_(&m_dll_instance_, &m_logic_instance_, &pd_buffer_),
-  m_router_(&application_layer_, &m_logic_instance_, &m_dll_instance_),
-  routerSet_(setRouterToSlaveHandlers()),
-  ethercat_master_(&application_layer_, &m_router_, &pd_buffer_, &m_logic_instance_, &m_dll_instance_),
   this_buffer_(NULL),
   prev_buffer_(NULL),
   buffer_size_(0),
@@ -101,7 +97,7 @@ EthercatHardware::~EthercatHardware()
   for (uint32_t i = 0; i < slaves_.size(); ++i)
   {
     EC_FixedStationAddress fsa(i + 1);
-    EtherCAT_SlaveHandler *sh = ethercat_master_.get_slave_handler(fsa);
+    EtherCAT_SlaveHandler *sh = ethercat_master_->get_slave_handler(fsa);
     if (sh)
       sh->to_state(EC_PREOP_STATE);
   }
@@ -110,16 +106,19 @@ EthercatHardware::~EthercatHardware()
     close_socket(ni_);
   }
   delete[] buffers_;
-  delete oob_com_;
   motor_publisher_.stop();
+  delete oob_com_;
+  delete ethercat_master_;
+  delete m_router_;
+  delete application_layer_;
 }
 
 bool EthercatHardware::setRouterToSlaveHandlers()
 {
-  unsigned int n_slaves = application_layer_.get_num_slaves();
-  EtherCAT_SlaveHandler **slaves = application_layer_.get_slaves();
+  unsigned int n_slaves = application_layer_->get_num_slaves();
+  EtherCAT_SlaveHandler **slaves = application_layer_->get_slaves();
   for (unsigned int i = 0; i < n_slaves; ++i)
-    slaves[i]->setRouter(&m_router_);
+    slaves[i]->setRouter(m_router_);
   return true;
 }
 
@@ -184,14 +183,19 @@ void EthercatHardware::init()
   // Initialize network interface
   if ((ni_ = init_ec(interface_.c_str())) == NULL)
   {
-    ROS_FATAL("Unable to initialize interface_.c_str(): %s", interface_.c_str());
+    ROS_FATAL_STREAM("Unable to initialize interface_: " << interface_);
     sleep(1);
     exit(EXIT_FAILURE);
   }
 
+  m_dll_instance_.attach(ni_);
+  application_layer_ = new EtherCAT_AL(&m_dll_instance_, &m_logic_instance_, &pd_buffer_);
+  m_router_ = new EtherCAT_Router(application_layer_, &m_logic_instance_, &m_dll_instance_);
+  setRouterToSlaveHandlers();
+  ethercat_master_ = new EtherCAT_Master(application_layer_, m_router_, &pd_buffer_, &m_logic_instance_, &m_dll_instance_);
   oob_com_ = new EthercatOobCom(ni_);
 
-  int num_ethercat_devices_ = application_layer_.get_num_slaves();
+  int num_ethercat_devices_ = application_layer_->get_num_slaves();
   if (num_ethercat_devices_ == 0)
   {
     ROS_FATAL("Unable to locate any slaves");
@@ -207,7 +211,7 @@ void EthercatHardware::init()
   for (unsigned int slave = 0; slave < slaves_.size(); ++slave)
   {
     EC_FixedStationAddress fsa(slave + 1);
-    EtherCAT_SlaveHandler *sh = ethercat_master_.get_slave_handler(fsa);
+    EtherCAT_SlaveHandler *sh = ethercat_master_->get_slave_handler(fsa);
     if (sh == NULL)
     {
       ROS_FATAL("Unable to get slave handler #%d", slave);
@@ -1019,7 +1023,7 @@ bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, u
   for (unsigned i = 0; i < tries && !success; ++i)
   {
     // Try transmitting process data
-    success = ethercat_master_.txandrx_PD(buffer_size_, this_buffer_);
+    success = ethercat_master_->txandrx_PD(buffer_size_, this_buffer_);
     if (!success)
     {
       ++diagnostics_.txandrx_errors_;

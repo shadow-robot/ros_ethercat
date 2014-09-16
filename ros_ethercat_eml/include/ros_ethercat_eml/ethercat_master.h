@@ -41,6 +41,7 @@ class EtherCAT_PD_Buffer;
 class EC_Logic;
 class EtherCAT_DataLinkLayer;
 
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_mbx.h"
 #include "ros_ethercat_eml/ethercat_process_data.h"
 #include "ros_ethercat_eml/ethercat_slave_memory.h"
@@ -62,6 +63,11 @@ public:
     m_logic_instance(_m_logic_instance),
     m_dll_instance(_m_dll_instance)
   {
+    ROS_ASSERT(m_al_instance);
+    ROS_ASSERT(m_router_instance);
+    ROS_ASSERT(m_pdbuf_instance);
+    ROS_ASSERT(m_logic_instance);
+    ROS_ASSERT(m_dll_instance);
   }
 
   /// Get Slave Handler

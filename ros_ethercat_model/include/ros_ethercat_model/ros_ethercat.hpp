@@ -99,6 +99,7 @@ public:
                                                         static_cast<hardware_interface::HardwareInterface*> (&model_),
                                                         *port_name,
                                                         allow));
+      ROS_INFO_STREAM("Added Ethernet port " << *port_name);
     }
 
     for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();

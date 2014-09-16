@@ -273,10 +273,9 @@ private:
   EtherCAT_DataLinkLayer m_dll_instance_;
   EC_Logic m_logic_instance_;
   EtherCAT_PD_Buffer pd_buffer_;
-  EtherCAT_AL application_layer_;
-  EtherCAT_Router m_router_;
-  bool routerSet_;
-  EtherCAT_Master ethercat_master_;
+  EtherCAT_AL *application_layer_;
+  EtherCAT_Router *m_router_;
+  EtherCAT_Master *ethercat_master_;
 
   std::vector<boost::shared_ptr<EthercatDevice> > slaves_;
   unsigned int num_ethercat_devices_;
