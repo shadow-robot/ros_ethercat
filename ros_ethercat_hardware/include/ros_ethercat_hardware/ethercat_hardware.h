@@ -96,7 +96,7 @@ struct EthercatHardwareDiagnostics
 /*!
  * \brief Publishes EthercatHardware diagnostics.
  *
- * All the string formating used for creatign diagnostics is too
+ * All the string formating used for creating diagnostics is too
  * slow to be run in the realtime thread. Instead, a copy of the raw
  * diagnostics data is made and a separate thread does the string conversion
  * and publishing.
@@ -115,7 +115,7 @@ public:
 
   /*!
    * \brief Initializes hardware publish.
-   * \param buffer_size size of proccess data buffer
+   * \param buffer_size size of process data buffer
    * \param number of EtherCAT slave devices
    */
   void initialize(const string &interface, unsigned int buffer_size,
@@ -159,8 +159,7 @@ private:
   /*!
    * \brief Helper function for converting timing for diagnostics
    */
-  static void timingInformation(
-                                diagnostic_updater::DiagnosticStatusWrapper &status,
+  static void timingInformation(diagnostic_updater::DiagnosticStatusWrapper &status,
                                 const string &key,
                                 const accumulator_set<double, stats<tag::max, tag::mean> > &acc,
                                 double max);
@@ -227,7 +226,7 @@ public:
   void init();
 
   /*!
-   * \brief Collects diagnotics from all devices.
+   * \brief Collects diagnostics from all devices.
    */
   void collectDiagnostics();
 
@@ -243,7 +242,7 @@ public:
    * \param position device ring position to publish trace for.  Use -1 to trigger all devices.
    * \param reason Message to put in trace as reason.
    * \param level Level to put in trace (aka ERROR=2, WARN=1, OK=0)
-   * \param delay Publish trace after delay cyles.  For 1kHz realtime loop 1cycle = 1ms.
+   * \param delay Publish trace after delay cycles.  For 1kHz realtime loop 1cycle = 1ms.
    * \return Return true if device supports publishing trace.  False, if not.
    *         If all devices are triggered, returns true if any device publishes trace.
    */
@@ -260,16 +259,24 @@ private:
 
   void haltMotors(bool error, const char* reason);
 
+  void publishDiagnostics(); //!< Collects raw diagnostics data and passes it to diagnostics_publisher
+  static void updateAccMax(double &max, const accumulator_set<double, stats<tag::max, tag::mean> > &acc);
+  boost::shared_ptr<EthercatDevice> configSlave(EtherCAT_SlaveHandler *sh);
+  bool setRouterToSlaveHandlers();
+
   ros::NodeHandle node_;
 
   struct netif *ni_;
 
   string interface_; //!< The socket interface that is connected to the EtherCAT devices (e.g., eth0)
 
-  EtherCAT_AL *al_;
-  EtherCAT_Master *em_;
+  EtherCAT_DataLinkLayer m_dll_instance_;
+  EC_Logic m_logic_instance_;
+  EtherCAT_PD_Buffer pd_buffer_;
+  EtherCAT_AL *application_layer_;
+  EtherCAT_Router *m_router_;
+  EtherCAT_Master *ethercat_master_;
 
-  boost::shared_ptr<EthercatDevice> configSlave(EtherCAT_SlaveHandler *sh);
   std::vector<boost::shared_ptr<EthercatDevice> > slaves_;
   unsigned int num_ethercat_devices_;
 
@@ -284,9 +291,6 @@ private:
   unsigned timeout_; //!< Timeout (in microseconds) to used for sending/recieving packets once in realtime mode.
   unsigned max_pd_retries_; //!< Max number of times to retry sending process data before halting motors
 
-  void publishDiagnostics(); //!< Collects raw diagnostics data and passes it to diagnostics_publisher
-  static void updateAccMax(double &max,
-                           const accumulator_set<double, stats<tag::max, tag::mean> > &acc);
   EthercatHardwareDiagnostics diagnostics_;
   EthercatHardwareDiagnosticsPublisher diagnostics_publisher_;
   ros::Time last_published_;

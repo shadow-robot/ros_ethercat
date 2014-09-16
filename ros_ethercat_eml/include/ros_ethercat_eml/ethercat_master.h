@@ -41,20 +41,37 @@ class EtherCAT_PD_Buffer;
 class EC_Logic;
 class EtherCAT_DataLinkLayer;
 
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_mbx.h"
 #include "ros_ethercat_eml/ethercat_process_data.h"
 #include "ros_ethercat_eml/ethercat_slave_memory.h"
+#include "ros_ethercat_eml/ethercat_router.h"
 
 /// EtherCAT Master instance
 
 class EtherCAT_Master
 {
 public:
-  /// This class is a singleton
-  static EtherCAT_Master * instance();
+  EtherCAT_Master(EtherCAT_AL *_m_al_instance,
+                  EtherCAT_Router *_m_router_instance,
+                  EtherCAT_PD_Buffer *_m_pdbuf_instance,
+                  EC_Logic *_m_logic_instance,
+                  EtherCAT_DataLinkLayer *_m_dll_instance) :
+    m_al_instance(_m_al_instance),
+    m_router_instance(_m_router_instance),
+    m_pdbuf_instance(_m_pdbuf_instance),
+    m_logic_instance(_m_logic_instance),
+    m_dll_instance(_m_dll_instance)
+  {
+    ROS_ASSERT(m_al_instance);
+    ROS_ASSERT(m_router_instance);
+    ROS_ASSERT(m_pdbuf_instance);
+    ROS_ASSERT(m_logic_instance);
+    ROS_ASSERT(m_dll_instance);
+  }
 
   /// Get Slave Handler
-  /** @return Pointer to slavehandler if found in the network, or NULL
+  /** @return Pointer to slave-handler if found in the network, or NULL
    otherwise
    */
   EtherCAT_SlaveHandler * get_slave_handler(EC_FixedStationAddress address);
@@ -66,28 +83,15 @@ public:
    data array.  This happens synchronously with the method call.
    @return true if msg got true
    */
-  bool txandrx_PD(size_t datalen,
-                  unsigned char * data);
-
-protected:
-  /// Constructor (protected)
-  EtherCAT_Master();
+  bool txandrx_PD(size_t datalen, unsigned char * data);
 
 private:
-  /// Master instance
-  static EtherCAT_Master * m_instance;
   /// Pointer to m_AL_instance
   EtherCAT_AL * m_al_instance;
   /// Pointer to router instance
   EtherCAT_Router * m_router_instance;
   /// Pointer to process data buffer instance
   EtherCAT_PD_Buffer * m_pdbuf_instance;
-
-  /* If master also has slave functionality, it has its own mailbox
-   and its own address, so slaves can post msgs to it.
-   EtherCAT_Mbx m_mbx;
-   EC_FixedStationAddress m_address;
-   */
 
   /// Pointer to logic instance
   EC_Logic * m_logic_instance;

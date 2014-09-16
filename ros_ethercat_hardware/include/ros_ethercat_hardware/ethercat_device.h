@@ -107,11 +107,11 @@ public:
   // sh   slaveHandler of device to collect Diagnostics from
   // prev previously collected diagnostics (can be pointer to this object)
   //
-  // collectDiagnotics will send/recieve multiple packets, and may considerable amount of time complete.
+  // collectDiagnotics will send/receive multiple packets, and may considerable amount of time complete.
   //
   void collect(EthercatCom *com, EtherCAT_SlaveHandler *sh);
 
-  // Puts reviously diagnostic collected diagnostic state to DiagnosticStatus object
+  // Puts previously diagnostic collected diagnostic state to DiagnosticStatus object
   //
   // d         DiagnositcState to add diagnostics to.
   // numPorts  Number of ports device is supposed to have.  4 is max, 1 is min.

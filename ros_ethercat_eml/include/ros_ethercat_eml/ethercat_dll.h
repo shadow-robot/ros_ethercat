@@ -30,6 +30,8 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
+#include "ros/ros.h"
+
 #ifndef __ethercat_dll__
 #define __ethercat_dll__
 
@@ -42,11 +44,7 @@ class EtherCAT_Frame;
 class EtherCAT_DataLinkLayer
 {
 public:
-  /// This class is a singleton
-  /** @todo Pass destination MAC address instead of defaulting to
-   broadcast?
-   */
-  static EtherCAT_DataLinkLayer * instance(void);
+  EtherCAT_DataLinkLayer() : m_if(NULL) {}
 
   /// Attach the DLL to a networking interface
   /** @param netif pointer to the NIC
@@ -62,7 +60,7 @@ public:
   /// transmit an EtherCAT frame (non-blocking call)
   /** @param a_frame ethercat frame to be sent
    *  @return positive or zero handle on success, negative value for error
-   *  Successfull tx MUST be followed by rx call.
+   *  Successful tx MUST be followed by rx call.
    */
   int tx(EtherCAT_Frame * a_frame);
 
@@ -73,11 +71,7 @@ public:
    */
   bool rx(EtherCAT_Frame * a_frame, int a_handle);
 
-protected:
-  EtherCAT_DataLinkLayer();
-
 private:
-  static EtherCAT_DataLinkLayer * m_instance;
   struct netif * m_if;
 };
 

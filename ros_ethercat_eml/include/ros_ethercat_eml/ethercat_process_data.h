@@ -56,8 +56,8 @@ class EtherCAT_PD_Buffer
   friend class EC_ESM_Ops;
 
 public:
-  /// Singleton
-  static EtherCAT_PD_Buffer * instance();
+  EtherCAT_PD_Buffer(EC_Logic *_m_logic_instance, EtherCAT_DataLinkLayer *_m_dll_instance);
+  virtual ~EtherCAT_PD_Buffer();
 
   /// Send some process data
   /** @param datalen number of bytes that should be set
@@ -74,20 +74,14 @@ protected:
   /// Stop transmitting process data
   void stop();
 
-  /// Constructor
-  EtherCAT_PD_Buffer();
-  virtual ~EtherCAT_PD_Buffer();
-
 private:
   /// Pointer to EC_Logic
   EC_Logic * m_logic_instance;
   /// Pointer to DLL instance
   EtherCAT_DataLinkLayer * m_dll_instance;
-  /// This class is a singleton
-  static EtherCAT_PD_Buffer * m_instance;
 
   /// See note in class definition.
-  unsigned int m_is_running;
+  bool m_is_running;
 
   /// Process data can be divided over MAX_CHUCKS packets
   /// of upto CHUNK_SIZE bytes

@@ -248,8 +248,7 @@ protected:
 class EtherCAT_SlaveDb
 {
 public:
-  /// Singleton
-  static EtherCAT_SlaveDb * instance(unsigned int num_slaves = 0);
+  EtherCAT_SlaveDb(unsigned int num_slaves);
   ~EtherCAT_SlaveDb()
   {
     delete[] m_sc;
@@ -265,18 +264,10 @@ public:
    @return Pointer to slave configuration if found, or NULL
    otherwise)
    */
-  const EtherCAT_SlaveConfig * find(uint32_t productcode,
-                                    uint32_t revision) const;
-protected:
-  /// Constructor
-  EtherCAT_SlaveDb(unsigned int num_slaves);
-
+  EtherCAT_SlaveConfig * find(uint32_t productcode, uint32_t revision) const;
 private:
-  static EtherCAT_SlaveDb * m_instance;
-
-  EtherCAT_SlaveConfig ** m_sc;
   unsigned int m_num_slaves;
-
+  EtherCAT_SlaveConfig ** m_sc;
 };
 
 #endif // __ethercat_slave_conf__

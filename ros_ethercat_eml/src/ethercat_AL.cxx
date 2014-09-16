@@ -30,6 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_log.h"
 #include "ros_ethercat_eml/ethercat_AL.h"
 #include "ros_ethercat_eml/ethercat_slave_conf.h"
@@ -40,53 +41,25 @@
 #include "ros_ethercat_eml/ethercat_frame.h"
 #include "ros_ethercat_eml/ethercat_device_addressed_telegram.h"
 #include "ros_ethercat_eml/ethercat_logical_addressed_telegram.h"
+#include "ros_ethercat_eml/ethercat_process_data.h"
 #include <time.h>
 
-// ==================================================
-EC_Logic * EC_Logic::m_instance = NULL;
-
-EC_Logic::EC_Logic()
-  :
-  m_wkc(0), m_idx(0)
+EtherCAT_AL::EtherCAT_AL(EtherCAT_DataLinkLayer *_m_dll_instance,
+                         EC_Logic *_m_logic_instance,
+                         EtherCAT_PD_Buffer *_pd_buffer_) :
+  m_dll_instance(_m_dll_instance),
+  m_logic_instance(_m_logic_instance),
+  m_slave_db(NULL),
+  pd_buffer_(_pd_buffer_),
+  m_num_slaves(0),
+  m_ready(false)
 {
-}
-
-EC_Logic *
-EC_Logic::instance()
-{
-  if (!m_instance)
+  ROS_ASSERT(m_dll_instance);
+  ROS_ASSERT(m_logic_instance);
+  ROS_ASSERT(pd_buffer_);
+  if (!init())
   {
-    m_instance = new EC_Logic();
-  }
-  return m_instance;
-}
-
-// ==================================================
-
-EtherCAT_AL * EtherCAT_AL::m_instance = NULL;
-
-EtherCAT_AL *
-EtherCAT_AL::instance()
-{
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_AL();
-  }
-  return m_instance;
-}
-
-EtherCAT_AL::EtherCAT_AL()
-  :
-  m_num_slaves(0), m_ready(false)
-{
-  m_dll_instance = EtherCAT_DataLinkLayer::instance();
-  m_slave_db = EtherCAT_SlaveDb::instance();
-  m_logic_instance = EC_Logic::instance();
-
-  if (init() == false)
-  {
-    // Can't use exceptions, since not supported by eCOS f.i.
-    ec_log(EC_LOG_FATAL, "EtherCAT_AL:: Can't init network\n");
+    ROS_INFO("EtherCAT_AL:: Can't init network\n");
   }
   m_ready = true;
 }
@@ -100,8 +73,7 @@ EtherCAT_AL::~EtherCAT_AL()
   delete[] m_slave_handler;
 }
 
-bool
-EtherCAT_AL::init(void)
+bool EtherCAT_AL::init(void)
 {
   if (scan_slaves())
   {
@@ -111,44 +83,45 @@ EtherCAT_AL::init(void)
     }
     else
     {
-      ec_log(EC_LOG_FATAL, "Something went wrong while resetting slaves\n");
+      ROS_ERROR("Something went wrong while resetting slaves");
       return false;
     }
   }
   else
   {
-    ec_log(EC_LOG_FATAL, "Something went wrong while scanning network\n");
+    ROS_ERROR("Something went wrong while scanning network");
     return false;
   }
 }
 
-bool
-EtherCAT_AL::isReady()
+bool EtherCAT_AL::isReady()
 {
   return m_ready;
 }
 
-bool
-EtherCAT_AL::scan_slaves(void)
+bool EtherCAT_AL::scan_slaves(void)
 {
   // Send APRD telegram to count number of slaves
   unsigned char a[1] = {0x00};
-  APRD_Telegram counter_tg(m_logic_instance->get_idx(), 0x0000, 0x0000,
+  APRD_Telegram counter_tg(m_logic_instance->get_idx(),
+                           0x0000,
+                           0x0000,
                            m_logic_instance->get_wkc(),
-                           0x01, a);
+                           0x01,
+                           a);
   EC_Ethernet_Frame counter_frame(&counter_tg);
   bool succeed = m_dll_instance->txandrx(&counter_frame);
   if (succeed == false)
   {
-    ec_log(EC_LOG_FATAL, "Error sending counter frame\n");
+    ROS_ERROR("Error sending counter frame\n");
     return succeed;
   }
   // Init Number of slaves
   m_num_slaves = counter_tg.get_adp();
-  ec_log(EC_LOG_INFO, "EtherCAT AL: Ring contains %d slaves\n", m_num_slaves);
+  ROS_DEBUG("EtherCAT AL: Ring contains %du slaves", m_num_slaves);
   m_slave_handler = new EtherCAT_SlaveHandler*[m_num_slaves];
 
-  // Initialise Slave Handlers, Reading productcode and revision from SII
+  // Initialise Slave Handlers, Reading product-code and revision from SII
   uint16_t adp = 0x0000;
   uint32_t productcode = 0x00000000;
   uint32_t revision = 0x00000000;
@@ -156,7 +129,7 @@ EtherCAT_AL::scan_slaves(void)
   const uint16_t SII_datalen = EC_Slave_RD[SII_ControlStatus].size + EC_Slave_RD[SII_Address].size
     + EC_Slave_RD[SII_Data].size;
   unsigned char data[SII_datalen];
-  const EtherCAT_SlaveConfig * sconf;
+  EtherCAT_SlaveConfig * sconf;
   for (unsigned i = 0; i < SII_datalen; i++)
     data[i] = 0x00;
   for (unsigned int i = 0; i < m_num_slaves; i++)
@@ -166,9 +139,8 @@ EtherCAT_AL::scan_slaves(void)
     succeed = read_SII(adp, EC_ProductCodeAddressInSII, data);
     if (!succeed)
     {
-      ec_log(EC_LOG_FATAL, "EC_AL::scan_slaves() Error reading Product code of slave %d\n", i);
+      ROS_ERROR("EC_AL::scan_slaves() Error reading Product code of slave %du", i);
       productcode = 0xbaddbadd;
-      //return succeed;
     }
     else
     {
@@ -185,9 +157,8 @@ EtherCAT_AL::scan_slaves(void)
     succeed = read_SII(adp, EC_RevisionAddressInSII, data);
     if (!succeed)
     {
-      ec_log(EC_LOG_FATAL, "EC_AL::scan_slaves() Error reading Revision of slave %d\n", i);
+      ROS_ERROR("EC_AL::scan_slaves() Error reading Revision of slave %du", i);
       revision = 0xbaddbadd;
-      //return succeed;
     }
     else
     {
@@ -200,9 +171,8 @@ EtherCAT_AL::scan_slaves(void)
     succeed = read_SII(adp, EC_SerialAddressInSII, data);
     if (!succeed)
     {
-      ec_log(EC_LOG_FATAL, "EC_AL::scan_slaves() Error reading Serial of slave %d\n", i);
+      ROS_ERROR("EC_AL::scan_slaves() Error reading Serial of slave %du", i);
       serial = 0xbaddbadd;
-      //return succeed;
     }
     else
     {
@@ -210,37 +180,49 @@ EtherCAT_AL::scan_slaves(void)
     }
     nanosleep(&sleept, 0);
 
+    m_slave_db = new EtherCAT_SlaveDb(m_num_slaves);
     sconf = m_slave_db->find(productcode, revision);
     if (sconf != NULL)
     {
-      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp), sconf, serial);
-      ec_log(EC_LOG_INFO,
-             "AL creating SlaveHandler: pos=%d, adr=0x%x, Prod. Code=0x%x, rev=0x%x, Serial=%d\n",
-             adp2ringpos(adp),
-             (uint16_t) sconf->get_station_address(), productcode, revision, serial);
+      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
+                                                     sconf,
+                                                     serial,
+                                                     m_dll_instance,
+                                                     m_logic_instance,
+                                                     pd_buffer_);
+      ROS_DEBUG("AL creating SlaveHandler: pos=%d, adr=0x%x, Prod. Code=0x%x, rev=0x%x, Serial=%d",
+                adp2ringpos(adp),
+                (uint16_t) sconf->get_station_address(), productcode, revision, serial);
     }
     else
     { // No such slave found...
-      ec_log(EC_LOG_WARNING, "EC_AL Warning: No such slave in db, creating dummy slave\n");
+      ROS_DEBUG("EC_AL Warning: No such slave in db, creating dummy slave");
       // Create slave handler
-      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp), productcode, revision,
-                                                     serial, (i + 1), NULL, NULL);
-      ec_log(EC_LOG_INFO,
-             "AL creating SlaveHandler: pos=%d, Product Code=0x%x, rev=0x%x, Serial=%d\n",
-             adp2ringpos(adp),
-             productcode, revision, serial);
+      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
+                                                     productcode,
+                                                     revision,
+                                                     serial,
+                                                     (i + 1),
+                                                     NULL,
+                                                     NULL,
+                                                     NULL,
+                                                     m_dll_instance,
+                                                     m_logic_instance,
+                                                     pd_buffer_);
+      ROS_DEBUG("AL creating SlaveHandler: pos=%d, Product Code=0x%x, rev=0x%x, Serial=%d",
+               adp2ringpos(adp),
+               productcode, revision, serial);
     }
     // prepare for querying next slave
-    adp--;
+    --adp;
   }
   return true;
 }
 
-bool
-EtherCAT_AL::reset_slaves(void)
+bool EtherCAT_AL::reset_slaves(void)
 {
   // Reset FMMUs
-  ec_log(EC_LOG_INFO, "AL: resetting FMMUs\n");
+  ROS_DEBUG("AL: resetting FMMUs");
   uint16_t ado = EC_Slave_RD[FMMU_0].ado;
   // Whole FMMU area is 0x100...
   static const uint16_t BWR_data_len = 0x100;
@@ -254,7 +236,7 @@ EtherCAT_AL::reset_slaves(void)
     return false;
 
   // 3: Reset Sync Managers
-  ec_log(EC_LOG_INFO, "AL: resetting SMs\n");
+  ROS_DEBUG("AL: resetting SMs");
   // Whole SM area is also 0x100...
   bwr_telegram.set_idx(m_logic_instance->get_idx());
   ado = EC_Slave_RD[Sync_Manager_0].ado;
@@ -263,10 +245,9 @@ EtherCAT_AL::reset_slaves(void)
   return m_dll_instance->txandrx(&bwr_frame);
 }
 
-bool
-EtherCAT_AL::put_slaves_in_init(void)
+bool EtherCAT_AL::put_slaves_in_init(void)
 {
-  ec_log(EC_LOG_INFO, "AL: Setting all slaves in init mode\n");
+  ROS_DEBUG("AL: Setting all slaves in init mode\n");
   // 6: Set device state to init
   EC_ALControl al_control(EC_INIT_STATE, false);
   unsigned char AL_Control_data[EC_Slave_RD[AL_Control].size];
@@ -287,7 +268,7 @@ EtherCAT_AL::put_slaves_in_init(void)
   /* Note: cannot initialize data array, since the compiler does not
    recognize AL_Status_Size as being const :-(  An option would be
    to include a for loop, but as this data is filled in by the slave,
-   no matter its value, I left it uninitialized for brievety (and
+   no matter its value, I left it uninitialized for brevity (and
    clarity?).
    */
   ado = EC_Slave_RD[AL_Status].ado;
@@ -314,7 +295,7 @@ EtherCAT_AL::put_slaves_in_init(void)
         EC_ALStatus status(AL_Status_data);
         if (status.State != EC_INIT_STATE)
         {
-          ec_log(EC_LOG_ERROR, "Error: EC slave %d not in init state, AL_status = %x\n", ringpos,
+          ROS_ERROR("Error: EC slave %d not in init state, AL_status = %x", ringpos,
                  status.State);
           succeed = false;
         }
@@ -329,11 +310,11 @@ EtherCAT_AL::put_slaves_in_init(void)
         AL_status_telegram.set_idx(m_logic_instance->get_idx());
       }
       else
-        ec_log(EC_LOG_ERROR, "EtherCAT_AL: Error sending AL_Status_frame for slave %d\n", ringpos);
+        ROS_ERROR("EtherCAT_AL: Error sending AL_Status_frame for slave %d", ringpos);
     }
     else
     {
-      ec_log(EC_LOG_ERROR, "EtherCAT_AL: Error sending AL_Control_frame for slave %d\n", ringpos);
+      ROS_ERROR("EtherCAT_AL: Error sending AL_Control_frame for slave %d", ringpos);
       struct timespec sleept;
       sleept.tv_sec = 0;
       sleept.tv_nsec = 10 * 1000 * 1000; //10ms
@@ -348,10 +329,7 @@ EtherCAT_AL::put_slaves_in_init(void)
 // 10 tries was not enough for the optimized version of the code
 static const unsigned int EC_SII_MAXTRIES = 100;
 
-bool
-EtherCAT_AL::read_SII(uint16_t slave_adp,
-                      uint32_t address,
-                      unsigned char * a_buffer)
+bool EtherCAT_AL::read_SII(uint16_t slave_adp, uint32_t address, unsigned char * a_buffer)
 {
   bool succeed;
 
@@ -371,7 +349,7 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
   succeed = m_dll_instance->txandrx(&SII_control_frame);
   if (!succeed)
   {
-    ec_log(EC_LOG_ERROR, "EC_AL::read_SII() Error sending control frame\n");
+    ROS_ERROR("EC_AL::read_SII() Error sending control frame");
     return false;
   }
   // BIG FAT WARNING:  USING 2 TELEGRAMS FOR WRITING AS PROGRAMMED
@@ -426,7 +404,7 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
       EC_SIIControlStatus siics(a_buffer);
       if (siics.Busy)
       {
-        ec_log(EC_LOG_WARNING, "EEPROM busy\n");
+        ROS_DEBUG("EEPROM busy");
         struct timespec sleept;
         sleept.tv_sec = 0;
         sleept.tv_nsec = 10 * 1000 * 1000; //10ms
@@ -437,7 +415,7 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
       {
         if (siics.AcknowledgeError)
         {
-          ec_log(EC_LOG_ERROR, "EC_AL::read_SII() Acknowledge error\n");
+          ROS_ERROR("EC_AL::read_SII() Acknowledge error");
           return false;
         }
         return succeed;
@@ -445,12 +423,11 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
     }
     tries++;
   }
-  ec_log(EC_LOG_ERROR, "EC_AL::read_SII() Max tries exceeded\n");
+  ROS_ERROR("EC_AL::read_SII() Max tries exceeded");
   return false;
 }
 
-EtherCAT_SlaveHandler *
-EtherCAT_AL::get_slave_handler(EC_FixedStationAddress station_address)
+EtherCAT_SlaveHandler * EtherCAT_AL::get_slave_handler(EC_FixedStationAddress station_address)
 {
   unsigned int i = 0;
   while (i < m_num_slaves)
@@ -460,7 +437,7 @@ EtherCAT_AL::get_slave_handler(EC_FixedStationAddress station_address)
     else
       i++;
   }
-  ec_log(EC_LOG_WARNING, "EtherCAT_AL: No such slave, returning NULL\n");
+  ROS_DEBUG("EtherCAT_AL: No such slave, returning NULL");
   return NULL;
 }
 

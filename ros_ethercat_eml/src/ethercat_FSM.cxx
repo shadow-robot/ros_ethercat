@@ -48,20 +48,27 @@ EC_ESM_PreOpState EC_ESM_State::preopState;
 EC_ESM_SafeOpState EC_ESM_State::safeopState;
 EC_ESM_OpState EC_ESM_State::opState;
 
-EC_ESM_Ops::EC_ESM_Ops(EtherCAT_SlaveHandler * a_SH)
-  : m_SH(a_SH)
+EC_ESM_Ops::EC_ESM_Ops(EtherCAT_SlaveHandler * a_SH,
+                       EtherCAT_DataLinkLayer *_m_dll_instance,
+                       EC_Logic *_m_logic_instance,
+                       EtherCAT_PD_Buffer *_m_pdbuf_instance) :
+  m_logic_instance(_m_logic_instance),
+  m_router_instance(NULL),
+  m_dll_instance(_m_dll_instance),
+  m_SH(a_SH),
+  m_pdbuf_instance(_m_pdbuf_instance)
 {
-  m_dll_instance = EtherCAT_DataLinkLayer::instance();
-  m_logic_instance = EC_Logic::instance();
-  m_router_instance = EtherCAT_Router::instance();
-  m_pdbuf_instance = EtherCAT_PD_Buffer::instance();
-};
+}
+
+void EC_ESM_Ops::setRouter(EtherCAT_Router* _router)
+{
+  m_router_instance = _router;
+}
 
 // Maximum number of tries setting the state
 static const unsigned int EC_ESM_OPS_MAX_RETRIES = 10;
 
-bool
-EC_ESM_Ops::set_state(EC_State a_state)
+bool EC_ESM_Ops::set_state(EC_State a_state)
 {
   static const uint16_t AL_Control_Size = EC_Slave_RD[AL_Control].size;
   EC_ALControl al_control(a_state, false);
@@ -125,10 +132,9 @@ EC_ESM_Ops::set_state(EC_State a_state)
   return false;
 }
 
-bool
-EC_ESM_Ops::start_mbx_comm()
+bool EC_ESM_Ops::start_mbx_comm()
 {
-  // Checking the current state of FSM is problably not necessary, since
+  // Checking the current state of FSM is probably not necessary, since
   // this function can only be called from the appropriate state (at
   // least in theory :-)
 
@@ -202,8 +208,7 @@ EC_ESM_Ops::start_mbx_comm()
   return set_state(EC_PREOP_STATE);
 }
 
-bool
-EC_ESM_Ops::stop_mbx_comm()
+bool EC_ESM_Ops::stop_mbx_comm()
 {
   return set_state(EC_INIT_STATE);
 
@@ -215,8 +220,7 @@ EC_ESM_Ops::stop_mbx_comm()
   return true;
 }
 
-bool
-EC_ESM_Ops::start_input_update()
+bool EC_ESM_Ops::start_input_update()
 {
   bool succeed = true;
 
@@ -292,16 +296,14 @@ EC_ESM_Ops::start_input_update()
 
 }
 
-bool
-EC_ESM_Ops::stop_input_update()
+bool EC_ESM_Ops::stop_input_update()
 {
   // Ask for stopping PD transmission in master
   m_pdbuf_instance->stop();
   return set_state(EC_PREOP_STATE);
 }
 
-bool
-EC_ESM_Ops::start_output_update()
+bool EC_ESM_Ops::start_output_update()
 {
   /* According to the spec (9.1.3.5 start output update (master)), make sure to
      transmit "valid" output data to the slaves.  However, AFAIS, the
@@ -314,29 +316,32 @@ EC_ESM_Ops::start_output_update()
   return set_state(EC_OP_STATE);
 }
 
-bool
-EC_ESM_Ops::stop_output_update()
+bool EC_ESM_Ops::stop_output_update()
 {
   return set_state(EC_SAFEOP_STATE);
 }
 // ==================================================
 
-EC_ESM::EC_ESM(EtherCAT_SlaveHandler * a_SH)
-  : EC_ESM_Ops(a_SH)
+EC_ESM::EC_ESM(EtherCAT_SlaveHandler * a_SH,
+               EtherCAT_DataLinkLayer *_m_dll_instance,
+               EC_Logic *_m_logic_instance,
+               EtherCAT_PD_Buffer *_m_pdbuf_instance)
+  : EC_ESM_Ops(a_SH,
+               _m_dll_instance,
+               _m_logic_instance,
+               _m_pdbuf_instance)
 {
   m_esm_state = &EC_ESM_State::initState;
 }
 
 // ==================================================
 
-EC_State
-EC_ESM_InitState::get_state() const
+EC_State EC_ESM_InitState::get_state() const
 {
   return EC_INIT_STATE;
 }
 
-bool
-EC_ESM_InitState::to_state(EC_ESM * a_ESM, EC_State a_state)
+bool EC_ESM_InitState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
   switch (a_state)
@@ -372,14 +377,12 @@ EC_ESM_InitState::to_state(EC_ESM * a_ESM, EC_State a_state)
   return succeed;
 }
 
-EC_State
-EC_ESM_PreOpState::get_state() const
+EC_State EC_ESM_PreOpState::get_state() const
 {
   return EC_PREOP_STATE;
 }
 
-bool
-EC_ESM_PreOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
+bool EC_ESM_PreOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
   switch (a_state)
@@ -411,14 +414,12 @@ EC_ESM_PreOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
   return succeed;
 }
 
-EC_State
-EC_ESM_SafeOpState::get_state() const
+EC_State EC_ESM_SafeOpState::get_state() const
 {
   return EC_SAFEOP_STATE;
 }
 
-bool
-EC_ESM_SafeOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
+bool EC_ESM_SafeOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
   switch (a_state)
@@ -450,14 +451,12 @@ EC_ESM_SafeOpState::to_state(EC_ESM * a_ESM, EC_State a_state)
   return succeed;
 }
 
-EC_State
-EC_ESM_OpState::get_state() const
+EC_State EC_ESM_OpState::get_state() const
 {
   return EC_OP_STATE;
 }
 
-bool
-EC_ESM_OpState::to_state(EC_ESM * a_ESM, EC_State a_state)
+bool EC_ESM_OpState::to_state(EC_ESM * a_ESM, EC_State a_state)
 {
   bool succeed;
   switch (a_state)

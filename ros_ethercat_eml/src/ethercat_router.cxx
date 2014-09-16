@@ -30,6 +30,7 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_router.h"
 #include "ros_ethercat_eml/ethercat_mbx.h"
 #include "ros_ethercat_eml/ethercat_slave_handler.h"
@@ -39,51 +40,35 @@
 #include "ros_ethercat_eml/ethercat_frame.h"
 #include "ros_ethercat_eml/ethercat_dll.h"
 
-EtherCAT_Router * EtherCAT_Router::m_instance = 0;
-
-EtherCAT_Router *
-EtherCAT_Router::instance()
+EtherCAT_Router::EtherCAT_Router(EtherCAT_AL* _m_al_instance,
+                                 EC_Logic* _m_logic_instance,
+                                 EtherCAT_DataLinkLayer* _m_dll_instance) :
+  m_al_instance(_m_al_instance),
+  m_logic_instance(_m_logic_instance),
+  m_dll_instance(_m_dll_instance),
+  m_is_running(false)
 {
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_Router();
-  }
-  return m_instance;
+  ROS_ASSERT(m_al_instance);
+  ROS_ASSERT(m_logic_instance);
+  ROS_ASSERT(m_dll_instance);
 }
 
-// al_instance cannot be initiated right now, since this results in a
-// circular instantiation al_instance calls router_instance etc.
-
-EtherCAT_Router::EtherCAT_Router()
-  :
-  m_al_instance(NULL), m_is_running(0)
+void EtherCAT_Router::start()
 {
-  // get pointer to DLL and logic
-  m_dll_instance = EtherCAT_DataLinkLayer::instance();
-  m_logic_instance = EC_Logic::instance();
+  m_is_running = true;
 }
 
-void
-EtherCAT_Router::start()
+void EtherCAT_Router::stop()
 {
-  // Only instantiate here...
-  m_al_instance = EtherCAT_AL::instance();
-  ++m_is_running;
-}
-
-void
-EtherCAT_Router::stop()
-{
-  if (EtherCAT_Router::m_is_running > 0)
-    --EtherCAT_Router::m_is_running;
+  if (m_is_running)
+    m_is_running = false;
   else
     ec_log(EC_LOG_INFO, "EtherCAT_Router already stopped...\n");
 }
 
-void
-EtherCAT_Router::route() const
+void EtherCAT_Router::route() const
 {
-  if (EtherCAT_Router::m_is_running != 0)
+  if (m_is_running)
   {
     // ec_log(EC_LOG_INFO, "EtherCAT_Router::Routing\n");
     EtherCAT_SlaveHandler * sh;
@@ -96,8 +81,7 @@ EtherCAT_Router::route() const
   }
 }
 
-bool
-EtherCAT_Router::check_mbx(const EtherCAT_SlaveHandler * sh) const
+bool EtherCAT_Router::check_mbx(const EtherCAT_SlaveHandler * sh) const
 {
   if (sh->is_complex())
   {
@@ -129,8 +113,7 @@ EtherCAT_Router::check_mbx(const EtherCAT_SlaveHandler * sh) const
   return true;
 }
 
-bool
-EtherCAT_Router::post_mbxmsg(EtherCAT_MbxMsg * msg, const EtherCAT_SlaveHandler * from_sh) const
+bool EtherCAT_Router::post_mbxmsg(EtherCAT_MbxMsg * msg, const EtherCAT_SlaveHandler * from_sh) const
 {
   EC_FixedStationAddress dest_addr = msg->m_hdr.m_address;
   EtherCAT_SlaveHandler * dest_sh = m_al_instance->get_slave_handler(dest_addr);
@@ -171,13 +154,3 @@ EtherCAT_Router::post_mbxmsg(EtherCAT_MbxMsg * msg, const EtherCAT_SlaveHandler 
     return false;
   }
 }
-
-/// C-interface to perform the routing
-
-void route_msgs(void)
-{
-  static EtherCAT_Router * EC_Router = EtherCAT_Router::instance();
-  EC_Router->route();
-  // ec_log(EC_LOG_INFO, "Routing Mbx msgs\n");
-}
-

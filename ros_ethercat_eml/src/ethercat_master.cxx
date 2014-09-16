@@ -41,35 +41,14 @@
 #include "ros_ethercat_eml/ethercat_device_addressed_telegram.h"
 #include "ros_ethercat_eml/ethercat_logical_addressed_telegram.h"
 
-EtherCAT_Master * EtherCAT_Master::m_instance = 0;
-
-EtherCAT_Master *
-EtherCAT_Master::instance()
-{
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_Master();
-  }
-  return m_instance;
-}
-
-EtherCAT_Master::EtherCAT_Master()
-{
-  m_al_instance = EtherCAT_AL::instance();
-  m_router_instance = EtherCAT_Router::instance();
-  m_pdbuf_instance = EtherCAT_PD_Buffer::instance();
-}
-
-EtherCAT_SlaveHandler *
-EtherCAT_Master::get_slave_handler(EC_FixedStationAddress address)
+EtherCAT_SlaveHandler *EtherCAT_Master::get_slave_handler(EC_FixedStationAddress address)
 {
   return m_al_instance->get_slave_handler(address);
 }
 
-bool
-EtherCAT_Master::txandrx_PD(size_t datalen,
-                            unsigned char * data)
+bool EtherCAT_Master::txandrx_PD(size_t datalen, unsigned char * data)
 {
   return m_pdbuf_instance->txandrx(datalen, data);
 }
+
 

@@ -30,40 +30,26 @@
 //	Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany.
 //===========================================================================
 
-
+#include "ros/ros.h"
 #include "ros_ethercat_eml/ethercat_process_data.h"
 #include "ros_ethercat_eml/ethercat_slave_handler.h"
 #include "ros_ethercat_eml/ethercat_AL.h"
 #include "ros_ethercat_eml/ethercat_master.h"
 #include "ros_ethercat_eml/ethercat_dll.h"
 
-EtherCAT_PD_Buffer * EtherCAT_PD_Buffer::m_instance = 0;
-
-EtherCAT_PD_Buffer *
-EtherCAT_PD_Buffer::instance()
+EtherCAT_PD_Buffer::EtherCAT_PD_Buffer(EC_Logic* _m_logic_instance,
+                                       EtherCAT_DataLinkLayer* _m_dll_instance) :
+  m_logic_instance(_m_logic_instance),
+  m_dll_instance(_m_dll_instance),
+  m_is_running(false)
 {
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_PD_Buffer();
-  }
-  return m_instance;
-}
-
-// al_instance cannot be initiated right now, since this results in a
-// circular instantiation al_instance calls router_instance etc.
-
-EtherCAT_PD_Buffer::EtherCAT_PD_Buffer()
-  : m_is_running(0)
-{
+  ROS_ASSERT(m_logic_instance);
+  ROS_ASSERT(m_dll_instance);
   for (unsigned i = 0; i < MAX_CHUNKS; ++i)
   {
     m_lrw_telegram[i] = new LRW_Telegram(0x00, 0x00010000, 0x00, 0, NULL);
     m_lrw_frame[i] = new EC_Ethernet_Frame(m_lrw_telegram[i]);
   }
-
-  // get pointer to DLL and logic
-  m_dll_instance = EtherCAT_DataLinkLayer::instance();
-  m_logic_instance = EC_Logic::instance();
 }
 
 EtherCAT_PD_Buffer::~EtherCAT_PD_Buffer()
@@ -77,23 +63,20 @@ EtherCAT_PD_Buffer::~EtherCAT_PD_Buffer()
   }
 }
 
-void
-EtherCAT_PD_Buffer::start()
+void EtherCAT_PD_Buffer::start()
 {
-  ++m_is_running;
+  m_is_running = true;
 }
 
-void
-EtherCAT_PD_Buffer::stop()
+void EtherCAT_PD_Buffer::stop()
 {
-  if (m_is_running > 0)
-    --m_is_running;
+  if (m_is_running)
+    m_is_running = false;
   else
     ec_log(EC_LOG_INFO, "EtherCAT_PD_Buffer already stopped...\n");
 }
 
-bool
-EtherCAT_PD_Buffer::txandrx(size_t datalen, unsigned char * data)
+bool EtherCAT_PD_Buffer::txandrx(size_t datalen, unsigned char * data)
 {
   //define MAX_CHUNKS 4
   //define CHUNK_SIZE 1486
@@ -110,7 +93,7 @@ EtherCAT_PD_Buffer::txandrx(size_t datalen, unsigned char * data)
     handles[i] = -1;
 
   bool success = true;
-  if (m_is_running != 0)
+  if (m_is_running)
     // In case only starting when all slaves in the appropriate state
     // this becomes something like
     // if ( EtherCAT_PD_Buffer::m_al_instance->get_num_slaves() == m_running)
