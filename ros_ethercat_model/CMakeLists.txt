@@ -35,6 +35,8 @@ CATKIN_DEPENDS
     pr2_mechanism_msgs
 INCLUDE_DIRS
     include
+CFG_EXTRAS
+    ${PROJECT_NAME}-extras.cmake
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/
