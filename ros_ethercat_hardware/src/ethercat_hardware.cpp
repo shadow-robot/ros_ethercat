@@ -85,6 +85,7 @@ EthercatHardware::EthercatHardware(const std::string& name,
   device_loader_("ros_ethercat_hardware", "EthercatDevice"),
   allow_unprogrammed_(allow_unprogrammed)
 {
+  node_.setParam("EtherCAT_Initialized", false);
   if (!interface_.empty())
     init();
   else
@@ -356,6 +357,8 @@ void EthercatHardware::init()
   diagnostics_publisher_.initialize(interface_, buffer_size_, slaves_, num_ethercat_devices_,
                                     timeout_,
                                     max_pd_retries_);
+
+  node_.setParam("EtherCAT_Initialized", true);
 }
 
 EthercatHardwareDiagnosticsPublisher::EthercatHardwareDiagnosticsPublisher(ros::NodeHandle &node) :
