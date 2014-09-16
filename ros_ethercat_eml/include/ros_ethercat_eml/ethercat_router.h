@@ -46,9 +46,9 @@ class EtherCAT_MbxMsg;
 class EtherCAT_Router
 {
 public:
-  /// Singleton
-  static EtherCAT_Router * instance();
-
+  EtherCAT_Router(EtherCAT_AL *_m_al_instance,
+                  EC_Logic *_m_logic_instance,
+                  EtherCAT_DataLinkLayer *_m_dll_instance);
   /// Start routing
   void start();
   /// Stop routing
@@ -56,7 +56,7 @@ public:
   /// Router running?
   bool is_running() const
   {
-    return (EtherCAT_Router::m_is_running != 0);
+    return m_is_running;
   }
 
   /// Actual routing code
@@ -74,20 +74,16 @@ public:
       the slave which listens to the written bit of sync manager 0.
    */
   void route(void) const;
-protected:
-  EtherCAT_Router();
 
-private:
   /// Pointer to AL instance
   EtherCAT_AL * m_al_instance;
+private:
   /// Pointer to EC_Logic
   EC_Logic * m_logic_instance;
   /// Pointer to DLL instance
   EtherCAT_DataLinkLayer * m_dll_instance;
-
-  static EtherCAT_Router * m_instance;
   /// Usage counter
-  unsigned int m_is_running;
+  bool m_is_running;
 
   /// Check and deliver post from slave
   /** Check if slave posted something in its mailbox and if positive,
@@ -104,8 +100,7 @@ private:
       not provide a From: header in its messages)
       @return true if everything went fine
    */
-  bool post_mbxmsg(EtherCAT_MbxMsg * msg,
-                   const EtherCAT_SlaveHandler * from_sh) const;
+  bool post_mbxmsg(EtherCAT_MbxMsg * msg, const EtherCAT_SlaveHandler * from_sh) const;
 
 };
 

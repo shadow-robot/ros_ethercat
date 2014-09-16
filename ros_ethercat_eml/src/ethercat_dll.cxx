@@ -41,24 +41,6 @@
 
 #include "unistd.h"
 
-EtherCAT_DataLinkLayer * EtherCAT_DataLinkLayer::m_instance = 0;
-
-EtherCAT_DataLinkLayer::EtherCAT_DataLinkLayer()
-  :
-  m_if(0)
-{
-}
-
-EtherCAT_DataLinkLayer * EtherCAT_DataLinkLayer::instance(void)
-{
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_DataLinkLayer();
-  }
-
-  return m_instance;
-}
-
 bool EtherCAT_DataLinkLayer::txandrx(EtherCAT_Frame * a_frame)
 {
   bool succeed = m_if->txandrx(a_frame, m_if);

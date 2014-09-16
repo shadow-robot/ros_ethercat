@@ -167,8 +167,8 @@ void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler 
     // Send a packet with both a Fixed address read (NPRW) and a positional read (APRD)
     // If the NPRD has a working counter == 0, but the APRD sees the correct number of devices,
     // then the node has likely been reset.
-    // Also, get DL status regiseter with nprd telegram
-    EC_Logic *logic = EC_Logic::instance();
+    // Also, get DL status register with nprd telegram
+    EC_Logic *logic = sh->m_logic_instance;
     et1x00_dl_status dl_status;
     NPRD_Telegram nprd_telegram(logic->get_idx(),
                                 sh->get_station_address(),
@@ -204,7 +204,7 @@ void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler 
     if (devicesRespondingToNodeAddress_ == 0)
     {
       // Device has not responded to its node address.
-      if (aprd_telegram.get_adp() >= EtherCAT_AL::instance()->get_num_slaves())
+      if (aprd_telegram.get_adp() >= sh->m_router_instance->m_al_instance->get_num_slaves())
       {
         resetDetected_ = true;
         goto end;
@@ -409,7 +409,7 @@ void EthercatDevice::collectDiagnostics(EthercatCom *com)
 int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *) buffer;
-  EC_Logic *logic = EC_Logic::instance();
+  EC_Logic *logic = sh->m_logic_instance;
 
   NPRW_Telegram nprw_telegram(logic->get_idx(),
                               sh->get_station_address(),
@@ -462,7 +462,7 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, u
 int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *) buffer;
-  EC_Logic *logic = EC_Logic::instance();
+  EC_Logic *logic = sh->m_logic_instance;
 
   NPRD_Telegram nprd_telegram(logic->get_idx(),
                               sh->get_station_address(),
@@ -515,7 +515,7 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16
 int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char const *p = (unsigned char const*) buffer;
-  EC_Logic *logic = EC_Logic::instance();
+  EC_Logic *logic = sh->m_logic_instance;
 
   NPWR_Telegram npwr_telegram(logic->get_idx(),
                               sh->get_station_address(),

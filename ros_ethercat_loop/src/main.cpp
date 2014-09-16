@@ -52,6 +52,7 @@
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
 using namespace boost::accumulators;
+using boost::ptr_vector;
 using std::string;
 using std::vector;
 using std::accumulate;
@@ -197,12 +198,15 @@ static inline double now()
 
 void *diagnosticLoop(void *args)
 {
-  EthercatHardware * ec((EthercatHardware *) args);
+  ptr_vector<EthercatHardware>* ec = (ptr_vector<EthercatHardware>*) args;
   struct timespec tick;
   clock_gettime(CLOCK_MONOTONIC, &tick);
   while (!g_quit)
   {
-    ec->collectDiagnostics();
+    for (ptr_vector<EthercatHardware>::iterator eh = ec->begin(); eh != ec->end(); ++eh)
+    {
+      eh->collectDiagnostics();
+    }
     ++tick.tv_sec;
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tick, NULL);
   }
@@ -317,7 +321,7 @@ void *controlLoop(void *)
 
   //Start Non-realtime diagnostic thread
   static pthread_t diagnosticThread;
-  int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ec_);
+  int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ethercat_hardware_);
   if (rv != 0)
     return terminate_control(&publisher, rtpublisher,
                              "Unable to create control thread: rv = %s", boost::lexical_cast<string>(rv).c_str());
@@ -443,7 +447,6 @@ void *controlLoop(void *)
 
   // Shutdown all of the motors on exit
   seth.shutdown();
-  seth.ec_.update(false, true);
 
   publisher.stop();
   delete rtpublisher;

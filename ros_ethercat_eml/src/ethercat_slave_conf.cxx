@@ -110,51 +110,32 @@ void EtherCAT_SlaveConfig::set_mbx_config(EtherCAT_MbxConfig *new_config)
     m_complex = true;
 }
 
-// ==================================================
-EtherCAT_SlaveDb * EtherCAT_SlaveDb::m_instance = NULL;
 
-EtherCAT_SlaveDb *
-EtherCAT_SlaveDb::instance(unsigned int num_slaves)
+EtherCAT_SlaveDb::EtherCAT_SlaveDb(unsigned int num_slaves) :
+  m_num_slaves(num_slaves),
+  m_sc(new EtherCAT_SlaveConfig*[num_slaves])
 {
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_SlaveDb(num_slaves);
-  }
-  return m_instance;
 }
 
-EtherCAT_SlaveDb::EtherCAT_SlaveDb(unsigned int num_slaves)
-  :
-  m_num_slaves(num_slaves)
-{
-  m_sc = new EtherCAT_SlaveConfig*[num_slaves];
-}
-
-EtherCAT_SlaveConfig *
-EtherCAT_SlaveDb::operator[](unsigned int i)
+EtherCAT_SlaveConfig *EtherCAT_SlaveDb::operator[](unsigned int i)
 {
   assert(i < m_num_slaves);
   return m_sc[i];
 }
 
-const EtherCAT_SlaveConfig *
-EtherCAT_SlaveDb::operator[](unsigned int i) const
+const EtherCAT_SlaveConfig *EtherCAT_SlaveDb::operator[](unsigned int i) const
 {
   assert(i < m_num_slaves);
   return m_sc[i];
 }
 
-void
-EtherCAT_SlaveDb::set_conf(EtherCAT_SlaveConfig * conf,
-                           unsigned int i)
+void EtherCAT_SlaveDb::set_conf(EtherCAT_SlaveConfig * conf, unsigned int i)
 {
   assert(i < m_num_slaves);
   m_sc[i] = conf;
 }
 
-const EtherCAT_SlaveConfig *
-EtherCAT_SlaveDb::find(uint32_t productcode,
-                       uint32_t revision) const
+EtherCAT_SlaveConfig *EtherCAT_SlaveDb::find(uint32_t productcode, uint32_t revision) const
 {
   unsigned int i = 0;
   while (i < m_num_slaves)

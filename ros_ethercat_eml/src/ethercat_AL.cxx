@@ -40,52 +40,21 @@
 #include "ros_ethercat_eml/ethercat_frame.h"
 #include "ros_ethercat_eml/ethercat_device_addressed_telegram.h"
 #include "ros_ethercat_eml/ethercat_logical_addressed_telegram.h"
+#include "ros_ethercat_eml/ethercat_process_data.h"
 #include <time.h>
 
-// ==================================================
-EC_Logic * EC_Logic::m_instance = NULL;
-
-EC_Logic::EC_Logic()
-  :
-  m_wkc(0), m_idx(0)
+EtherCAT_AL::EtherCAT_AL(EtherCAT_DataLinkLayer *_m_dll_instance,
+                         EC_Logic *_m_logic_instance,
+                         EtherCAT_PD_Buffer *_pd_buffer_) :
+  m_dll_instance(_m_dll_instance),
+  m_logic_instance(_m_logic_instance),
+  m_slave_db(NULL),
+  pd_buffer_(_pd_buffer_),
+  m_num_slaves(0),
+  m_ready(false)
 {
-}
-
-EC_Logic *
-EC_Logic::instance()
-{
-  if (!m_instance)
+  if (!init())
   {
-    m_instance = new EC_Logic();
-  }
-  return m_instance;
-}
-
-// ==================================================
-
-EtherCAT_AL * EtherCAT_AL::m_instance = NULL;
-
-EtherCAT_AL *
-EtherCAT_AL::instance()
-{
-  if (!m_instance)
-  {
-    m_instance = new EtherCAT_AL();
-  }
-  return m_instance;
-}
-
-EtherCAT_AL::EtherCAT_AL()
-  :
-  m_num_slaves(0), m_ready(false)
-{
-  m_dll_instance = EtherCAT_DataLinkLayer::instance();
-  m_slave_db = EtherCAT_SlaveDb::instance();
-  m_logic_instance = EC_Logic::instance();
-
-  if (init() == false)
-  {
-    // Can't use exceptions, since not supported by eCOS f.i.
     ec_log(EC_LOG_FATAL, "EtherCAT_AL:: Can't init network\n");
   }
   m_ready = true;
@@ -100,8 +69,7 @@ EtherCAT_AL::~EtherCAT_AL()
   delete[] m_slave_handler;
 }
 
-bool
-EtherCAT_AL::init(void)
+bool EtherCAT_AL::init(void)
 {
   if (scan_slaves())
   {
@@ -122,14 +90,12 @@ EtherCAT_AL::init(void)
   }
 }
 
-bool
-EtherCAT_AL::isReady()
+bool EtherCAT_AL::isReady()
 {
   return m_ready;
 }
 
-bool
-EtherCAT_AL::scan_slaves(void)
+bool EtherCAT_AL::scan_slaves(void)
 {
   // Send APRD telegram to count number of slaves
   unsigned char a[1] = {0x00};
@@ -148,7 +114,7 @@ EtherCAT_AL::scan_slaves(void)
   ec_log(EC_LOG_INFO, "EtherCAT AL: Ring contains %d slaves\n", m_num_slaves);
   m_slave_handler = new EtherCAT_SlaveHandler*[m_num_slaves];
 
-  // Initialise Slave Handlers, Reading productcode and revision from SII
+  // Initialise Slave Handlers, Reading product-code and revision from SII
   uint16_t adp = 0x0000;
   uint32_t productcode = 0x00000000;
   uint32_t revision = 0x00000000;
@@ -156,7 +122,7 @@ EtherCAT_AL::scan_slaves(void)
   const uint16_t SII_datalen = EC_Slave_RD[SII_ControlStatus].size + EC_Slave_RD[SII_Address].size
     + EC_Slave_RD[SII_Data].size;
   unsigned char data[SII_datalen];
-  const EtherCAT_SlaveConfig * sconf;
+  EtherCAT_SlaveConfig * sconf;
   for (unsigned i = 0; i < SII_datalen; i++)
     data[i] = 0x00;
   for (unsigned int i = 0; i < m_num_slaves; i++)
@@ -210,10 +176,16 @@ EtherCAT_AL::scan_slaves(void)
     }
     nanosleep(&sleept, 0);
 
+    m_slave_db = new EtherCAT_SlaveDb(m_num_slaves);
     sconf = m_slave_db->find(productcode, revision);
     if (sconf != NULL)
     {
-      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp), sconf, serial);
+      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
+                                                     sconf,
+                                                     serial,
+                                                     m_dll_instance,
+                                                     m_logic_instance,
+                                                     pd_buffer_);
       ec_log(EC_LOG_INFO,
              "AL creating SlaveHandler: pos=%d, adr=0x%x, Prod. Code=0x%x, rev=0x%x, Serial=%d\n",
              adp2ringpos(adp),
@@ -223,21 +195,29 @@ EtherCAT_AL::scan_slaves(void)
     { // No such slave found...
       ec_log(EC_LOG_WARNING, "EC_AL Warning: No such slave in db, creating dummy slave\n");
       // Create slave handler
-      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp), productcode, revision,
-                                                     serial, (i + 1), NULL, NULL);
+      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
+                                                     productcode,
+                                                     revision,
+                                                     serial,
+                                                     (i + 1),
+                                                     NULL,
+                                                     NULL,
+                                                     NULL,
+                                                     m_dll_instance,
+                                                     m_logic_instance,
+                                                     pd_buffer_);
       ec_log(EC_LOG_INFO,
              "AL creating SlaveHandler: pos=%d, Product Code=0x%x, rev=0x%x, Serial=%d\n",
              adp2ringpos(adp),
              productcode, revision, serial);
     }
     // prepare for querying next slave
-    adp--;
+    --adp;
   }
   return true;
 }
 
-bool
-EtherCAT_AL::reset_slaves(void)
+bool EtherCAT_AL::reset_slaves(void)
 {
   // Reset FMMUs
   ec_log(EC_LOG_INFO, "AL: resetting FMMUs\n");
@@ -263,8 +243,7 @@ EtherCAT_AL::reset_slaves(void)
   return m_dll_instance->txandrx(&bwr_frame);
 }
 
-bool
-EtherCAT_AL::put_slaves_in_init(void)
+bool EtherCAT_AL::put_slaves_in_init(void)
 {
   ec_log(EC_LOG_INFO, "AL: Setting all slaves in init mode\n");
   // 6: Set device state to init
@@ -348,10 +327,7 @@ EtherCAT_AL::put_slaves_in_init(void)
 // 10 tries was not enough for the optimized version of the code
 static const unsigned int EC_SII_MAXTRIES = 100;
 
-bool
-EtherCAT_AL::read_SII(uint16_t slave_adp,
-                      uint32_t address,
-                      unsigned char * a_buffer)
+bool EtherCAT_AL::read_SII(uint16_t slave_adp, uint32_t address, unsigned char * a_buffer)
 {
   bool succeed;
 
@@ -449,8 +425,7 @@ EtherCAT_AL::read_SII(uint16_t slave_adp,
   return false;
 }
 
-EtherCAT_SlaveHandler *
-EtherCAT_AL::get_slave_handler(EC_FixedStationAddress station_address)
+EtherCAT_SlaveHandler * EtherCAT_AL::get_slave_handler(EC_FixedStationAddress station_address)
 {
   unsigned int i = 0;
   while (i < m_num_slaves)

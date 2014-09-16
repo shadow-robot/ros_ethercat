@@ -40,6 +40,8 @@
 #ifndef ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
 #define ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <hardware_interface/robot_hw.h>
@@ -70,7 +72,9 @@
  */
 
 using std::string;
+using std::vector;
 using boost::ptr_unordered_map;
+using boost::ptr_vector;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
@@ -83,9 +87,20 @@ class RosEthercat : public hardware_interface::RobotHW
 public:
   RosEthercat(ros::NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
     cm_node_(nh, "ethercat_controller_manager"),
-    model_(config),
-    ec_(name, static_cast<hardware_interface::HardwareInterface*> (&model_), eth, allow)
+    model_(config)
   {
+    vector<string> port_names;
+    boost::split(port_names, eth, boost::is_any_of("_, "));
+    for (vector<string>::const_iterator port_name = port_names.begin();
+         port_name != port_names.end();
+         ++port_name)
+    {
+      ethercat_hardware_.push_back(new EthercatHardware(name,
+                                                        static_cast<hardware_interface::HardwareInterface*> (&model_),
+                                                        *port_name,
+                                                        allow));
+    }
+
     for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
          it != model_.joint_states_.end();
          ++it)
@@ -120,12 +135,17 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read(const ros::Time &time)
   {
-    ec_.update(false, false);
+    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+         eh != ethercat_hardware_.end();
+         ++eh)
+    {
+      eh->update(false, false);
+    }
 
     model_.current_time_ = time;
     model_.propagateActuatorPositionToJointPosition();
 
-    for (boost::ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
+    for (ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
          it != model_.custom_hws_.end();
          ++it)
     {
@@ -154,7 +174,7 @@ public:
 
     model_.propagateJointEffortToActuatorEffort();
 
-    for (boost::ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
+    for (ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
          it != model_.custom_hws_.end();
          ++it)
     {
@@ -168,18 +188,25 @@ public:
   /// stop all actuators
   void shutdown()
   {
-    for (boost::ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
+    for (ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
          it != model_.transmissions_.end();
          ++it)
     {
       it->actuator_->command_.enable_ = false;
       it->actuator_->command_.effort_ = 0;
     }
+
+    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+         eh != ethercat_hardware_.end();
+         ++eh)
+    {
+      eh->update(false, true);
+    }
   }
 
   ros::NodeHandle cm_node_;
   ros_ethercat_model::RobotState model_;
-  EthercatHardware ec_;
+  ptr_vector<EthercatHardware> ethercat_hardware_;
   boost::scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
 
   // state interface

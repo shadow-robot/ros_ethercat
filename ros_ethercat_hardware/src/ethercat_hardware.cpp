@@ -44,7 +44,6 @@
 #include <boost/regex.hpp>
 
 EthercatHardwareDiagnostics::EthercatHardwareDiagnostics() :
-
   txandrx_errors_(0),
   device_count_(0),
   pd_error_(false),
@@ -68,13 +67,19 @@ void EthercatHardwareDiagnostics::resetMaxTiming()
 
 EthercatHardware::EthercatHardware(const std::string& name,
                                    hardware_interface::HardwareInterface *hw,
-                                   const std::string& eth, bool allow_unprogrammed) :
+                                   const std::string& eth,
+                                   bool allow_unprogrammed) :
   hw_(hw),
   node_(ros::NodeHandle(name)),
-  ni_(0),
+  ni_(NULL),
   interface_(eth),
-  this_buffer_(0),
-  prev_buffer_(0),
+  pd_buffer_(&m_logic_instance_, &m_dll_instance_),
+  application_layer_(&m_dll_instance_, &m_logic_instance_, &pd_buffer_),
+  m_router_(&application_layer_, &m_logic_instance_, &m_dll_instance_),
+  routerSet_(setRouterToSlaveHandlers()),
+  ethercat_master_(&application_layer_, &m_router_, &pd_buffer_, &m_logic_instance_, &m_dll_instance_),
+  this_buffer_(NULL),
+  prev_buffer_(NULL),
   buffer_size_(0),
   halt_motors_(true),
   reset_state_(0),
@@ -96,7 +101,7 @@ EthercatHardware::~EthercatHardware()
   for (uint32_t i = 0; i < slaves_.size(); ++i)
   {
     EC_FixedStationAddress fsa(i + 1);
-    EtherCAT_SlaveHandler *sh = em_->get_slave_handler(fsa);
+    EtherCAT_SlaveHandler *sh = ethercat_master_.get_slave_handler(fsa);
     if (sh)
       sh->to_state(EC_PREOP_STATE);
   }
@@ -107,6 +112,15 @@ EthercatHardware::~EthercatHardware()
   delete[] buffers_;
   delete oob_com_;
   motor_publisher_.stop();
+}
+
+bool EthercatHardware::setRouterToSlaveHandlers()
+{
+  unsigned int n_slaves = application_layer_.get_num_slaves();
+  EtherCAT_SlaveHandler **slaves = application_layer_.get_slaves();
+  for (unsigned int i = 0; i < n_slaves; ++i)
+    slaves[i]->setRouter(&m_router_);
+  return true;
 }
 
 void EthercatHardware::changeState(EtherCAT_SlaveHandler *sh, EC_State new_state)
@@ -177,27 +191,10 @@ void EthercatHardware::init()
 
   oob_com_ = new EthercatOobCom(ni_);
 
-  // Initialize Application Layer (AL)
-  EtherCAT_DataLinkLayer::instance()->attach(ni_);
-  if ((al_ = EtherCAT_AL::instance()) == NULL)
-  {
-    ROS_FATAL("Unable to initialize Application Layer (AL): %p", al_);
-    sleep(1);
-    exit(EXIT_FAILURE);
-  }
-
-  int num_ethercat_devices_ = al_->get_num_slaves();
+  int num_ethercat_devices_ = application_layer_.get_num_slaves();
   if (num_ethercat_devices_ == 0)
   {
     ROS_FATAL("Unable to locate any slaves");
-    sleep(1);
-    exit(EXIT_FAILURE);
-  }
-
-  // Initialize Master
-  if ((em_ = EtherCAT_Master::instance()) == NULL)
-  {
-    ROS_FATAL("Unable to initialize EtherCAT_Master: %p", em_);
     sleep(1);
     exit(EXIT_FAILURE);
   }
@@ -210,7 +207,7 @@ void EthercatHardware::init()
   for (unsigned int slave = 0; slave < slaves_.size(); ++slave)
   {
     EC_FixedStationAddress fsa(slave + 1);
-    EtherCAT_SlaveHandler *sh = em_->get_slave_handler(fsa);
+    EtherCAT_SlaveHandler *sh = ethercat_master_.get_slave_handler(fsa);
     if (sh == NULL)
     {
       ROS_FATAL("Unable to get slave handler #%d", slave);
@@ -963,15 +960,14 @@ void EthercatHardware::collectDiagnostics()
     return;
 
   { // Count number of devices
-    EC_Logic *logic = EC_Logic::instance();
     unsigned char p[1];
     uint16_t length = sizeof (p);
 
     // Build read telegram, use slave position
-    APRD_Telegram status(logic->get_idx(), // Index
+    APRD_Telegram status(m_logic_instance_.get_idx(), // Index
                          0, // Slave position on ethercat chain (auto increment address)
                          0, // ESC physical memory address (start address)
-                         logic->get_wkc(), // Working counter
+                         m_logic_instance_.get_wkc(), // Working counter
                          length, // Data Length,
                          p); // Buffer to put read result into
 
@@ -1018,12 +1014,12 @@ void EthercatHardware::printCounters(std::ostream &os)
 
 bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, unsigned tries)
 {
-  // Try multiple times to get proccess data to device
+  // Try multiple times to get process data to device
   bool success = false;
   for (unsigned i = 0; i < tries && !success; ++i)
   {
     // Try transmitting process data
-    success = em_->txandrx_PD(buffer_size_, this_buffer_);
+    success = ethercat_master_.txandrx_PD(buffer_size_, this_buffer_);
     if (!success)
     {
       ++diagnostics_.txandrx_errors_;

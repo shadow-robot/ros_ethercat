@@ -69,11 +69,17 @@ public:
                         EC_FixedStationAddress a_station_address,
                         EtherCAT_FMMU_Config * a_fmmu_config,
                         EtherCAT_PD_Config * a_pd_config,
-                        EtherCAT_MbxConfig * a_mbx_config = NULL);
+                        EtherCAT_MbxConfig * a_mbx_config,
+                        EtherCAT_DataLinkLayer *_m_dll_instance,
+                        EC_Logic *_m_logic_instance,
+                        EtherCAT_PD_Buffer *_m_pdbuf_instance);
   /// Constructor using Slave Configuration
   EtherCAT_SlaveHandler(uint16_t a_ring_position,
-                        const EtherCAT_SlaveConfig * a_sconf,
-                        uint32_t a_serial);
+                        EtherCAT_SlaveConfig * a_sconf,
+                        uint32_t a_serial,
+                        EtherCAT_DataLinkLayer *_m_dll_instance,
+                        EC_Logic *_m_logic_instance,
+                        EtherCAT_PD_Buffer *_m_pdbuf_instance);
 
   /// Get position in the EtherCAT logical ring
   uint16_t get_ring_position() const

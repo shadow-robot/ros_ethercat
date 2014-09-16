@@ -53,6 +53,10 @@ class EtherCAT_PD_Buffer;
 
 class EC_ESM_Ops
 {
+public:
+  void setRouter(EtherCAT_Router *_router);
+  EC_Logic * m_logic_instance;
+  EtherCAT_Router * m_router_instance;
 protected:
   /// Start MBX communication
   bool start_mbx_comm();
@@ -71,12 +75,14 @@ protected:
   /// Constructor
   /** @param a_SH pointer to slave handler
    */
-  EC_ESM_Ops(EtherCAT_SlaveHandler * a_SH);
+  EC_ESM_Ops(EtherCAT_SlaveHandler * a_SH,
+             EtherCAT_DataLinkLayer *_m_dll_instance,
+             EC_Logic *_m_logic_instance,
+             EtherCAT_PD_Buffer *_m_pdbuf_instance);
 
   EtherCAT_DataLinkLayer * m_dll_instance;
-  EC_Logic * m_logic_instance;
   EtherCAT_SlaveHandler * m_SH;
-  EtherCAT_Router * m_router_instance;
+
   EtherCAT_PD_Buffer * m_pdbuf_instance;
 
   /// Change state of Slave
@@ -142,6 +148,11 @@ class EC_ESM : public EC_ESM_Ops
   friend class EC_ESM_OpState;
 
 public:
+  EC_ESM(EtherCAT_SlaveHandler * a_SH,
+         EtherCAT_DataLinkLayer *_m_dll_instance,
+         EC_Logic *_m_logic_instance,
+         EtherCAT_PD_Buffer *_m_pdbuf_instance);
+
   /// State Transitions
   /** @param a_state state to go to. Possibilities are
    - EC_INIT_STATE = 0x01,
@@ -165,11 +176,6 @@ protected:
   {
     m_esm_state = a_esm_state;
   }
-
-  /// Constructor
-  /** @param a_SH pointer to Slave Handler this FSM concerns
-   */
-  EC_ESM(EtherCAT_SlaveHandler * a_SH);
 
 private:
   EC_ESM_State * m_esm_state;
