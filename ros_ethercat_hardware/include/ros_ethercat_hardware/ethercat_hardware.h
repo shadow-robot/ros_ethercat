@@ -303,6 +303,8 @@ private:
   pluginlib::ClassLoader<EthercatDevice> device_loader_;
 
   bool allow_unprogrammed_; //!< if the driver should treat the discovery of unprogrammed boards as a fatal error. Set to 'true' during board configuration, and set to 'false' otherwise.
+
+  int start_address_;
 };
 
 #endif /* ETHERCAT_HARDWARE_H */
