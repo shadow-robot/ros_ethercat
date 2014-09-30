@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ros_ethercat_eml)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED roscpp)
 
 include_directories(include
     ${catkin_INCLUDE_DIRS}
 )
 
 catkin_package(
-    CATKIN_DEPENDS
+    CATKIN_DEPENDS roscpp
     INCLUDE_DIRS include
     LIBRARIES ros_ethercat_eml
 )

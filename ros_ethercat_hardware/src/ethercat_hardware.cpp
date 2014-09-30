@@ -83,7 +83,8 @@ EthercatHardware::EthercatHardware(const std::string& name,
   diagnostics_publisher_(node_),
   motor_publisher_(node_, "motors_halted", 1, true),
   device_loader_("ros_ethercat_hardware", "EthercatDevice"),
-  allow_unprogrammed_(allow_unprogrammed)
+  allow_unprogrammed_(allow_unprogrammed),
+  start_address_(0x00010000)
 {
   node_.setParam("EtherCAT_Initialized", false);
   if (!interface_.empty())
@@ -745,7 +746,6 @@ void EthercatHardware::publishDiagnostics()
 boost::shared_ptr<EthercatDevice>
 EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 {
-  static int start_address = 0x00010000;
   boost::shared_ptr<EthercatDevice> p;
   unsigned product_code = sh->get_product_code();
   unsigned serial = sh->get_serial();
@@ -847,7 +847,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   if (p != NULL)
   {
-    p->construct(sh, start_address);
+    p->construct(sh, start_address_);
   }
 
   return p;
