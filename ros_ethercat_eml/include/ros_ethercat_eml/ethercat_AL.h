@@ -38,7 +38,6 @@
 // forward declaration
 class EtherCAT_DataLinkLayer;
 class EtherCAT_SlaveHandler;
-class EtherCAT_SlaveDb;
 class EC_FixedStationAddress;
 class EtherCAT_PD_Buffer;
 
@@ -164,9 +163,6 @@ private:
 
   /// Pointer to the slave Handlers
   EtherCAT_SlaveHandler ** m_slave_handler;
-
-  /// Pointer to the slave database
-  EtherCAT_SlaveDb * m_slave_db;
 
   EtherCAT_PD_Buffer *pd_buffer_;
 

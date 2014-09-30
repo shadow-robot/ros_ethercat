@@ -240,34 +240,4 @@ protected:
   bool used;
 };
 
-/// Database of EtherCAT slave configurations
-
-/** @todo allow dynamic updating by adding of removing a slave
- configuration
- */
-class EtherCAT_SlaveDb
-{
-public:
-  EtherCAT_SlaveDb(unsigned int num_slaves);
-  ~EtherCAT_SlaveDb()
-  {
-    delete[] m_sc;
-  }
-
-  EtherCAT_SlaveConfig * operator[](unsigned int i);
-  const EtherCAT_SlaveConfig * operator[](unsigned int i) const;
-  void set_conf(EtherCAT_SlaveConfig * conf, unsigned int i);
-
-  /// Find a configuration...
-  /** @param productcode product code
-   @param revision revision
-   @return Pointer to slave configuration if found, or NULL
-   otherwise)
-   */
-  EtherCAT_SlaveConfig * find(uint32_t productcode, uint32_t revision) const;
-private:
-  unsigned int m_num_slaves;
-  EtherCAT_SlaveConfig ** m_sc;
-};
-
 #endif // __ethercat_slave_conf__

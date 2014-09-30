@@ -49,7 +49,6 @@ EtherCAT_AL::EtherCAT_AL(EtherCAT_DataLinkLayer *_m_dll_instance,
                          EtherCAT_PD_Buffer *_pd_buffer_) :
   m_dll_instance(_m_dll_instance),
   m_logic_instance(_m_logic_instance),
-  m_slave_db(NULL),
   pd_buffer_(_pd_buffer_),
   m_num_slaves(0),
   m_ready(false)
@@ -118,7 +117,7 @@ bool EtherCAT_AL::scan_slaves(void)
   }
   // Init Number of slaves
   m_num_slaves = counter_tg.get_adp();
-  ROS_DEBUG("EtherCAT AL: Ring contains %du slaves", m_num_slaves);
+  ROS_DEBUG("EtherCAT AL: Ring contains %u slaves", m_num_slaves);
   m_slave_handler = new EtherCAT_SlaveHandler*[m_num_slaves];
 
   // Initialise Slave Handlers, Reading product-code and revision from SII
@@ -129,7 +128,7 @@ bool EtherCAT_AL::scan_slaves(void)
   const uint16_t SII_datalen = EC_Slave_RD[SII_ControlStatus].size + EC_Slave_RD[SII_Address].size
     + EC_Slave_RD[SII_Data].size;
   unsigned char data[SII_datalen];
-  EtherCAT_SlaveConfig * sconf;
+
   for (unsigned i = 0; i < SII_datalen; i++)
     data[i] = 0x00;
   for (unsigned int i = 0; i < m_num_slaves; i++)
@@ -139,7 +138,7 @@ bool EtherCAT_AL::scan_slaves(void)
     succeed = read_SII(adp, EC_ProductCodeAddressInSII, data);
     if (!succeed)
     {
-      ROS_ERROR("EC_AL::scan_slaves() Error reading Product code of slave %du", i);
+      ROS_ERROR("EC_AL::scan_slaves() Error reading Product code of slave %u", i);
       productcode = 0xbaddbadd;
     }
     else
@@ -157,7 +156,7 @@ bool EtherCAT_AL::scan_slaves(void)
     succeed = read_SII(adp, EC_RevisionAddressInSII, data);
     if (!succeed)
     {
-      ROS_ERROR("EC_AL::scan_slaves() Error reading Revision of slave %du", i);
+      ROS_ERROR("EC_AL::scan_slaves() Error reading Revision of slave %u", i);
       revision = 0xbaddbadd;
     }
     else
@@ -171,7 +170,7 @@ bool EtherCAT_AL::scan_slaves(void)
     succeed = read_SII(adp, EC_SerialAddressInSII, data);
     if (!succeed)
     {
-      ROS_ERROR("EC_AL::scan_slaves() Error reading Serial of slave %du", i);
+      ROS_ERROR("EC_AL::scan_slaves() Error reading Serial of slave %u", i);
       serial = 0xbaddbadd;
     }
     else
@@ -180,39 +179,23 @@ bool EtherCAT_AL::scan_slaves(void)
     }
     nanosleep(&sleept, 0);
 
-    m_slave_db = new EtherCAT_SlaveDb(m_num_slaves);
-    sconf = m_slave_db->find(productcode, revision);
-    if (sconf != NULL)
-    {
-      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
-                                                     sconf,
-                                                     serial,
-                                                     m_dll_instance,
-                                                     m_logic_instance,
-                                                     pd_buffer_);
-      ROS_DEBUG("AL creating SlaveHandler: pos=%d, adr=0x%x, Prod. Code=0x%x, rev=0x%x, Serial=%d",
-                adp2ringpos(adp),
-                (uint16_t) sconf->get_station_address(), productcode, revision, serial);
-    }
-    else
-    { // No such slave found...
-      ROS_DEBUG("EC_AL Warning: No such slave in db, creating dummy slave");
-      // Create slave handler
-      m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
-                                                     productcode,
-                                                     revision,
-                                                     serial,
-                                                     (i + 1),
-                                                     NULL,
-                                                     NULL,
-                                                     NULL,
-                                                     m_dll_instance,
-                                                     m_logic_instance,
-                                                     pd_buffer_);
-      ROS_DEBUG("AL creating SlaveHandler: pos=%d, Product Code=0x%x, rev=0x%x, Serial=%d",
-               adp2ringpos(adp),
-               productcode, revision, serial);
-    }
+    ROS_DEBUG("AL creating new slave");
+    // Create slave handler
+    m_slave_handler[i] = new EtherCAT_SlaveHandler(adp2ringpos(adp),
+                                                   productcode,
+                                                   revision,
+                                                   serial,
+                                                   (i + 1),
+                                                   NULL,
+                                                   NULL,
+                                                   NULL,
+                                                   m_dll_instance,
+                                                   m_logic_instance,
+                                                   pd_buffer_);
+    ROS_DEBUG("AL creating SlaveHandler: pos=%d, Product Code=0x%x, rev=0x%x, Serial=%d",
+             adp2ringpos(adp),
+             productcode, revision, serial);
+
     // prepare for querying next slave
     --adp;
   }
