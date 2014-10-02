@@ -74,7 +74,7 @@ def calibrate(controllers):
         def calibrated(msg, name):  # Somewhat not thread-safe
             if name in waiting_for:
                 waiting_for.remove(name)
-        for name in waiting_for:
+        for name in launched:
             rospy.Subscriber("%s/calibrated" % name, Empty, calibrated, name)
 
         # Waits until all the controllers have calibrated
