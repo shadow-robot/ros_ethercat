@@ -45,6 +45,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <uv.h>
 #include <numeric>
 
 #include "ros_ethercat_model/ros_ethercat.hpp"

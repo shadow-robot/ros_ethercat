@@ -67,6 +67,7 @@ public:
     if (root)
       initXml(root);
   }
+
   void initXml(TiXmlElement *root)
   {
     try

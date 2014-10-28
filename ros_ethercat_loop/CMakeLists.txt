@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
 
 catkin_package(
 DEPENDS

@@ -42,6 +42,7 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <uv.h>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <hardware_interface/robot_hw.h>
@@ -95,11 +96,14 @@ public:
          port_name != port_names.end();
          ++port_name)
     {
-      ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                        static_cast<hardware_interface::HardwareInterface*> (&model_),
-                                                        *port_name,
-                                                        allow));
-      ROS_INFO_STREAM("Added Ethernet port " << *port_name);
+      if (!port_name->empty())
+      {
+        ethercat_hardware_.push_back(new EthercatHardware(name,
+                                                          static_cast<hardware_interface::HardwareInterface*> (&model_),
+                                                          *port_name,
+                                                          allow));
+        ROS_INFO_STREAM("Added Ethernet port " << *port_name);
+      }
     }
 
     for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
@@ -129,6 +133,7 @@ public:
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
   }
+
   virtual ~RosEthercat()
   {
   }
