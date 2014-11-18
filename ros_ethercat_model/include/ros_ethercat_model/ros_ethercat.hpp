@@ -42,7 +42,6 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-#include <uv.h>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <hardware_interface/robot_hw.h>
