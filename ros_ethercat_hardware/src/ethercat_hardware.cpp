@@ -484,7 +484,7 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
     status_.mergeSummary(status_.ERROR, "Error sending proccess data");
   }
 
-  status_.add("Motors halted", diagnostics_.motors_halted_ ? "true" : "false");
+  //status_.add("Motors halted", diagnostics_.motors_halted_ ? "true" : "false");
   status_.addf("EtherCAT devices (expected)", "%d", num_ethercat_devices_);
   status_.addf("EtherCAT devices (current)", "%d", diagnostics_.device_count_);
   ethernet_interface_info_.publishDiagnostics(status_);
