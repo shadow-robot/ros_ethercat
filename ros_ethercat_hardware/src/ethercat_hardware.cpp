@@ -464,21 +464,21 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   status_.clear();
 
   status_.name = "EtherCAT Master";
-  if (diagnostics_.motors_halted_)
-  {
-    std::ostringstream desc;
-    desc << "Motors halted";
-    if (diagnostics_.halt_after_reset_)
-    {
-      desc << " soon after reset";
-    }
-    desc << " (" << diagnostics_.motors_halted_reason_ << ")";
-    status_.summary(status_.ERROR, desc.str());
-  }
-  else
-  {
-    status_.summary(status_.OK, "OK");
-  }
+//  if (diagnostics_.motors_halted_)
+//  {
+//    std::ostringstream desc;
+//    desc << "Motors halted";
+//    if (diagnostics_.halt_after_reset_)
+//    {
+//      desc << " soon after reset";
+//    }
+//    desc << " (" << diagnostics_.motors_halted_reason_ << ")";
+//    status_.summary(status_.ERROR, desc.str());
+//  }
+//  else
+//  {
+  status_.summary(status_.OK, "OK");
+//  }
 
   if (diagnostics_.pd_error_)
   {
