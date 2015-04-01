@@ -41,6 +41,7 @@
 #include <cfloat>
 #include <tinyxml.h>
 #include <urdf_model/joint.h>
+#include <sr_robot_msgs/ControlType.h>
 
 namespace ros_ethercat_model
 {
@@ -170,6 +171,9 @@ public:
 
   /// The position of the optical flag that was used to calibrate this joint
   double reference_position_;
+
+  /// The current control type running on the motor board
+  sr_robot_msgs::ControlType control_type_;
 
   /// Constructor
   JointState() :
