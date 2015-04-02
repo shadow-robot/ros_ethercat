@@ -2,6 +2,17 @@
 Changelog for package ros_ethercat_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added shutdown-timeout=1.0 to improve controller shutdown time
+* Check if a port has been defined before starting EtherCAT
+* Check if an ethercat port has been defined
+* Fix wait for calibration problem
+* Add cmake function to enable rpath
+* bug fixes in initialization
+* added and registered JointCommandInterfaces
+* added install directives
+
 0.1.8 (2014-07-18)
 ------------------
 
