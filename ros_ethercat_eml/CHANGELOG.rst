@@ -2,8 +2,8 @@
 Changelog for package ros_ethercat_eml
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2015-04-07)
+------------------
 * Delete unnecessary class EtherCAT_SlaveDb that was causing sigsegv
 * Make the start address non-static (each ethercat port will have its own separate logical address space)
 * bug fixes in initialization

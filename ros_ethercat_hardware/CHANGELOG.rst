@@ -2,8 +2,8 @@
 Changelog for package ros_ethercat_hardware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2015-04-07)
+------------------
 * Delete motor halted message
 * Make the start address non-static (each ethercat port will have its own separate logical address space)
 * Add run dependency, otherwise catkin complains.
