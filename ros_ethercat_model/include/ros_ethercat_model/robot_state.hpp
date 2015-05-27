@@ -88,15 +88,24 @@ public:
            xit;
            xit = xit->NextSiblingElement("transmission"))
       {
+	std::string type;
+
 	if (xit->Attribute("type"))
 	{
-	  std::string type = xit->Attribute("type");
+	  type = xit->Attribute("type");
+	} // new transmissions have type as an element instead of attribute
+	else if (xit->FirstChildElement("type"))
+	{
+	  type = std::string(xit->FirstChildElement("type")->GetText());
+	}
 
+	if (!type.empty())
+	{
 	  Transmission *t = transmission_loader_.createUnmanagedInstance(type);
 	  if (!t || !t->initXml(xit, this))
 	    throw std::runtime_error(std::string("Failed to initialize transmission type: ") + type);
 	  transmissions_.push_back(t);
-	} // ignores transmission with no type
+	}
       }
     }
     catch (const std::runtime_error &ex)
