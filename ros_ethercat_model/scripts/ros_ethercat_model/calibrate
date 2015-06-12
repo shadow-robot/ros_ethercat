@@ -43,6 +43,12 @@ import rospy
 import controller_manager_msgs.srv as controller_manager_srvs
 from std_msgs.msg import Bool, Empty
 
+rospy.loginfo("waiting for the controller manager")
+rospy.wait_for_service('controller_manager/load_controller', timeout=40.0)
+rospy.wait_for_service('controller_manager/unload_controller', timeout=40.0)
+rospy.wait_for_service('controller_manager/switch_controller', timeout=40.0)
+rospy.loginfo("OK the controller manager is ready")
+
 load_controller = rospy.ServiceProxy('controller_manager/load_controller', controller_manager_srvs.LoadController)
 unload_controller = rospy.ServiceProxy('controller_manager/unload_controller', controller_manager_srvs.UnloadController)
 switch_controller = rospy.ServiceProxy('controller_manager/switch_controller', controller_manager_srvs.SwitchController)
