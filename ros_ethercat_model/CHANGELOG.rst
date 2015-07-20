@@ -2,6 +2,11 @@
 Changelog for package ros_ethercat_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* checking type as an element as well as attribute, for new transmission style
+* ignore transmissions with no type instead of crashing
+
 0.2.0 (2015-04-07)
 ------------------
 * Added shutdown-timeout=1.0 to improve controller shutdown time
