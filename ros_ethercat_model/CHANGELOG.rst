@@ -2,8 +2,8 @@
 Changelog for package ros_ethercat_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2015-07-20)
+------------------
 * checking type as an element as well as attribute, for new transmission style
 * ignore transmissions with no type instead of crashing
 
