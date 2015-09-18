@@ -40,7 +40,7 @@ from time import sleep
 
 # Loads interface with the robot.
 import rospy
-from calibrate_class import Calibrate
+from ros_ethercat_model.calibrate_class import Calibrate
 
 def main():
     if rospy.is_shutdown():
