@@ -29,4 +29,7 @@
   <run_depend>pr2_mechanism_msgs</run_depend>
   <run_depend>joint_state_controller</run_depend>
 
+  <export>
+    <hardware_interface plugin="${prefix}/ethercat_robot_hw_plugin.xml"/>
+  </export>
 </package>
