@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
     hardware_interface
     ros_ethercat_eml
-    ros_ethercat_model
 )
 
 include_directories(include
@@ -25,9 +24,10 @@ catkin_package(
         pluginlib
         hardware_interface
         ros_ethercat_eml
-        ros_ethercat_model
     INCLUDE_DIRS include
     LIBRARIES ros_ethercat_hardware
+    CFG_EXTRAS
+        ${PROJECT_NAME}-extras.cmake
 )
 
 add_library(${PROJECT_NAME}
@@ -42,6 +42,8 @@ add_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
 )
+
+include(cmake/${PROJECT_NAME}-extras.cmake.em)
 ros_enable_rpath(${PROJECT_NAME})
 
 

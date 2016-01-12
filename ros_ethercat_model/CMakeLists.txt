@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     kdl_parser
     pr2_mechanism_msgs
     cmake_modules
+    ros_ethercat_hardware
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
