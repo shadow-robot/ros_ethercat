@@ -299,6 +299,20 @@ public:
       mech_stats_publisher_->publish(time);
   }
 
+  /// propagate position actuator -> joint and set commands to zero
+  void read()
+  {
+    ros::Time time = ros::Time::now();
+    read(time);
+  }
+
+  /// propagate effort joint -> actuator and enforce safety limits
+  void write()
+  {
+    ros::Time time = ros::Time::now();
+    write(time);
+  }
+
   /// stop all actuators
   void shutdown()
   {
