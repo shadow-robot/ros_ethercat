@@ -1,0 +1,7 @@
+<library path="lib/libros_ethercat_model">
+  <class name="ros_ethercat_model/RosEthercat" type="RosEthercat" base_class_type="hardware_interface::RobotHW">
+  <description>
+    A RobotHW class that deals with etherCAT devices
+  </description>
+  </class>
+</library>

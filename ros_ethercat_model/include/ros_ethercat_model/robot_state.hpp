@@ -61,7 +61,7 @@ namespace ros_ethercat_model
 class RobotState : public hardware_interface::HardwareInterface
 {
 public:
-  RobotState(TiXmlElement *root)
+  RobotState(TiXmlElement *root=NULL)
     : transmission_loader_("ros_ethercat_model", "ros_ethercat_model::Transmission")
   {
     if (root)

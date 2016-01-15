@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     kdl_parser
     pr2_mechanism_msgs
     cmake_modules
+    ros_ethercat_hardware
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -40,6 +41,11 @@ INCLUDE_DIRS
 CFG_EXTRAS
     ${PROJECT_NAME}-extras.cmake
 )
+
+add_library(${PROJECT_NAME} src/ros_ethercat.cpp)
+
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+
 
 install(DIRECTORY include/${PROJECT_NAME}/
    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

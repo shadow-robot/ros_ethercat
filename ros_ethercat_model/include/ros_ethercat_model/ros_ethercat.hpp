@@ -40,6 +40,8 @@
 #ifndef ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
 #define ROS_ETHERCAT_MODEL_ROS_ETHERCAT_HPP_
 
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 #include <ros/ros.h>
@@ -85,10 +87,16 @@ static const string name = "ros_ethercat";
 class RosEthercat : public hardware_interface::RobotHW
 {
 public:
-  RosEthercat(ros::NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
-    cm_node_(nh, "ethercat_controller_manager"),
-    model_(config)
+  RosEthercat() :
+    compatibility_mode(false)
   {
+
+  }
+
+  RosEthercat(ros::NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
+    compatibility_mode(true)
+  {
+    model_.reset(new RobotState(config));
     vector<string> port_names;
     boost::split(port_names, eth, boost::is_any_of("_, "));
     for (vector<string>::const_iterator port_name = port_names.begin();
@@ -98,15 +106,15 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (&model_),
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
       }
     }
 
-    for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
-         it != model_.joint_states_.end();
+    for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
+         it != model_->joint_states_.end();
          ++it)
     {
       hardware_interface::JointStateHandle jsh(it->first,
@@ -123,10 +131,10 @@ public:
                                                                                      & it->second->commanded_effort_));
     }
 
-    if (!model_.joint_states_.empty())
-      mech_stats_publisher_.reset(new MechStatsPublisher(nh, model_));
+    if (!model_->joint_states_.empty())
+      mech_stats_publisher_.reset(new MechStatsPublisher(nh, *model_));
 
-    registerInterface(&model_);
+    registerInterface(model_.get());
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
@@ -135,6 +143,107 @@ public:
 
   virtual ~RosEthercat()
   {
+    if (!compatibility_mode)
+    {
+      // Shutdown all of the motors on exit
+      shutdown();
+      // Cleanup pid files
+      cleanupPidFile(NULL);
+      cleanupPidFile(eth_.c_str());
+    }
+  }
+
+  virtual bool init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh)
+  {
+    // Load robot description
+    TiXmlDocument xml;
+    TiXmlElement *root;
+    TiXmlElement *root_element;
+
+    std::string robot_description;
+    std::string robot_description_param;
+    bool allow;
+
+    if (!robot_hw_nh.getParam("robot_description_param", robot_description_param))
+    {
+      ROS_ERROR("robot_description_param not found (namespace: %s)", robot_hw_nh.getNamespace().c_str());
+      return false;
+    }
+
+    if (!root_nh.getParam(robot_description_param, robot_description))
+    {
+      ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());
+      return false;
+    }
+    xml.Parse(robot_description.c_str());
+    root_element = xml.RootElement();
+    root = xml.FirstChildElement("robot");
+    if (!root || !root_element)
+    {
+      ROS_ERROR("Robot description %s has no root",robot_description_param.c_str());
+      return false;
+    }
+
+    model_.reset(new RobotState(root));
+
+    if (!robot_hw_nh.getParam("ethercat_port", eth_))
+    {
+      ROS_ERROR("ethercat_port param not found (namespace: %s)", robot_hw_nh.getNamespace().c_str());
+      return false;
+    }
+
+    // EtherCAT lock for this interface (e.g. Ethernet port)
+    if (setupPidFile(eth_.c_str()) < 0)
+    {
+      return false;
+    }
+
+    robot_hw_nh.param<bool>("allow_unprogrammed", allow, false);
+
+    vector<string> port_names;
+    boost::split(port_names, eth_, boost::is_any_of("_, "));
+    for (vector<string>::const_iterator port_name = port_names.begin();
+         port_name != port_names.end();
+         ++port_name)
+    {
+      if (!port_name->empty())
+      {
+        ethercat_hardware_.push_back(new EthercatHardware(name,
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),
+                                                          *port_name,
+                                                          allow));
+        ROS_INFO_STREAM("Added Ethernet port " << *port_name);
+      }
+    }
+
+    for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
+         it != model_->joint_states_.end();
+         ++it)
+    {
+      hardware_interface::JointStateHandle jsh(it->first,
+                                               &it->second->position_,
+                                               &it->second->velocity_,
+                                               &it->second->effort_);
+      joint_state_interface_.registerHandle(jsh);
+
+      joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
+                                                                                       & it->second->commanded_position_));
+      joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
+                                                                                       & it->second->commanded_velocity_));
+      joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
+                                                                                     & it->second->commanded_effort_));
+    }
+
+    if (!model_->joint_states_.empty())
+      mech_stats_publisher_.reset(new MechStatsPublisher(root_nh, *model_));
+
+    registerInterface(model_.get());
+    registerInterface(&joint_state_interface_);
+    registerInterface(&joint_position_command_interface_);
+    registerInterface(&joint_velocity_command_interface_);
+    registerInterface(&joint_effort_command_interface_);
+
+    return true;
   }
 
   /// propagate position actuator -> joint and set commands to zero
@@ -147,18 +256,18 @@ public:
       eh->update(false, false);
     }
 
-    model_.current_time_ = time;
-    model_.propagateActuatorPositionToJointPosition();
+    model_->current_time_ = time;
+    model_->propagateActuatorPositionToJointPosition();
 
-    for (ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
-         it != model_.custom_hws_.end();
+    for (ptr_unordered_map<std::string, CustomHW>::iterator it = model_->custom_hws_.begin();
+         it != model_->custom_hws_.end();
          ++it)
     {
       it->second->read(time);
     }
 
-    for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
-         it != model_.joint_states_.end();
+    for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
+         it != model_->joint_states_.end();
          ++it)
     {
       it->second->joint_statistics_.update(it->second);
@@ -170,31 +279,45 @@ public:
   void write(const ros::Time &time)
   {
     /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
-    for (ptr_unordered_map<string, JointState>::iterator it = model_.joint_states_.begin();
-         it != model_.joint_states_.end();
+    for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
+         it != model_->joint_states_.end();
          ++it)
     {
       it->second->enforceLimits();
     }
 
-    model_.propagateJointEffortToActuatorEffort();
+    model_->propagateJointEffortToActuatorEffort();
 
-    for (ptr_unordered_map<std::string, CustomHW>::iterator it = model_.custom_hws_.begin();
-         it != model_.custom_hws_.end();
+    for (ptr_unordered_map<std::string, CustomHW>::iterator it = model_->custom_hws_.begin();
+         it != model_->custom_hws_.end();
          ++it)
     {
       it->second->write(time);
     }
 
-    if (!model_.joint_states_.empty())
+    if (!model_->joint_states_.empty())
       mech_stats_publisher_->publish(time);
+  }
+
+  /// propagate position actuator -> joint and set commands to zero
+  void read()
+  {
+    ros::Time time = ros::Time::now();
+    read(time);
+  }
+
+  /// propagate effort joint -> actuator and enforce safety limits
+  void write()
+  {
+    ros::Time time = ros::Time::now();
+    write(time);
   }
 
   /// stop all actuators
   void shutdown()
   {
-    for (ptr_vector<Transmission>::iterator it = model_.transmissions_.begin();
-         it != model_.transmissions_.end();
+    for (ptr_vector<Transmission>::iterator it = model_->transmissions_.begin();
+         it != model_->transmissions_.end();
          ++it)
     {
       it->actuator_->command_.enable_ = false;
@@ -209,8 +332,10 @@ public:
     }
   }
 
-  ros::NodeHandle cm_node_;
-  ros_ethercat_model::RobotState model_;
+
+  static const string pid_dir;
+  string eth_;
+  boost::shared_ptr<ros_ethercat_model::RobotState> model_;
   ptr_vector<EthercatHardware> ethercat_hardware_;
   boost::scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
 
@@ -221,6 +346,116 @@ public:
   hardware_interface::PositionJointInterface joint_position_command_interface_;
   hardware_interface::VelocityJointInterface joint_velocity_command_interface_;
   hardware_interface::EffortJointInterface joint_effort_command_interface_;
+
+private:
+  static int lock_fd(int fd)
+  {
+    struct flock lock;
+
+    lock.l_type = F_WRLCK;
+    lock.l_whence = SEEK_SET;
+    lock.l_start = 0;
+    lock.l_len = 0;
+
+    return fcntl(fd, F_SETLK, &lock);
+  }
+
+  static string generatePIDFilename(const char* interface)
+  {
+    string filename;
+    filename = pid_dir + "EtherCAT_" + string(interface) + ".pid";
+    return filename;
+  }
+
+  static int setupPidFile(const char* interface)
+  {
+    pid_t pid;
+    int fd;
+    FILE *fp = NULL;
+
+    string filename = generatePIDFilename(interface);
+
+    umask(0);
+    mkdir(pid_dir.c_str(), 0777);
+    int PID_FLAGS = O_RDWR | O_CREAT | O_EXCL;
+    int PID_MODE = S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH;
+    fd = open(filename.c_str(), PID_FLAGS, PID_MODE);
+    if (fd == -1)
+    {
+      if (errno != EEXIST)
+      {
+        ROS_FATAL("Unable to create pid file '%s': %s", filename.c_str(), strerror(errno));
+        return -1;
+      }
+
+      if ((fd = open(filename.c_str(), O_RDWR)) < 0)
+      {
+        ROS_FATAL("Unable to open pid file '%s': %s", filename.c_str(), strerror(errno));
+        return -1;
+      }
+
+      if ((fp = fdopen(fd, "rw")) == NULL)
+      {
+        ROS_FATAL("Can't read from '%s': %s", filename.c_str(), strerror(errno));
+        return -1;
+      }
+      pid = -1;
+      if ((fscanf(fp, "%d", &pid) != 1) || (pid == getpid()) || (lock_fd(fileno(fp)) == 0))
+      {
+        int rc;
+
+        if ((rc = unlink(filename.c_str())) == -1)
+        {
+          ROS_FATAL("Can't remove stale pid file '%s': %s", filename.c_str(), strerror(errno));
+          return -1;
+        }
+      }
+      else
+      {
+        ROS_FATAL("Another instance of ros_ethercat is already running with pid: %d", pid);
+        return -1;
+      }
+    }
+
+    unlink(filename.c_str());
+    fd = open(filename.c_str(), PID_FLAGS, PID_MODE);
+
+    if (fd == -1)
+    {
+      ROS_FATAL("Unable to open pid file '%s': %s", filename.c_str(), strerror(errno));
+      return -1;
+    }
+
+    if (lock_fd(fd) == -1)
+    {
+      ROS_FATAL("Unable to lock pid file '%s': %s", filename.c_str(), strerror(errno));
+      return -1;
+    }
+
+    if ((fp = fdopen(fd, "w")) == NULL)
+    {
+      ROS_FATAL("fdopen failed: %s", strerror(errno));
+      return -1;
+    }
+
+    fprintf(fp, "%d\n", getpid());
+
+    /* We do NOT close fd, since we want to keep the lock. */
+    fflush(fp);
+    fcntl(fd, F_SETFD, (long) 1);
+
+    return 0;
+  }
+
+  static void cleanupPidFile(const char* interface)
+  {
+    string filename = generatePIDFilename(interface);
+    unlink(filename.c_str());
+  }
+
+  bool compatibility_mode;
 };
+
+const string RosEthercat::pid_dir = "/var/tmp/run/";
 
 #endif
