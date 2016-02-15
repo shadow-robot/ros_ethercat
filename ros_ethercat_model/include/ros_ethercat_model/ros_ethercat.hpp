@@ -247,7 +247,7 @@ public:
   }
 
   /// propagate position actuator -> joint and set commands to zero
-  void read(const ros::Time &time)
+  void read(const ros::Time &time, const ros::Duration& period)
   {
     for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
          eh != ethercat_hardware_.end();
@@ -276,7 +276,7 @@ public:
   }
 
   /// propagate effort joint -> actuator and enforce safety limits
-  void write(const ros::Time &time)
+  void write(const ros::Time &time, const ros::Duration& period)
   {
     /// Modify the commanded_effort_ of each joint state so that the joint limits are satisfied
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
@@ -297,20 +297,6 @@ public:
 
     if (!model_->joint_states_.empty())
       mech_stats_publisher_->publish(time);
-  }
-
-  /// propagate position actuator -> joint and set commands to zero
-  void read()
-  {
-    ros::Time time = ros::Time::now();
-    read(time);
-  }
-
-  /// propagate effort joint -> actuator and enforce safety limits
-  void write()
-  {
-    ros::Time time = ros::Time::now();
-    write(time);
   }
 
   /// stop all actuators
