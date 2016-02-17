@@ -154,7 +154,6 @@ void EthercatDeviceDiagnostics::accumulate(const et1x00_error_counters &n, const
 
 void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler *sh)
 {
-
   diagnosticsValid_ = false;
   diagnosticsFirst_ = false;
 
