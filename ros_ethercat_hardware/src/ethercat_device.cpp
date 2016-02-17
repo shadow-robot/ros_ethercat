@@ -154,6 +154,7 @@ void EthercatDeviceDiagnostics::accumulate(const et1x00_error_counters &n, const
 
 void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler *sh)
 {
+
   diagnosticsValid_ = false;
   diagnosticsFirst_ = false;
 
@@ -168,6 +169,14 @@ void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler 
     // If the NPRD has a working counter == 0, but the APRD sees the correct number of devices,
     // then the node has likely been reset.
     // Also, get DL status register with nprd telegram
+
+    // This is for the case of non-ethercat device where SlaveHandler is NULL
+    if (sh == NULL)
+    {
+      diagnosticsValid_ = true;
+      return;
+    }
+
     EC_Logic *logic = sh->m_logic_instance;
     et1x00_dl_status dl_status;
     NPRD_Telegram nprd_telegram(logic->get_idx(),
