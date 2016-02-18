@@ -44,6 +44,7 @@
 #include <sys/stat.h>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/thread/thread.hpp>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <hardware_interface/robot_hw.h>
@@ -150,6 +151,12 @@ public:
       // Cleanup pid files
       cleanupPidFile(NULL);
       cleanupPidFile(eth_.c_str());
+
+      stop_collect_diagnostics();
+      while (is_collect_diagnostics_running())
+      {
+        usleep(100);
+      }
     }
   }
 
@@ -242,6 +249,10 @@ public:
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
+
+    // Start a thread to collect diagnostics. This could actually be inside the EthercatHardware class
+    // but until we remove the compatibility mode this will do.
+    collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
 
     return true;
   }
@@ -439,7 +450,35 @@ private:
     unlink(filename.c_str());
   }
 
+  void collect_diagnostics_loop()
+  {
+    collect_diagnostics_running_ = true;
+    ros::Rate diag_rate(1.0); // Send diagnostics at 1Hz
+    while (run_diagnostics_)
+    {
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin(); eh != ethercat_hardware_.end(); ++eh)
+      {
+        eh->collectDiagnostics();
+      }
+      diag_rate.sleep();
+    }
+    collect_diagnostics_running_ = false;
+  }
+
+  void stop_collect_diagnostics()
+  {
+    run_diagnostics_ = false;
+  }
+
+  bool is_collect_diagnostics_running()
+  {
+    return collect_diagnostics_running_;
+  }
+
   bool compatibility_mode;
+  bool run_diagnostics_;
+  bool collect_diagnostics_running_;
+  boost::thread collect_diagnostics_thread_;
 };
 
 const string RosEthercat::pid_dir = "/var/tmp/run/";
