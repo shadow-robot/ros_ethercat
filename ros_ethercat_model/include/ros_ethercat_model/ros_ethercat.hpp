@@ -53,6 +53,7 @@
 #include <controller_manager/controller_manager.h>
 #include <pr2_mechanism_msgs/MechanismStatistics.h>
 #include "ros_ethercat_model/robot_state.hpp"
+#include "ros_ethercat_model/robot_state_interface.hpp"
 #include "ros_ethercat_model/mech_stats_publisher.hpp"
 #include "ros_ethercat_hardware/ethercat_hardware.h"
 
@@ -135,7 +136,9 @@ public:
     if (!model_->joint_states_.empty())
       mech_stats_publisher_.reset(new MechStatsPublisher(nh, *model_));
 
-    registerInterface(model_.get());
+    robot_state_interface_.registerHandle(ros_ethercat_model::RobotStateHandle("unique_robot_hw", model_.get()));
+
+    registerInterface(&robot_state_interface_);
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
@@ -244,7 +247,9 @@ public:
     if (!model_->joint_states_.empty())
       mech_stats_publisher_.reset(new MechStatsPublisher(root_nh, *model_));
 
-    registerInterface(model_.get());
+    robot_state_interface_.registerHandle(ros_ethercat_model::RobotStateHandle("unique_robot_hw", model_.get()));
+
+    registerInterface(&robot_state_interface_);
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
@@ -336,10 +341,13 @@ public:
   ptr_vector<EthercatHardware> ethercat_hardware_;
   boost::scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
 
-  // state interface
+  // robot state interface
+  ros_ethercat_model::RobotStateInterface robot_state_interface_;
+
+  // joint state interface
   hardware_interface::JointStateInterface joint_state_interface_;
 
-  // command interface
+  // joint command interface
   hardware_interface::PositionJointInterface joint_position_command_interface_;
   hardware_interface::VelocityJointInterface joint_velocity_command_interface_;
   hardware_interface::EffortJointInterface joint_effort_command_interface_;
