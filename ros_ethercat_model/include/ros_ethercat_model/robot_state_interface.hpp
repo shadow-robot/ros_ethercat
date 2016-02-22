@@ -44,15 +44,6 @@
 #include "ros_ethercat_model/robot_state.hpp"
 
 
-//#include <urdf/model.h>
-//#include <pluginlib/class_loader.h>
-//#include <boost/ptr_container/ptr_unordered_map.hpp>
-//#include <boost/ptr_container/ptr_vector.hpp>
-//#include <hardware_interface/hardware_interface.h>
-//#include "ros_ethercat_model/joint.hpp"
-//#include "ros_ethercat_model/transmission.hpp"
-//#include "ros_ethercat_model/hardware_interface.hpp"
-
 namespace ros_ethercat_model
 {
 
