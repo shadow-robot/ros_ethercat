@@ -90,13 +90,17 @@ class RosEthercat : public hardware_interface::RobotHW
 {
 public:
   RosEthercat() :
-    compatibility_mode(false)
+    compatibility_mode_(false),
+    collect_diagnostics_running_(false),
+    run_diagnostics_(false)
   {
 
   }
 
   RosEthercat(ros::NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
-    compatibility_mode(true)
+    compatibility_mode_(true),
+    collect_diagnostics_running_(false),
+    run_diagnostics_(false)
   {
     model_.reset(new RobotState(config));
     vector<string> port_names;
@@ -147,7 +151,7 @@ public:
 
   virtual ~RosEthercat()
   {
-    if (!compatibility_mode)
+    if (!compatibility_mode_)
     {
       // Shutdown all of the motors on exit
       shutdown();
@@ -174,24 +178,34 @@ public:
     std::string robot_description_param;
     bool allow;
 
+    robot_state_name_ = robot_hw_nh.getNamespace().substr(1); // remove the leading slash of the namespace
+    ROS_INFO_STREAM("Robot State Name: " << robot_state_name_);
+
     if (!robot_hw_nh.getParam("robot_description_param", robot_description_param))
     {
       ROS_ERROR("robot_description_param not found (namespace: %s)", robot_hw_nh.getNamespace().c_str());
       return false;
     }
 
-    if (!root_nh.getParam(robot_description_param, robot_description))
+    if (robot_description_param == "none")
     {
-      ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());
-      return false;
+      root = NULL;
     }
-    xml.Parse(robot_description.c_str());
-    root_element = xml.RootElement();
-    root = xml.FirstChildElement("robot");
-    if (!root || !root_element)
+    else
     {
-      ROS_ERROR("Robot description %s has no root",robot_description_param.c_str());
-      return false;
+      if (!root_nh.getParam(robot_description_param, robot_description))
+      {
+        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());
+        return false;
+      }
+      xml.Parse(robot_description.c_str());
+      root_element = xml.RootElement();
+      root = xml.FirstChildElement("robot");
+      if (!root || !root_element)
+      {
+        ROS_ERROR("Robot description %s has no root",robot_description_param.c_str());
+        return false;
+      }
     }
 
     model_.reset(new RobotState(root));
@@ -247,7 +261,7 @@ public:
     if (!model_->joint_states_.empty())
       mech_stats_publisher_.reset(new MechStatsPublisher(root_nh, *model_));
 
-    robot_state_interface_.registerHandle(ros_ethercat_model::RobotStateHandle("unique_robot_hw", model_.get()));
+    robot_state_interface_.registerHandle(ros_ethercat_model::RobotStateHandle(robot_state_name_, model_.get()));
 
     registerInterface(&robot_state_interface_);
     registerInterface(&joint_state_interface_);
@@ -352,7 +366,7 @@ public:
   hardware_interface::VelocityJointInterface joint_velocity_command_interface_;
   hardware_interface::EffortJointInterface joint_effort_command_interface_;
 
-private:
+protected:
   static int lock_fd(int fd)
   {
     struct flock lock;
@@ -460,6 +474,7 @@ private:
 
   void collect_diagnostics_loop()
   {
+    run_diagnostics_ = true;
     collect_diagnostics_running_ = true;
     ros::Rate diag_rate(1.0); // Send diagnostics at 1Hz
     while (run_diagnostics_)
@@ -483,10 +498,11 @@ private:
     return collect_diagnostics_running_;
   }
 
-  bool compatibility_mode;
+  bool compatibility_mode_;
   bool run_diagnostics_;
   bool collect_diagnostics_running_;
   boost::thread collect_diagnostics_thread_;
+  std::string robot_state_name_;
 };
 
 const string RosEthercat::pid_dir = "/var/tmp/run/";
