@@ -47,7 +47,7 @@
 namespace ros_ethercat_model
 {
 
-/** A handle used to read the state of a single joint. */
+/** A handle used to read a single RobotState. */
 class RobotStateHandle
 {
 public:
@@ -74,11 +74,9 @@ private:
   RobotState* state_;
 };
 
-/** \brief Hardware interface to support reading the state of an array of joints
+/** \brief Hardware interface to support reading an array of RobotStates
  *
- * This \ref HardwareInterface supports reading the state of an array of named
- * joints, each of which has some position, velocity, and effort (force or
- * torque).
+ * This \ref HardwareInterface supports reading an array of named RobotStates
  *
  */
 class RobotStateInterface : public hardware_interface::HardwareResourceManager<RobotStateHandle> {};
