@@ -187,7 +187,7 @@ public:
       return false;
     }
 
-    if (robot_description_param == "none")
+    if (robot_description_param == "None")
     {
       root = NULL;
     }
