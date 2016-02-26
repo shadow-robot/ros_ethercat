@@ -48,6 +48,7 @@
 #include <numeric>
 
 #include "ros_ethercat_model/ros_ethercat.hpp"
+#include <controller_manager/controller_manager.h>
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
