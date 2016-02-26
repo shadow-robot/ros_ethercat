@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     kdl_parser
     pr2_mechanism_msgs
     cmake_modules
+    realtime_tools
     ros_ethercat_hardware
 )
 
@@ -36,6 +37,8 @@ CATKIN_DEPENDS
     urdf
     kdl_parser
     pr2_mechanism_msgs
+    realtime_tools
+    ros_ethercat_hardware
 INCLUDE_DIRS
     include
 CFG_EXTRAS

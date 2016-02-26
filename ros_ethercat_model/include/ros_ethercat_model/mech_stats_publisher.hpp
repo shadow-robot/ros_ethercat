@@ -44,6 +44,7 @@
 #include <pr2_mechanism_msgs/MechanismStatistics.h>
 #include <pr2_mechanism_msgs/JointStatistics.h>
 #include <pr2_mechanism_msgs/ActuatorStatistics.h>
+#include <realtime_tools/realtime_publisher.h>
 
 using std::string;
 using std::vector;
