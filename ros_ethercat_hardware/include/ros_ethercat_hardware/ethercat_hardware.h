@@ -250,7 +250,10 @@ public:
 
   hardware_interface::HardwareInterface *hw_;
 
-  const std::vector<boost::shared_ptr<EthercatDevice> > getSlaves() const {return slaves_;}
+  const std::vector<boost::shared_ptr<const EthercatDevice> > getSlaves() const
+  {
+    return std::vector<boost::shared_ptr<const EthercatDevice> >(slaves_.begin(), slaves_.end());
+  }
 
 private:
   static void changeState(EtherCAT_SlaveHandler *sh, EC_State new_state);
