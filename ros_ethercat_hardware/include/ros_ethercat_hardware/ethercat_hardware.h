@@ -138,6 +138,8 @@ public:
    */
   void stop();
 
+
+
 private:
 
   /*!
@@ -249,6 +251,9 @@ public:
   bool publishTrace(int position, const string &reason, unsigned level, unsigned delay);
 
   hardware_interface::HardwareInterface *hw_;
+
+  const std::vector<boost::shared_ptr<EthercatDevice> >& get_slaves() const {return slaves_;}
+
 
 private:
   static void changeState(EtherCAT_SlaveHandler *sh, EC_State new_state);
