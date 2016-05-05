@@ -142,7 +142,7 @@ void EthercatHardware::changeState(EtherCAT_SlaveHandler *sh, EC_State new_state
   }
 }
 
-std::vector<EtherCAT_SlaveHandler> EthercatHardware::ScanPort(const std::string& eth)
+std::vector<EtherCAT_SlaveHandler> EthercatHardware::scanPort(const std::string& eth)
 {
   std::vector<EtherCAT_SlaveHandler> detected_devices;
   int sock = socket(PF_INET, SOCK_DGRAM, 0);
