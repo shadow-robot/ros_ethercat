@@ -203,6 +203,13 @@ class EthercatHardware
 {
 public:
   /*!
+   * \brief Scans the network and gives a list of detected devices on a given ethercat port
+   * \param eth is the thernet port to be scanned
+   */
+  static std::vector<EtherCAT_SlaveHandler> scanPort(const std::string& eth);
+
+
+  /*!
    * \brief Constructor
    */
   EthercatHardware(const std::string& name, hardware_interface::HardwareInterface *hw,

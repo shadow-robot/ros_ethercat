@@ -142,6 +142,72 @@ void EthercatHardware::changeState(EtherCAT_SlaveHandler *sh, EC_State new_state
   }
 }
 
+std::vector<EtherCAT_SlaveHandler> EthercatHardware::scanPort(const std::string& eth)
+{
+  std::vector<EtherCAT_SlaveHandler> detected_devices;
+  int sock = socket(PF_INET, SOCK_DGRAM, 0);
+  if (sock < 0)
+  {
+    int error = errno;
+    ROS_FATAL("Couldn't open temp socket : %s", strerror(error));
+    return detected_devices;
+  }
+
+  struct ifreq ifr;
+  strncpy(ifr.ifr_name, eth.c_str(), IFNAMSIZ);
+  if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0)
+  {
+    int error = errno;
+    ROS_FATAL("Cannot get interface_.c_str() flags for %s: %s", eth.c_str(),
+              strerror(error));
+    return detected_devices;
+  }
+
+  close(sock);
+  sock = -1;
+
+  if (!(ifr.ifr_flags & IFF_UP))
+  {
+    ROS_FATAL("Interface %s is not UP. Try : ifup %s", eth.c_str(), eth.c_str());
+    return detected_devices;
+  }
+  if (!(ifr.ifr_flags & IFF_RUNNING))
+  {
+    ROS_FATAL("Interface %s is not RUNNING. Is cable plugged in and device powered?",
+              eth.c_str());
+    return detected_devices;
+  }
+
+  // Initialize network interface
+  struct netif *ni(NULL);
+  if ((ni = init_ec(eth.c_str())) == NULL)
+  {
+    ROS_FATAL_STREAM("Unable to initialize interface_: " << eth);
+    return detected_devices;
+  }
+  EC_Logic logic_instance;
+  EtherCAT_DataLinkLayer dll_instance;
+  EtherCAT_PD_Buffer pd_buffer(&logic_instance, &dll_instance);
+  boost::scoped_ptr<EtherCAT_AL> application_layer;
+  boost::scoped_ptr<EtherCAT_Router> router;
+
+  dll_instance.attach(ni);
+  application_layer.reset(new EtherCAT_AL(&dll_instance, &logic_instance, &pd_buffer));
+  router.reset(new EtherCAT_Router(application_layer.get(), &logic_instance, &dll_instance));
+
+  unsigned int n_slaves = application_layer->get_num_slaves();
+  EtherCAT_SlaveHandler **slaves = application_layer->get_slaves();
+  for (unsigned int i = 0; i < n_slaves; ++i)
+  {
+      detected_devices.push_back(EtherCAT_SlaveHandler(*slaves[i]));
+  }
+  if (ni)
+  {
+    close_socket(ni);
+  }
+  return detected_devices;
+}
+
 void EthercatHardware::init()
 {
   // open temporary socket to use with ioctl
