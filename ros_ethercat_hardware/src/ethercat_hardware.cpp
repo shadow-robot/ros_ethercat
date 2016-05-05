@@ -201,6 +201,10 @@ std::vector<EtherCAT_SlaveHandler> EthercatHardware::ScanPort(const std::string&
   {
       detected_devices.push_back(EtherCAT_SlaveHandler(*slaves[i]));
   }
+  if (ni)
+  {
+    close_socket(ni);
+  }
   return detected_devices;
 }
 
