@@ -48,6 +48,8 @@
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
+#include <map>
+#include <string>
 
 namespace ros_ethercat_model
 {
@@ -172,6 +174,9 @@ public:
 
   /// the transmission's loader
   pluginlib::ClassLoader<Transmission> transmission_loader_;
+
+  // map between the hardware name and its product code
+  std::map<std::string, std::string> device_to_name_map_;
 };
 }
 #endif
