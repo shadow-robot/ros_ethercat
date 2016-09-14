@@ -243,6 +243,7 @@ public:
          it != model_->joint_states_.end();
          ++it)
     {
+      ROS_WARN_STREAM(it->first);
       hardware_interface::JointStateHandle jsh(it->first,
                                                &it->second->position_,
                                                &it->second->velocity_,
