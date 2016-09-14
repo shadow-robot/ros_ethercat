@@ -239,23 +239,40 @@ public:
       }
     }
 
+    vector<string> joint_filter;
+    robot_hw_nh.param<vector<string> >("joint_filter", joint_filter);
+
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
          ++it)
     {
-      ROS_WARN_STREAM(it->first);
+      const char *joint_name = it->first.c_str();
+      bool use_joint = true; // Default true - means if filter array is empty, all joints included.
+      for (vector<string>::iterator filter_it = joint_filter.begin(); filter_it != joint_filter.end(); ++filter_it)
+      {
+	const char *filter = (*filter_it).c_str();
+	use_joint = !strncmp(joint_name, filter, strlen(filter)); // strncmp returns false if joint name starts with filter
+	if (use_joint)
+	{
+	  break;
+	}
+      }
+      if (!use_joint)
+      {
+	continue;
+      }
       hardware_interface::JointStateHandle jsh(it->first,
-                                               &it->second->position_,
-                                               &it->second->velocity_,
-                                               &it->second->effort_);
+					       &it->second->position_,
+					       &it->second->velocity_,
+					       &it->second->effort_);
       joint_state_interface_.registerHandle(jsh);
 
       joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_position_));
+										       &it->second->commanded_position_));
       joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_velocity_));
+										       &it->second->commanded_velocity_));
       joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                     & it->second->commanded_effort_));
+										     &it->second->commanded_effort_));
     }
 
     if (!model_->joint_states_.empty())
