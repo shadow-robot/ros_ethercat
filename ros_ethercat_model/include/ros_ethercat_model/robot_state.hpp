@@ -60,11 +60,15 @@ namespace ros_ethercat_model
  * access to the joint position/velocity/effort, and to command the effort a joint
  * should apply. Controllers can get access to the hard realtime clock through current_time_
  */
+
+using std::vector;
+using std::string;
+
 class RobotState : public hardware_interface::HardwareInterface
 {
 public:
-  RobotState(TiXmlElement *root=NULL)
-    : transmission_loader_("ros_ethercat_model", "ros_ethercat_model::Transmission")
+  RobotState(TiXmlElement *root=NULL, vector<string> joint_filter=vector<string>())
+    : joint_filter_(joint_filter), transmission_loader_("ros_ethercat_model", "ros_ethercat_model::Transmission")
   {
     if (root)
       initXml(root);
@@ -81,16 +85,17 @@ public:
            it != robot_model_.joints_.end();
            ++it)
       {
-        // we are only loading joints that can be controlled
-        if (it->second->type == urdf::Joint::PRISMATIC || it->second->type == urdf::Joint::REVOLUTE)
+	if (use_joint_(it->second->name) && (it->second->type == urdf::Joint::PRISMATIC || it->second->type == urdf::Joint::REVOLUTE))
+	{
           joint_states_[it->first].joint_ = it->second;
+	}
       }
 
       for (TiXmlElement *xit = root->FirstChildElement("transmission");
            xit;
            xit = xit->NextSiblingElement("transmission"))
       {
-	std::string type;
+	std::string type, joint_name;
 
 	if (xit->Attribute("type"))
 	{
@@ -101,11 +106,18 @@ public:
 	  type = std::string(xit->FirstChildElement("type")->GetText());
 	}
 
-	if (!type.empty())
+	joint_name = string(xit->FirstChildElement("joint")->Attribute("name"));
+	if (joint_name.empty())
+	{
+	  ROS_FATAL_STREAM("Transmission specified without joint element.");
+	}
+
+	if (!type.empty() && use_joint_(joint_name))
 	{
 	  Transmission *t = transmission_loader_.createUnmanagedInstance(type);
 	  if (!t || !t->initXml(xit, this))
 	    throw std::runtime_error(std::string("Failed to initialize transmission type: ") + type);
+
 	  transmissions_.push_back(t);
 	}
       }
@@ -177,6 +189,26 @@ public:
 
   // map between the hardware name and its product code
   std::map<std::string, std::string> device_to_name_map_;
+
+  vector<string> joint_filter_;
+  bool use_joint_(string joint_name)
+  {
+    if (0 == joint_filter_.size())
+    {
+      return true;
+    }
+    for (vector<string>::iterator filter_it = joint_filter_.begin(); filter_it != joint_filter_.end(); ++filter_it)
+    {
+      const char *filter = (*filter_it).c_str();
+      if (!strncmp(joint_name.c_str(), filter, strlen(filter)))  // strncmp returns 0 if joint name starts with filter
+      {
+	return true;
+      }
+    }
+    return false;
+  }
+
+
 };
 }
 #endif

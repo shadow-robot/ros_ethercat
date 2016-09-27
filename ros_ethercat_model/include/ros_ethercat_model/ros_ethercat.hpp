@@ -207,7 +207,10 @@ public:
       }
     }
 
-    model_.reset(new RobotState(root));
+    vector<string> joint_filter;
+    !robot_hw_nh.getParam("joint_filter", joint_filter);
+
+    model_.reset(new RobotState(root, joint_filter));
 
     if (!robot_hw_nh.getParam("ethercat_port", eth_))
     {
@@ -239,28 +242,14 @@ public:
       }
     }
 
-    vector<string> joint_filter;
-    robot_hw_nh.param<vector<string> >("joint_filter", joint_filter);
+
 
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
          ++it)
     {
-      const char *joint_name = it->first.c_str();
-      bool use_joint = true; // Default true - means if filter array is empty, all joints included.
-      for (vector<string>::iterator filter_it = joint_filter.begin(); filter_it != joint_filter.end(); ++filter_it)
-      {
-	const char *filter = (*filter_it).c_str();
-	use_joint = !strncmp(joint_name, filter, strlen(filter)); // strncmp returns false if joint name starts with filter
-	if (use_joint)
-	{
-	  break;
-	}
-      }
-      if (!use_joint)
-      {
-	continue;
-      }
+      // joints have already had filter applied in initialisation of robot model
+      ROS_INFO_STREAM("Joint state interface for hand joint " << it->first);
       hardware_interface::JointStateHandle jsh(it->first,
 					       &it->second->position_,
 					       &it->second->velocity_,
@@ -504,6 +493,8 @@ protected:
     }
     collect_diagnostics_running_ = false;
   }
+
+protected:
 
   void stop_collect_diagnostics()
   {
