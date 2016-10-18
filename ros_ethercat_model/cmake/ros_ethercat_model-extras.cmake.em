@@ -13,12 +13,11 @@ function(ros_enable_rpath target)
       set(RPATH "${RPATH}:$ENV{LD_LIBRARY_PATH}")
    endif()
 
-   message("Install RPATH for ${target} is ${RPATH}")
+   message(STATUS "Install RPATH for ${target} is ${RPATH}")
 
    # Apply our computed RPATH to the target
    set_target_properties(${target} PROPERTIES INSTALL_RPATH ${RPATH})
 
    # Don't use the final RPATH in devel space
    set_target_properties(${target} PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
-
 endfunction()
