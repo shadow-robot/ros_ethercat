@@ -36,7 +36,7 @@ CATKIN_DEPENDS
     pluginlib
     urdf
     kdl_parser
-    pr2_mechanism_msgs
+    sr_robot_msgs
     realtime_tools
     ros_ethercat_hardware
 INCLUDE_DIRS
