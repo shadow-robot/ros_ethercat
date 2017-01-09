@@ -41,9 +41,9 @@
 #define ROS_ETHERCAT_MODEL_MECH_STATS_PUBLISHER_HPP_
 
 #include <ros_ethercat_model/robot_state.hpp>
-#include <pr2_mechanism_msgs/MechanismStatistics.h>
-#include <pr2_mechanism_msgs/JointStatistics.h>
-#include <pr2_mechanism_msgs/ActuatorStatistics.h>
+#include <sr_robot_msgs/MechanismStatistics.h>
+#include <sr_robot_msgs/JointStatistics.h>
+#include <sr_robot_msgs/ActuatorStatistics.h>
 #include <realtime_tools/realtime_publisher.h>
 
 using std::string;
@@ -55,9 +55,9 @@ using ros::Duration;
 using ros::Time;
 using ros::NodeHandle;
 using realtime_tools::RealtimePublisher;
-using pr2_mechanism_msgs::MechanismStatistics;
-using pr2_mechanism_msgs::JointStatistics;
-using pr2_mechanism_msgs::ActuatorStatistics;
+using sr_robot_msgs::MechanismStatistics;
+using sr_robot_msgs::JointStatistics;
+using sr_robot_msgs::ActuatorStatistics;
 using ros_ethercat_model::JointState;
 using ros_ethercat_model::Actuator;
 using ros_ethercat_model::ActuatorState;
