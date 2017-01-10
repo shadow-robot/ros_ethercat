@@ -27,8 +27,7 @@ include_directories(include
 
 catkin_package(
 DEPENDS
-    tinyxml
-    urdfdom
+    TinyXML
     Boost
 CATKIN_DEPENDS
     roscpp
