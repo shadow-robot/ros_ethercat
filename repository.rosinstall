@@ -1,0 +1,4 @@
+- git:
+    local-name: sr_common
+    uri: https://github.com/shadow-robot/sr_common
+    version: kinetic-devel

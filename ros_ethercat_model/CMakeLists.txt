@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
     urdf
     kdl_parser
-    pr2_mechanism_msgs
+    sr_robot_msgs
     cmake_modules
     realtime_tools
     ros_ethercat_hardware
@@ -36,7 +36,7 @@ CATKIN_DEPENDS
     pluginlib
     urdf
     kdl_parser
-    pr2_mechanism_msgs
+    sr_robot_msgs
     realtime_tools
     ros_ethercat_hardware
 INCLUDE_DIRS

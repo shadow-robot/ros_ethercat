@@ -50,7 +50,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
-#include <pr2_mechanism_msgs/MechanismStatistics.h>
+#include <sr_robot_msgs/MechanismStatistics.h>
 #include "ros_ethercat_model/robot_state.hpp"
 #include "ros_ethercat_model/robot_state_interface.hpp"
 #include "ros_ethercat_model/mech_stats_publisher.hpp"
