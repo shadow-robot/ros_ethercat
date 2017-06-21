@@ -207,7 +207,10 @@ public:
       }
     }
 
-    model_.reset(new RobotState(root));
+    vector<string> joint_filter;
+    !robot_hw_nh.getParam("joint_filter", joint_filter);
+
+    model_.reset(new RobotState(root, joint_filter));
 
     if (!robot_hw_nh.getParam("ethercat_port", eth_))
     {
@@ -239,22 +242,26 @@ public:
       }
     }
 
+
+
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
          ++it)
     {
+      // joints have already had filter applied in initialisation of robot model
+      ROS_INFO_STREAM("Joint state interface for hand joint " << it->first);
       hardware_interface::JointStateHandle jsh(it->first,
-                                               &it->second->position_,
-                                               &it->second->velocity_,
-                                               &it->second->effort_);
+					       &it->second->position_,
+					       &it->second->velocity_,
+					       &it->second->effort_);
       joint_state_interface_.registerHandle(jsh);
 
       joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_position_));
+										       &it->second->commanded_position_));
       joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_velocity_));
+										       &it->second->commanded_velocity_));
       joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                     & it->second->commanded_effort_));
+										     &it->second->commanded_effort_));
     }
 
     if (!model_->joint_states_.empty())
@@ -486,6 +493,8 @@ protected:
     }
     collect_diagnostics_running_ = false;
   }
+
+protected:
 
   void stop_collect_diagnostics()
   {
