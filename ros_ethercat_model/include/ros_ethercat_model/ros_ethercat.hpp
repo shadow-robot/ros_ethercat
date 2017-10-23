@@ -50,11 +50,13 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/imu_sensor_interface.h>
 #include <sr_robot_msgs/MechanismStatistics.h>
 #include "ros_ethercat_model/robot_state.hpp"
 #include "ros_ethercat_model/robot_state_interface.hpp"
 #include "ros_ethercat_model/mech_stats_publisher.hpp"
 #include "ros_ethercat_hardware/ethercat_hardware.h"
+
 
 
 /** \brief Contains robot state information and init, read, write function.
@@ -117,7 +119,6 @@ public:
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
       }
     }
-
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
          ++it)
@@ -136,6 +137,27 @@ public:
                                                                                      & it->second->commanded_effort_));
     }
 
+    hardware_interface::ImuSensorHandle::Data data;
+    data.name = "imu";
+    data.frame_id = "rh_palm";
+    double * orientation = new double[3];
+    double * orientation_cv = new double[9];
+    double * av = new double[3];
+    double * av_cv = new double[9];
+    double * la = new double[3];
+    double * la_cv = new double[9];
+
+    data.orientation = orientation;
+    data.orientation_covariance = orientation_cv;
+    data.angular_velocity = av;
+    data.angular_velocity_covariance = av_cv;
+    data.linear_acceleration = la;
+    data.linear_acceleration_covariance = la_cv;
+
+    hardware_interface::ImuSensorHandle imu_sh(data);
+
+    imu_sensor_interface_.registerHandle(imu_sh);
+
     if (!model_->joint_states_.empty())
       mech_stats_publisher_.reset(new MechStatsPublisher(nh, *model_));
 
@@ -146,6 +168,8 @@ public:
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
+    registerInterface(&imu_sensor_interface_);
+    ROS_WARN("registered interfaces!!!");
   }
 
   virtual ~RosEthercat()
@@ -366,6 +390,9 @@ public:
 
   // joint state interface
   hardware_interface::JointStateInterface joint_state_interface_;
+
+  // imu sensor interface
+  hardware_interface::ImuSensorInterface imu_sensor_interface_;
 
   // joint command interface
   hardware_interface::PositionJointInterface joint_position_command_interface_;

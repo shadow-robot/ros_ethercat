@@ -126,6 +126,7 @@ public:
     {
       ROS_FATAL_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
     }
+
   }
 
   /// Propagate the actuator positions, through the transmissions, to the joint positions
@@ -171,7 +172,7 @@ public:
 
   /// The time at which the commands were sent to the hardware
   ros::Time current_time_;
-
+  
   /// The joint states mapped to the joint names
   boost::ptr_unordered_map<std::string, JointState> joint_states_;
 
