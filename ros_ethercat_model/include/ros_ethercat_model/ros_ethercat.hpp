@@ -137,27 +137,6 @@ public:
                                                                                      & it->second->commanded_effort_));
     }
 
-    hardware_interface::ImuSensorHandle::Data data;
-    data.name = "imu";
-    data.frame_id = "rh_palm";
-    double * orientation = new double[3];
-    double * orientation_cv = new double[9];
-    double * av = new double[3];
-    double * av_cv = new double[9];
-    double * la = new double[3];
-    double * la_cv = new double[9];
-
-    data.orientation = orientation;
-    data.orientation_covariance = orientation_cv;
-    data.angular_velocity = av;
-    data.angular_velocity_covariance = av_cv;
-    data.linear_acceleration = la;
-    data.linear_acceleration_covariance = la_cv;
-
-    hardware_interface::ImuSensorHandle imu_sh(data);
-
-    imu_sensor_interface_.registerHandle(imu_sh);
-
     if (!model_->joint_states_.empty())
       mech_stats_publisher_.reset(new MechStatsPublisher(nh, *model_));
 
@@ -168,7 +147,7 @@ public:
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
-    registerInterface(&imu_sensor_interface_);
+
     ROS_WARN("registered interfaces!!!");
   }
 
@@ -293,11 +272,46 @@ public:
 
     robot_state_interface_.registerHandle(ros_ethercat_model::RobotStateHandle(robot_state_name_, model_.get()));
 
+
+    hardware_interface::ImuSensorHandle::Data data;
+    data.name = "imu";
+    data.frame_id = "rh_palm";
+    double * orientation = new double[4];
+    double * orientation_cv = new double[9];
+    double * av = new double[3];
+    double * av_cv = new double[9];
+    double * la = new double[3];
+    double * la_cv = new double[9];
+
+    for (int i = 0; i < 3; ++i) {
+      orientation[i] = av[i] = la[i] = 0.0;
+    }
+    for (int i = 0; i < 9; ++i) {
+      orientation_cv[i] = av_cv[i] = la_cv[i] = 0.0;
+    }
+
+
+    orientation[3] = 0;
+
+    data.orientation = orientation;
+    data.orientation_covariance = orientation_cv;
+    data.angular_velocity = av;
+    data.angular_velocity_covariance = av_cv;
+    data.linear_acceleration = la;
+    data.linear_acceleration_covariance = la_cv;
+
+    hardware_interface::ImuSensorHandle imu_sh(data);
+
+    imu_sensor_interface_.registerHandle(imu_sh);
+
+    ROS_WARN("here");
+
     registerInterface(&robot_state_interface_);
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
+    registerInterface(&imu_sensor_interface_);
 
     // Start a thread to collect diagnostics. This could actually be inside the EthercatHardware class
     // but until we remove the compatibility mode this will do.
