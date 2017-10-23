@@ -168,6 +168,13 @@ public:
     return joint_states_.count(name) ? &joint_states_[name] : NULL;
   }
 
+  /// Get a joint state by name or NULL on failure
+  ImuState* getImuState(const std::string &name)
+  {
+    return imu_states_.count(name) ? & imu_states_[name] : NULL;
+  }
+
+
   /// return the current time of the control loop
   ros::Time getTime()
   {
