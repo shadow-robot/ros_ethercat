@@ -56,7 +56,7 @@
 #include "ros_ethercat_model/robot_state_interface.hpp"
 #include "ros_ethercat_model/mech_stats_publisher.hpp"
 #include "ros_ethercat_hardware/ethercat_hardware.h"
-
+#include "ros_ethercat_model/imu_state.hpp"
 
 
 /** \brief Contains robot state information and init, read, write function.
@@ -119,6 +119,15 @@ public:
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
       }
     }
+
+    for (ptr_unordered_map<string, ros_ethercat_model::ImuState>::iterator it = model_->imu_states_.begin();
+         it != model_->imu_states_.end(); ++it)
+    {
+      ROS_INFO_STREAM("IMU State Interface for IMU " << it->first);
+      hardware_interface::ImuSensorHandle imu_sh(it->second->data_);
+      imu_sensor_interface_.registerHandle(imu_sh);
+    }
+
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
          ++it)
@@ -147,8 +156,8 @@ public:
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
+    registerInterface(&imu_sensor_interface_);
 
-    ROS_WARN("registered interfaces!!!");
   }
 
   virtual ~RosEthercat()
@@ -245,7 +254,13 @@ public:
       }
     }
 
-
+    for (ptr_unordered_map<string, ros_ethercat_model::ImuState>::iterator it = model_->imu_states_.begin();
+         it != model_->imu_states_.end(); ++it)
+    {
+      ROS_INFO_STREAM("IMU State Interface for IMU " << it->first);
+      hardware_interface::ImuSensorHandle imu_sh(it->second->data_);
+      imu_sensor_interface_.registerHandle(imu_sh);
+    }
 
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
@@ -271,40 +286,6 @@ public:
       mech_stats_publisher_.reset(new MechStatsPublisher(root_nh, *model_));
 
     robot_state_interface_.registerHandle(ros_ethercat_model::RobotStateHandle(robot_state_name_, model_.get()));
-
-
-    hardware_interface::ImuSensorHandle::Data data;
-    data.name = "imu";
-    data.frame_id = "rh_palm";
-    double * orientation = new double[4];
-    double * orientation_cv = new double[9];
-    double * av = new double[3];
-    double * av_cv = new double[9];
-    double * la = new double[3];
-    double * la_cv = new double[9];
-
-    for (int i = 0; i < 3; ++i) {
-      orientation[i] = av[i] = la[i] = 0.0;
-    }
-    for (int i = 0; i < 9; ++i) {
-      orientation_cv[i] = av_cv[i] = la_cv[i] = 0.0;
-    }
-
-
-    orientation[3] = 0;
-
-    data.orientation = orientation;
-    data.orientation_covariance = orientation_cv;
-    data.angular_velocity = av;
-    data.angular_velocity_covariance = av_cv;
-    data.linear_acceleration = la;
-    data.linear_acceleration_covariance = la_cv;
-
-    hardware_interface::ImuSensorHandle imu_sh(data);
-
-    imu_sensor_interface_.registerHandle(imu_sh);
-
-    ROS_WARN("here");
 
     registerInterface(&robot_state_interface_);
     registerInterface(&joint_state_interface_);
@@ -391,7 +372,6 @@ public:
       eh->update(false, true);
     }
   }
-
 
   static const string pid_dir;
   string eth_;

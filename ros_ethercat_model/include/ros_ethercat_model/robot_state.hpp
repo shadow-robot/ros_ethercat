@@ -8,7 +8,7 @@
  *
  *  Copyright (c) 2014, Shadow Robot Company Ltd.
  *  All rights reserved.
- *
+# *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -46,6 +46,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_model/joint.hpp"
+#include "ros_ethercat_model/imu_state.hpp"
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
 #include <map>
@@ -85,11 +86,14 @@ public:
            it != robot_model_.joints_.end();
            ++it)
       {
-	if (use_joint_(it->second->name) && (it->second->type == urdf::Joint::PRISMATIC || it->second->type == urdf::Joint::REVOLUTE))
+	if (use_joint_(it->second->name) && (it->second->type == urdf::Joint::PRISMATIC ||
+                                             it->second->type == urdf::Joint::REVOLUTE))
 	{
           joint_states_[it->first].joint_ = it->second;
 	}
       }
+
+      imu_states_["rh_imu"] = ImuState( "rh_imu", "rh_palm");
 
       for (TiXmlElement *xit = root->FirstChildElement("transmission");
            xit;
@@ -172,9 +176,11 @@ public:
 
   /// The time at which the commands were sent to the hardware
   ros::Time current_time_;
-  
+
   /// The joint states mapped to the joint names
   boost::ptr_unordered_map<std::string, JointState> joint_states_;
+
+  boost::ptr_unordered_map<std::string, ImuState> imu_states_;
 
   /// Custom hardware structures mapped to their names
   boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;
