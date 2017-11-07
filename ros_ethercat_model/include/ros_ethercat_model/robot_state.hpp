@@ -86,14 +86,20 @@ public:
            it != robot_model_.joints_.end();
            ++it)
       {
+
 	if (use_joint_(it->second->name) && (it->second->type == urdf::Joint::PRISMATIC ||
                                              it->second->type == urdf::Joint::REVOLUTE))
 	{
+          // URDF sensor implementation is incomplete, so cant get list of named imus.
+          // find the prefix of the imu from the joint names instead
+          std::string prefix = it->first.substr(0, it->first.find("_"));
+          if (!getImuState(prefix + "_imu"))
+          {
+            imu_states_[prefix + "_imu"] = ImuState(prefix + "_imu", prefix + "_palm");
+          }
           joint_states_[it->first].joint_ = it->second;
-	}
+        }
       }
-
-      imu_states_["rh_imu"] = ImuState( "rh_imu", "rh_palm");
 
       for (TiXmlElement *xit = root->FirstChildElement("transmission");
            xit;
