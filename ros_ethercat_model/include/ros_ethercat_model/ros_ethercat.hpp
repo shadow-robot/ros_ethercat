@@ -50,11 +50,13 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/imu_sensor_interface.h>
 #include <sr_robot_msgs/MechanismStatistics.h>
 #include "ros_ethercat_model/robot_state.hpp"
 #include "ros_ethercat_model/robot_state_interface.hpp"
 #include "ros_ethercat_model/mech_stats_publisher.hpp"
 #include "ros_ethercat_hardware/ethercat_hardware.h"
+#include "ros_ethercat_model/imu_state.hpp"
 
 
 /** \brief Contains robot state information and init, read, write function.
@@ -118,6 +120,14 @@ public:
       }
     }
 
+    for (ptr_unordered_map<string, ros_ethercat_model::ImuState>::iterator it = model_->imu_states_.begin();
+         it != model_->imu_states_.end(); ++it)
+    {
+      ROS_INFO_STREAM("IMU State Interface for IMU " << it->first);
+      hardware_interface::ImuSensorHandle imu_sh(it->second->data_);
+      imu_sensor_interface_.registerHandle(imu_sh);
+    }
+
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
          ++it)
@@ -146,6 +156,8 @@ public:
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
+    registerInterface(&imu_sensor_interface_);
+
   }
 
   virtual ~RosEthercat()
@@ -242,7 +254,13 @@ public:
       }
     }
 
-
+    for (ptr_unordered_map<string, ros_ethercat_model::ImuState>::iterator it = model_->imu_states_.begin();
+         it != model_->imu_states_.end(); ++it)
+    {
+      ROS_INFO_STREAM("IMU State Interface for IMU " << it->first);
+      hardware_interface::ImuSensorHandle imu_sh(it->second->data_);
+      imu_sensor_interface_.registerHandle(imu_sh);
+    }
 
     for (ptr_unordered_map<string, JointState>::iterator it = model_->joint_states_.begin();
          it != model_->joint_states_.end();
@@ -274,6 +292,7 @@ public:
     registerInterface(&joint_position_command_interface_);
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
+    registerInterface(&imu_sensor_interface_);
 
     // Start a thread to collect diagnostics. This could actually be inside the EthercatHardware class
     // but until we remove the compatibility mode this will do.
@@ -354,7 +373,6 @@ public:
     }
   }
 
-
   static const string pid_dir;
   string eth_;
   boost::shared_ptr<ros_ethercat_model::RobotState> model_;
@@ -366,6 +384,9 @@ public:
 
   // joint state interface
   hardware_interface::JointStateInterface joint_state_interface_;
+
+  // imu sensor interface
+  hardware_interface::ImuSensorInterface imu_sensor_interface_;
 
   // joint command interface
   hardware_interface::PositionJointInterface joint_position_command_interface_;

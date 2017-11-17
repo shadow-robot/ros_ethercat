@@ -46,6 +46,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_model/joint.hpp"
+#include "ros_ethercat_model/imu_state.hpp"
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
 #include <map>
@@ -85,10 +86,19 @@ public:
            it != robot_model_.joints_.end();
            ++it)
       {
-	if (use_joint_(it->second->name) && (it->second->type == urdf::Joint::PRISMATIC || it->second->type == urdf::Joint::REVOLUTE))
+
+	if (use_joint_(it->second->name) && (it->second->type == urdf::Joint::PRISMATIC ||
+                                             it->second->type == urdf::Joint::REVOLUTE))
 	{
+          // URDF sensor implementation is incomplete, so cant get list of named imus.
+          // find the prefix of the imu from the joint names instead
+          std::string prefix = it->first.substr(0, it->first.find("_"));
+          if (!getImuState(prefix + "_imu"))
+          {
+            imu_states_[prefix + "_imu"] = ImuState(prefix + "_imu", prefix + "_palm");
+          }
           joint_states_[it->first].joint_ = it->second;
-	}
+        }
       }
 
       for (TiXmlElement *xit = root->FirstChildElement("transmission");
@@ -126,6 +136,7 @@ public:
     {
       ROS_FATAL_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
     }
+
   }
 
   /// Propagate the actuator positions, through the transmissions, to the joint positions
@@ -163,6 +174,13 @@ public:
     return joint_states_.count(name) ? &joint_states_[name] : NULL;
   }
 
+  /// Get a joint state by name or NULL on failure
+  ImuState* getImuState(const std::string &name)
+  {
+    return imu_states_.count(name) ? & imu_states_[name] : NULL;
+  }
+
+
   /// return the current time of the control loop
   ros::Time getTime()
   {
@@ -174,6 +192,8 @@ public:
 
   /// The joint states mapped to the joint names
   boost::ptr_unordered_map<std::string, JointState> joint_states_;
+
+  boost::ptr_unordered_map<std::string, ImuState> imu_states_;
 
   /// Custom hardware structures mapped to their names
   boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;
