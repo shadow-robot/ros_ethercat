@@ -1,7 +1,8 @@
 <launch>
   <!-- load configuration -->
+  <arg name="publish_rate" default='100'/>
   <rosparam command="load" file="$(find ros_ethercat_model)/launch/joint_state_controller.yaml" />
-
+  <param name="joint_state_controller/publish_rate" value="$(arg publish_rate)"/>
   <!-- spawn controller -->
   <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--shutdown-timeout=1.0 joint_state_controller" />
 </launch>
