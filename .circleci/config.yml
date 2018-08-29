@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  build:
+    working_directory: /tmp/repository
+    docker:
+      - image: shadowrobot/build-tools:xenial-kinetic
+        environment:
+          toolset_branch: master
+          server_type: circle
+          ros_release_name: kinetic
+          ubuntu_version_name: xenial
+          used_modules: check_cache,code_style_check
+    steps:
+      - checkout
+      - run: echo 'export remote_shell_script="https://raw.githubusercontent.com/shadow-robot/sr-build-tools/$toolset_branch/bin/sr-run-ci-build.sh"' >> $BASH_ENV
+      - run: wget -O /tmp/oneliner "$( echo "$remote_shell_script" | sed 's/#/%23/g' )"
+      - run: chown -R $MY_USERNAME:$MY_USERNAME $CIRCLE_WORKING_DIRECTORY
+      - run: chmod 755 /tmp/oneliner
+      - run: gosu $MY_USERNAME /tmp/oneliner "$toolset_branch" $server_type $used_modules
+
+      - store_test_results:
+          path: test_results
+
+      - store_artifacts:
+          path: code_coverage_results
