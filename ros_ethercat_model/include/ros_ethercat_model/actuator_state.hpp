@@ -41,7 +41,7 @@
 #define ROS_ETHERCAT_MODEL_IMU_STATE_HPP_
 
 #include <string>
-#include <hardware_interface/imu_sensor_interface.h>
+//#include <hardware_interface/actuator_state_interface.h>
 
 using std::string;
 
@@ -52,9 +52,16 @@ namespace ros_ethercat_model
   {
   public:
     float effort_;
+    float position_;
+    float velocity_;
+    string name_;
+    //ActuatorStateHandle handle_;
 
-    ActuatorState(string name)   {};
-    ImuState(){};
+    ActuatorState(string name)
+    {
+      name_ = name;
+      //handle_ = ActuatorStateHandle(name, position_, velocity_, effort_);
+    };
 
   };
 };
