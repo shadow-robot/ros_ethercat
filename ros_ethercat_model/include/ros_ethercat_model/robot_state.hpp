@@ -183,7 +183,7 @@ public:
 
   ActuatorState* getActuatorState(const std::string &name)
   {
-    return actuator_states_.count(name) ? &actutor_states_[name] : NULL;
+    return actuator_states_.count(name) ? &actuator_states_[name] : NULL;
   }
 
   /// Get a joint state by name or NULL on failure
