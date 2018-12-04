@@ -47,8 +47,6 @@
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/imu_state.hpp"
-#include "ros_ethercat_model/actuator_state.hpp"
-
 
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
@@ -78,9 +76,10 @@ public:
       initXml(root);
   }
 
-  void addActuatorState(string name)
+  ActuatorState* addActuatorState(string name)
   {
-    actuator_states_[name] = ActuatorState();
+    actuator_states_[name] = Actuator().state_;
+    return &actuator_states_[name];
   }
 
   void initXml(TiXmlElement *root)

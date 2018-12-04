@@ -50,6 +50,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/imu_sensor_interface.h>
 #include <sr_robot_msgs/MechanismStatistics.h>
 #include "ros_ethercat_model/robot_state.hpp"
@@ -379,9 +380,13 @@ public:
   ptr_vector<EthercatHardware> ethercat_hardware_;
   boost::scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
 
+  
   // robot state interface
   ros_ethercat_model::RobotStateInterface robot_state_interface_;
 
+  // actuator state interface
+  hardware_interface::ActuatorStateInterface actuator_state_interface_;
+  
   // joint state interface
   hardware_interface::JointStateInterface joint_state_interface_;
 
