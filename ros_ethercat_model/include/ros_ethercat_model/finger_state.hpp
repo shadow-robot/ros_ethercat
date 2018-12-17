@@ -47,7 +47,7 @@
 #include "ros_ethercat_model/hardware_interface.hpp"
 #include <map>
 #include <string>
-
+#include <hardware_interface/internal/hardware_resource_manager.h>
 
 /** \brief This class provides the controllers with an interface to the finger state
  *
@@ -119,6 +119,7 @@ private:
  
 };
 
+  
 class FingerStateInterface : public hardware_interface::HardwareResourceManager<FingerStateHandle> {};
   
 } 
