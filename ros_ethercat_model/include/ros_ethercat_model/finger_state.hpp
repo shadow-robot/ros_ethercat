@@ -48,8 +48,6 @@
 #include <map>
 #include <string>
 
-namespace ros_ethercat_model
-{
 
 /** \brief This class provides the controllers with an interface to the finger state
  *
@@ -61,6 +59,9 @@ namespace ros_ethercat_model
 using std::vector;
 using std::string;
 
+namespace ros_ethercat_model
+{
+  
 class FingerState : public hardware_interface::HardwareInterface
 {
 public:
@@ -96,6 +97,29 @@ private:
 
 };
 
-class FingerStateInterface : public hardware_interface::HardwareResourceManager<FingerState> {};
-}
+//class FingerStateInterface : public hardware_interface::HardwareResourceManager <FingerState> {};
+
+class FingerStateHandle
+{
+public:
+  FingerStateHandle() : name_(), state_(0) {}
+  FingerStateHandle(string name, FingerState* state) : name_(name), state_(state)
+  {
+    if (!state)
+    {
+      throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + name + "'. Finger state data pointer is null.");
+    }
+    
+  }
+  string getName() const {return name_;}
+  FingerState* getState() const {assert(state_); return state_;}
+private:
+  string name_;
+  FingerState* state_;
+ 
+};
+
+class FingerStateInterface : public hardware_interface::HardwareResourceManager<FingerStateHandle> {};
+  
+} 
 #endif
