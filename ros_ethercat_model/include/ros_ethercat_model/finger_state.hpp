@@ -66,8 +66,8 @@ class FingerState : public hardware_interface::HardwareInterface
 {
 public:
   FingerState() : name_() {}
-  FingerState(string name, vector <JointState*> joint_states, vector<ActuatorState*> actuator_states)
-    : name_(name), joint_states_(joint_states), actuator_states_(actuator_states)
+  FingerState(string name, vector <JointState*> joint_states, vector<ActuatorState*> actuator_states, vector<string> joint_names, vector<string> actuator_names)
+    : name_(name), joint_states_(joint_states), actuator_states_(actuator_states), joint_names_(joint_names), actuator_names_(actuator_names)
   {
 
   }
@@ -77,13 +77,15 @@ public:
 
   }
 
-  void addActuatorState(ActuatorState* actuator_state)
+  void addActuatorState(string name, ActuatorState* actuator_state)
   {
+    actuator_names_.push_back(name);
     actuator_states_.push_back(actuator_state);
   }
 
-  void addJointState(JointState* joint_state)
+  void addJointState(string name, JointState* joint_state)
   {
+    joint_names_.push_back(name);
     joint_states_.push_back(joint_state);
   }
 
@@ -91,6 +93,8 @@ public:
 
   vector<JointState*> joint_states_;
   vector<ActuatorState*> actuator_states_;
+  vector<string> joint_names_;
+  vector<string> actuator_names_;
 
 private:
   string name_;
@@ -122,7 +126,7 @@ private:
 };
 
   
-class FingerStateInterface : public HardwareResourceManager<FingerStateHandle> {};
+  class FingerStateInterface : public HardwareResourceManager<ros_ethercat_model::FingerState> {};
   
 } 
 #endif
