@@ -97,30 +97,32 @@ private:
 
 };
 
-//class FingerStateInterface : public hardware_interface::HardwareResourceManager <FingerState> {};
+}
+namespace hardware_interface
+{
 
 class FingerStateHandle
 {
 public:
   FingerStateHandle() : name_(), state_(0) {}
-  FingerStateHandle(string name, FingerState* state) : name_(name), state_(state)
+  FingerStateHandle(string name, ros_ethercat_model::FingerState* state) : name_(name), state_(state)
   {
     if (!state)
     {
-      throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + name + "'. Finger state data pointer is null.");
+      throw HardwareInterfaceException("Cannot create handle '" + name + "'. Finger state data pointer is null.");
     }
     
   }
   string getName() const {return name_;}
-  FingerState* getState() const {assert(state_); return state_;}
+  ros_ethercat_model::FingerState* getState() const {assert(state_); return state_;}
 private:
   string name_;
-  FingerState* state_;
+  ros_ethercat_model::FingerState* state_;
  
 };
 
   
-class FingerStateInterface : public hardware_interface::HardwareResourceManager<FingerStateHandle> {};
+class FingerStateInterface : public HardwareResourceManager<FingerStateHandle> {};
   
 } 
 #endif
