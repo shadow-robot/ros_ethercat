@@ -94,7 +94,7 @@ public:
         joints_.push_back(jnt);
       }
     }
-    ROS_DEBUG("Added %i joints", int(joints_.size()));
+    ROS_DEBUG("Added %i joints", static_cast<int>(joints_.size()));
     return true;
   }
   void getPositions(std::vector<double> &positions)
@@ -113,7 +113,7 @@ public:
   /// gets the joint positions of the chain as any type with size() and []
   template <class Vec> void getPositions(Vec &v)
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       v[i] = joints_[i]->position_;
   }
@@ -140,7 +140,7 @@ public:
   /// gets the joint velocities of the chain as any type with size() and []
   template <class Vec> void getVelocities(Vec &v)
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       v[i] = joints_[i]->velocity_;
   }
@@ -178,7 +178,7 @@ public:
   /// Adds efforts from any type that implements size() and [] lookup.
   template <class Vec> void addEfforts(const Vec& v)
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       joints_[i]->commanded_effort_ += v[i];
   }
@@ -220,9 +220,8 @@ private:
   RobotState *robot_state_;
   KDL::Chain kdl_chain_;
 
-  std::vector< JointState* > joints_; // ONLY joints that can be actuated (not fixed joints)
+  std::vector< JointState* > joints_;  // ONLY joints that can be actuated (not fixed joints)
 };
-
-}
+}  // namespace ros_ethercat_model
 
 #endif

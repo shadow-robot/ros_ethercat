@@ -8,4 +8,3 @@ d = generate_distutils_setup(
 )
 
 setup(**d)
-

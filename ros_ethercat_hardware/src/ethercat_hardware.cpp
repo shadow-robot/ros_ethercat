@@ -33,15 +33,15 @@
  *********************************************************************/
 
 #include "ros_ethercat_hardware/ethercat_hardware.h"
-
 #include <ros_ethercat_eml/ethercat_xenomai_drv.h>
-
+#include <algorithm>
 #include <sstream>
-
+#include <vector>
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
+#include <string>
 
 EthercatHardwareDiagnostics::EthercatHardwareDiagnostics() :
   txandrx_errors_(0),
@@ -260,7 +260,8 @@ void EthercatHardware::init()
   application_layer_ = new EtherCAT_AL(&m_dll_instance_, &m_logic_instance_, &pd_buffer_);
   m_router_ = new EtherCAT_Router(application_layer_, &m_logic_instance_, &m_dll_instance_);
   setRouterToSlaveHandlers();
-  ethercat_master_ = new EtherCAT_Master(application_layer_, m_router_, &pd_buffer_, &m_logic_instance_, &m_dll_instance_);
+  ethercat_master_ = new EtherCAT_Master(application_layer_, m_router_, &pd_buffer_,
+                                         &m_logic_instance_, &m_dll_instance_);
   oob_com_ = new EthercatOobCom(ni_);
 
   int num_ethercat_devices_ = application_layer_->get_num_slaves();
@@ -321,7 +322,7 @@ void EthercatHardware::init()
   }
 
   // Move slave from SAFEOP to OP
-  // TODO : move to OP after initializing slave process data
+  // TODO(maintainer): move to OP after initializing slave process data
 
   BOOST_FOREACH(EtherCAT_SlaveHandler *sh, slave_handles)
   {
@@ -348,7 +349,7 @@ void EthercatHardware::init()
   last_published_ = ros::Time::now();
 
   // Initialize slaves
-  //set<string> actuator_names;
+  // set<string> actuator_names;
   for (unsigned int slave = 0; slave < slaves_.size(); ++slave)
   {
     if (slaves_[slave]->initialize(hw_, allow_unprogrammed_) < 0)
@@ -372,8 +373,8 @@ void EthercatHardware::init()
   { // Initialization is now complete. Reduce timeout of EtherCAT txandrx for better realtime performance
     // Allow timeout to be configured at program load time with rosparam.
     // This will allow tweaks for systems with different realtime performance
-    static const int MAX_TIMEOUT = 100000; // 100ms = 100,000us
-    static const int DEFAULT_TIMEOUT = 20000; // default to timeout to 20000us = 20ms
+    static const int MAX_TIMEOUT = 100000;  // 100ms = 100,000us
+    static const int DEFAULT_TIMEOUT = 20000;  // default to timeout to 20000us = 20ms
     int timeout;
     if (!node_.getParam("realtime_socket_timeout", timeout))
     {
@@ -402,7 +403,7 @@ void EthercatHardware::init()
     // performance glitch in network or OS causes will cause the motors to halt.
     //
     // If number of retries is not specified, use a formula that allows 100ms of dropped packets
-    int max_pd_retries = MAX_TIMEOUT / timeout; // timeout is in nanoseconds : 20msec = 20000usec
+    int max_pd_retries = MAX_TIMEOUT / timeout;  // timeout is in nanoseconds : 20msec = 20000usec
     static const int MAX_RETRIES = 50, MIN_RETRIES = 1;
     node_.getParam("max_pd_retries", max_pd_retries);
     // Make sure motor halt due to dropped packet takes less than 1/10 of a second
@@ -513,12 +514,13 @@ void EthercatHardwareDiagnosticsPublisher::diagnosticsThreadFunc()
 
 void EthercatHardwareDiagnosticsPublisher::timingInformation(diagnostic_updater::DiagnosticStatusWrapper &status,
                                                              const string &key,
-                                                             const accumulator_set<double, stats<tag::max, tag::mean> > &acc,
+                                                             const accumulator_set<double,
+                                                             stats<tag::max, tag::mean> > &acc,
                                                              double max)
 {
-  status.addf(key + " Avg (us)", "%5.4f", extract_result<tag::mean>(acc) * 1e6); // Average over last 1 second
-  status.addf(key + " 1 Sec Max (us)", "%5.4f", extract_result<tag::max>(acc) * 1e6); // Max over last 1 second
-  status.addf(key + " Max (us)", "%5.4f", max * 1e6); // Max since start
+  status.addf(key + " Avg (us)", "%5.4f", extract_result<tag::mean>(acc) * 1e6);  // Average over last 1 second
+  status.addf(key + " 1 Sec Max (us)", "%5.4f", extract_result<tag::max>(acc) * 1e6);  // Max over last 1 second
+  status.addf(key + " Max (us)", "%5.4f", max * 1e6);  // Max since start
 }
 
 void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
@@ -551,11 +553,11 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
     status_.mergeSummary(status_.ERROR, "Error sending proccess data");
   }
 
-  //status_.add("Motors halted", diagnostics_.motors_halted_ ? "true" : "false");
+  // status_.add("Motors halted", diagnostics_.motors_halted_ ? "true" : "false");
   status_.addf("EtherCAT devices (expected)", "%d", num_ethercat_devices_);
   status_.addf("EtherCAT devices (current)", "%d", diagnostics_.device_count_);
   ethernet_interface_info_.publishDiagnostics(status_);
-  //status_.addf("Reset state", "%d", reset_state_);
+  // status_.addf("Reset state", "%d", reset_state_);
 
   status_.addf("Timeout (us)", "%d", timeout_);
   status_.addf("Max PD Retries", "%d", max_pd_retries_);
@@ -587,30 +589,30 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   { // Publish ethercat network interface counters
     const struct netif_counters *c = &diagnostics_.counters_;
     status_.add("Input Thread", (diagnostics_.input_thread_is_stopped_ ? "Stopped" : "Running"));
-    status_.addf("Sent Packets", "%llu", (unsigned long long) c->sent);
-    status_.addf("Received Packets", "%llu", (unsigned long long) c->received);
-    status_.addf("Collected Packets", "%llu", (unsigned long long) c->collected);
-    status_.addf("Dropped Packets", "%llu", (unsigned long long) c->dropped);
-    status_.addf("TX Errors", "%llu", (unsigned long long) c->tx_error);
-    status_.addf("TX Network Down", "%llu", (unsigned long long) c->tx_net_down);
-    status_.addf("TX Would Block", "%llu", (unsigned long long) c->tx_would_block);
-    status_.addf("TX No Buffers", "%llu", (unsigned long long) c->tx_no_bufs);
-    status_.addf("TX Queue Full", "%llu", (unsigned long long) c->tx_full);
-    status_.addf("RX Runt Packet", "%llu", (unsigned long long) c->rx_runt_pkt);
-    status_.addf("RX Not EtherCAT", "%llu", (unsigned long long) c->rx_not_ecat);
-    status_.addf("RX Other EML", "%llu", (unsigned long long) c->rx_other_eml);
-    status_.addf("RX Bad Index", "%llu", (unsigned long long) c->rx_bad_index);
-    status_.addf("RX Bad Sequence", "%llu", (unsigned long long) c->rx_bad_seqnum);
-    status_.addf("RX Duplicate Sequence", "%llu", (unsigned long long) c->rx_dup_seqnum);
-    status_.addf("RX Duplicate Packet", "%llu", (unsigned long long) c->rx_dup_pkt);
-    status_.addf("RX Bad Order", "%llu", (unsigned long long) c->rx_bad_order);
-    status_.addf("RX Late Packet", "%llu", (unsigned long long) c->rx_late_pkt);
-    status_.addf("RX Late Packet RTT", "%llu", (unsigned long long) c->rx_late_pkt_rtt_us);
+    status_.addf("Sent Packets", "%llu", (unsigned long long) c->sent);  // NOLINT
+    status_.addf("Received Packets", "%llu", (unsigned long long) c->received);  // NOLINT
+    status_.addf("Collected Packets", "%llu", (unsigned long long) c->collected);  // NOLINT
+    status_.addf("Dropped Packets", "%llu", (unsigned long long) c->dropped);  // NOLINT
+    status_.addf("TX Errors", "%llu", (unsigned long long) c->tx_error);  // NOLINT
+    status_.addf("TX Network Down", "%llu", (unsigned long long) c->tx_net_down);  // NOLINT
+    status_.addf("TX Would Block", "%llu", (unsigned long long) c->tx_would_block);  // NOLINT
+    status_.addf("TX No Buffers", "%llu", (unsigned long long) c->tx_no_bufs);  // NOLINT
+    status_.addf("TX Queue Full", "%llu", (unsigned long long) c->tx_full);  // NOLINT
+    status_.addf("RX Runt Packet", "%llu", (unsigned long long) c->rx_runt_pkt);  // NOLINT
+    status_.addf("RX Not EtherCAT", "%llu", (unsigned long long) c->rx_not_ecat);  // NOLINT
+    status_.addf("RX Other EML", "%llu", (unsigned long long) c->rx_other_eml);  // NOLINT
+    status_.addf("RX Bad Index", "%llu", (unsigned long long) c->rx_bad_index);  // NOLINT
+    status_.addf("RX Bad Sequence", "%llu", (unsigned long long) c->rx_bad_seqnum);  // NOLINT
+    status_.addf("RX Duplicate Sequence", "%llu", (unsigned long long) c->rx_dup_seqnum);  // NOLINT
+    status_.addf("RX Duplicate Packet", "%llu", (unsigned long long) c->rx_dup_pkt);  // NOLINT
+    status_.addf("RX Bad Order", "%llu", (unsigned long long) c->rx_bad_order);  // NOLINT
+    status_.addf("RX Late Packet", "%llu", (unsigned long long) c->rx_late_pkt);  // NOLINT
+    status_.addf("RX Late Packet RTT", "%llu", (unsigned long long) c->rx_late_pkt_rtt_us);  // NOLINT
 
     double rx_late_pkt_rtt_us_avg = 0.0;
     if (c->rx_late_pkt > 0)
     {
-      rx_late_pkt_rtt_us_avg = ((double) c->rx_late_pkt_rtt_us_sum) / ((double) c->rx_late_pkt);
+      rx_late_pkt_rtt_us_avg = ((static_cast<double>) c->rx_late_pkt_rtt_us_sum) / ((static_cast<double>) c->rx_late_pkt);
     }
     status_.addf("RX Late Packet Avg RTT", "%f", rx_late_pkt_rtt_us_avg);
 
@@ -664,7 +666,7 @@ void EthercatHardware::update(bool reset, bool halt)
 
   // Resetting devices should clear device errors and release devices from halt.
   // To reduce load on power system, release devices from halt, one at a time
-  const unsigned CYCLES_PER_HALT_RELEASE = 2; // Wait two cycles between releasing each device
+  const unsigned CYCLES_PER_HALT_RELEASE = 2;  // Wait two cycles between releasing each device
   if (reset)
   {
     ++diagnostics_.reset_motors_service_count_;
@@ -692,13 +694,13 @@ void EthercatHardware::update(bool reset, bool halt)
   }
 
   // Transmit process data
-  ros::Time txandrx_start_time(ros::Time::now()); // Also end time for pack_command_stage
+  ros::Time txandrx_start_time(ros::Time::now());  // Also end time for pack_command_stage
   diagnostics_.pack_command_acc_((txandrx_start_time - update_start_time).toSec());
 
   // Send/receive device process data
   bool success = txandrx_PD(buffer_size_, this_buffer_, max_pd_retries_);
 
-  ros::Time txandrx_end_time(ros::Time::now()); // Also start unpack_state
+  ros::Time txandrx_end_time(ros::Time::now());  // Also start unpack_state
   diagnostics_.txandrx_acc_((txandrx_end_time - txandrx_start_time).toSec());
 
   if (!success)
@@ -733,7 +735,7 @@ void EthercatHardware::update(bool reset, bool halt)
   ros::Time unpack_end_time;
   if (diagnostics_.collect_extra_timing_)
   {
-    unpack_end_time = ros::Time::now(); // also start of publish time
+    unpack_end_time = ros::Time::now();  // also start of publish time
     diagnostics_.unpack_state_acc_((unpack_end_time - txandrx_end_time).toSec());
   }
 
@@ -794,7 +796,7 @@ void EthercatHardware::publishDiagnostics()
 
   // Grab stats and counters from input thread
   diagnostics_.counters_ = ni_->counters;
-  diagnostics_.input_thread_is_stopped_ = bool(ni_->is_stopped);
+  diagnostics_.input_thread_is_stopped_ = static_cast<bool>(ni_->is_stopped);
 
   diagnostics_.motors_halted_ = halt_motors_;
 
@@ -906,7 +908,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
         ROS_ERROR("  %s", class_name.c_str());
       }
 
-      // TODO, use default plugin for ethercat devices that have no driver.
+      // TODO(maintainer): use default plugin for ethercat devices that have no driver.
       // This way, the EtherCAT chain still works.
     }
   }
@@ -947,8 +949,7 @@ EthercatHardware::configNonEthercatDevice(const std::string &name, const std::st
 class MyXmlRpcValue : public XmlRpc::XmlRpcValue
 {
 public:
-
-  MyXmlRpcValue(XmlRpc::XmlRpcValue &value) :
+  explicit MyXmlRpcValue(XmlRpc::XmlRpcValue &value) :
     XmlRpc::XmlRpcValue(value)
   {
   }
@@ -1037,12 +1038,12 @@ void EthercatHardware::collectDiagnostics()
     uint16_t length = sizeof (p);
 
     // Build read telegram, use slave position
-    APRD_Telegram status(m_logic_instance_.get_idx(), // Index
-                         0, // Slave position on ethercat chain (auto increment address)
-                         0, // ESC physical memory address (start address)
-                         m_logic_instance_.get_wkc(), // Working counter
-                         length, // Data Length,
-                         p); // Buffer to put read result into
+    APRD_Telegram status(m_logic_instance_.get_idx(),  // Index
+                         0,  // Slave position on ethercat chain (auto increment address)
+                         0,  // ESC physical memory address (start address)
+                         m_logic_instance_.get_wkc(),  // Working counter
+                         length,  // Data Length,
+                         p);  // Buffer to put read result into
 
     // Put read telegram in ros_ethercat_eml/ethernet frame
     EC_Ethernet_Frame frame(&status);
@@ -1106,9 +1107,9 @@ bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, u
 bool EthercatHardware::publishTrace(int position, const string &reason, unsigned level,
                                     unsigned delay)
 {
-  if (position >= (int) slaves_.size())
+  if (position >= (static_cast<int>) slaves_.size())
   {
-    ROS_WARN("Invalid device position %d.  Use 0-%d, or -1.", position, int(slaves_.size()) - 1);
+    ROS_WARN("Invalid device position %d.  Use 0-%d, or -1.", position, static_cast<int>(slaves_.size()) - 1);
     return false;
   }
 

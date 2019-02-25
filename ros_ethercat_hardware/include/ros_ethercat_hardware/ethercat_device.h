@@ -32,11 +32,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ETHERCAT_DEVICE_H
-#define ETHERCAT_DEVICE_H
+#ifndef ROS_ETHERCAT_HARDWARE_ETHERCAT_DEVICE_H
+#define ROS_ETHERCAT_HARDWARE_ETHERCAT_DEVICE_H
 
 #include <vector>
-
+#include <string>
 #include <ros_ethercat_eml/ethercat_defs.h>
 #include <ros_ethercat_eml/ethercat_slave_handler.h>
 #include <ros_ethercat_eml/ethercat_device_addressed_telegram.h>
@@ -53,16 +53,16 @@
 
 #include <pluginlib/class_list_macros.h>
 
-using namespace std;
+using namespace std; // no-warning
 
 struct et1x00_error_counters
 {
-
   struct
   {
     uint8_t invalid_frame;
     uint8_t rx_error;
-  } __attribute__((__packed__)) port[4];
+  }
+  __attribute__((__packed__)) port[4];
   uint8_t forwarded_rx_error[4];
   uint8_t epu_error;
   uint8_t pdi_error;
@@ -72,7 +72,8 @@ struct et1x00_error_counters
   bool isGreaterThan(unsigned value) const;
   bool isGreaterThan(const et1x00_error_counters &value) const;
   void zero();
-} __attribute__((__packed__));
+}
+__attribute__((__packed__));
 
 struct et1x00_dl_status
 {
@@ -81,7 +82,8 @@ struct et1x00_dl_status
   bool isClosed(unsigned port);
   bool hasCommunication(unsigned port);
   static const uint16_t BASE_ADDR = 0x110;
-} __attribute__((__packed__));
+}
+__attribute__((__packed__));
 
 struct EthercatPortDiagnostics
 {
@@ -262,4 +264,4 @@ public:
   diagnostic_updater::DiagnosticStatusWrapper diagnostic_status_;
 };
 
-#endif /* ETHERCAT_DEVICE_H */
+#endif // ROS_ETHERCAT_HARDWARE_ETHERCAT_DEVICE_H

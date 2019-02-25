@@ -32,8 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ETHERNET_INTERFACE_INFO_H
-#define ETHERNET_INTERFACE_INFO_H
+#ifndef ROS_ETHERCAT_HARDWARE_ETHERNET_INTERFACE_INFO_H
+#define ROS_ETHERCAT_HARDWARE_ETHERNET_INTERFACE_INFO_H
 
 #include <string>
 #include <stdint.h>
@@ -106,4 +106,4 @@ protected:
   InterfaceState last_state_;
 };
 
-#endif //ETHERNET_INTERFACE_INFO_H
+#endif // ROS_ETHERCAT_HARDWARE_ETHERNET_INTERFACE_INFO_H

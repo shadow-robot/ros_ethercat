@@ -46,13 +46,15 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <numeric>
-
+#include <vector>
+#include <algorithm>
+#include <string>
 #include "ros_ethercat_model/ros_ethercat.hpp"
 #include <controller_manager/controller_manager.h>
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
-using namespace boost::accumulators;
+using namespace boost::accumulators;  // NOLINT
 using boost::ptr_vector;
 using std::string;
 using std::vector;
@@ -67,9 +69,10 @@ static struct
   bool allow_unprogrammed_;
   bool stats_;
   double period;
-} g_options;
+}
+g_options;
 
-string g_robot_desc;
+string g_robot_desc;  // NOLINT
 
 void Usage(const string &msg = "")
 {
@@ -77,7 +80,7 @@ void Usage(const string &msg = "")
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
   fprintf(stderr, "    -p, --period                RT loop period in msec\n");
-  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/realtime\" in seconds\n");
+  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/realtime\" in seconds\n");  // NOLINT
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
   fprintf(stderr, "    -u, --allow_unprogrammed    Allow control loop to run with unprogrammed devices\n");
   fprintf(stderr, "    -h, --help                  Print this message and exit\n");
@@ -112,7 +115,8 @@ static struct
   bool rt_loop_not_making_timing;
   double halt_rt_loop_frequency;
   double rt_loop_frequency;
-} g_stats;
+}
+g_stats;
 
 static void publishDiagnostics(RealtimePublisher<diagnostic_msgs::DiagnosticArray> &publisher)
 {
@@ -194,7 +198,7 @@ static inline double now()
 {
   struct timespec n;
   clock_gettime(CLOCK_MONOTONIC, &n);
-  return double(n.tv_nsec) / SEC_2_NSEC + n.tv_sec;
+  return static_cast<double>(n.tv_nsec) / SEC_2_NSEC + n.tv_sec;
 }
 
 void *diagnosticLoop(void *args)
@@ -227,7 +231,6 @@ static void timespecInc(struct timespec &tick, int nsec)
 class RTLoopHistory
 {
 public:
-
   RTLoopHistory(unsigned length, double default_value) :
     index_(0),
     length_(length),
@@ -243,7 +246,7 @@ public:
 
   double average() const
   {
-    return accumulate(history_.begin(), history_.end(), 0.0) / (double) length_;
+    return accumulate(history_.begin(), history_.end(), 0.0) / (static_cast<double>) length_;
   }
 
 protected:
@@ -261,10 +264,10 @@ static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArra
   publisher->stop();
   delete rtpublisher;
   ros::shutdown();
-  return (void*) - 1;
+  return (void*) - 1;  // NOLINT
 }
 
-void *controlLoop(void *)
+void *controlLoop(void *)  // NOLINT
 {
   double last_published, last_loop_start;
   int policy;
@@ -320,7 +323,7 @@ void *controlLoop(void *)
   // Publish one-time before entering real-time to pre-allocate message vectors
   publishDiagnostics(publisher);
 
-  //Start Non-realtime diagnostic thread
+  // Start Non-realtime diagnostic thread
   static pthread_t diagnosticThread;
   int rv = pthread_create(&diagnosticThread, NULL, diagnosticLoop, &seth.ethercat_hardware_);
   if (rv != 0)
@@ -376,7 +379,7 @@ void *controlLoop(void *)
     if ((start - last_rt_monitor_time) > rt_loop_monitor_period)
     {
       // Calculate new average rt loop frequency
-      double rt_loop_frequency = double(rt_cycle_count) / rt_loop_monitor_period;
+      double rt_loop_frequency = static_cast<double>(rt_cycle_count) / rt_loop_monitor_period;
 
       // Use last X samples of frequency when deciding whether or not to halt
       rt_loop_history.sample(rt_loop_frequency);
@@ -400,11 +403,11 @@ void *controlLoop(void *)
 
     struct timespec before;
     clock_gettime(CLOCK_REALTIME, &before);
-    if ((before.tv_sec + double(before.tv_nsec) / SEC_2_NSEC) > (tick.tv_sec + double(tick.tv_nsec) / SEC_2_NSEC))
+    if ((before.tv_sec + static_cast<double>(before.tv_nsec) / SEC_2_NSEC) > (tick.tv_sec + static_cast<double>(tick.tv_nsec) / SEC_2_NSEC))  // NOLINT
     {
       // Total amount of time the loop took to run
-      g_stats.overrun_loop_sec = (before.tv_sec + double(before.tv_nsec) / SEC_2_NSEC) -
-        (tick.tv_sec + double(tick.tv_nsec) / SEC_2_NSEC);
+      g_stats.overrun_loop_sec = (before.tv_sec + static_cast<double>(before.tv_nsec) / SEC_2_NSEC) -
+        (tick.tv_sec + static_cast<double>(tick.tv_nsec) / SEC_2_NSEC);
 
       // We overran, snap to next "g_options.period"
       tick.tv_sec = before.tv_sec;
@@ -434,7 +437,7 @@ void *controlLoop(void *)
     // Calculate RT loop jitter
     struct timespec after;
     clock_gettime(CLOCK_REALTIME, &after);
-    double jitter = (after.tv_sec - tick.tv_sec + double(after.tv_nsec - tick.tv_nsec) / SEC_2_NSEC);
+    double jitter = (after.tv_sec - tick.tv_sec + static_cast<double>(after.tv_nsec - tick.tv_nsec) / SEC_2_NSEC);
 
     g_stats.jitter_acc(jitter);
 
@@ -557,7 +560,7 @@ static int setupPidFile(const char* interface)
 
   /* We do NOT close fd, since we want to keep the lock. */
   fflush(fp);
-  fcntl(fd, F_SETFD, (long) 1);
+  fcntl(fd, F_SETFD, (long) 1);  // NOLINT
 
   return 0;
 }
@@ -589,11 +592,12 @@ int main(int argc, char *argv[])
   // Parse options
   g_options.program_ = argv[0];
   g_options.rosparam_ = NULL;
-  g_options.period = 1e+6; // 1 ms in nanoseconds
+  g_options.period = 1e+6;  // 1 ms in nanoseconds
 
   while (true)
   {
-    static struct option long_options[] = {
+    static struct option long_options[] =
+    {
       {"help", no_argument, 0, 'h'},
       {"stats", no_argument, 0, 's'},
       {"allow_unprogrammed", no_argument, 0, 'u'},
@@ -648,7 +652,7 @@ int main(int argc, char *argv[])
   signal(SIGINT, quitRequested);
   signal(SIGHUP, quitRequested);
 
-  //Start thread
+  // Start thread
   int rv = pthread_create(&controlThread, &controlThreadAttr, controlLoop, 0);
   if (rv != 0)
   {
@@ -657,7 +661,7 @@ int main(int argc, char *argv[])
   }
 
   ros::spin();
-  pthread_join(controlThread, (void **) &rv);
+  pthread_join(controlThread, (void **) &rv);  // NOLINT
 
   // Cleanup pid files
   cleanupPidFile(NULL);

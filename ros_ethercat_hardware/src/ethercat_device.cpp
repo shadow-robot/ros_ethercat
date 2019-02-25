@@ -35,7 +35,7 @@
 #include "ros_ethercat_hardware/ethercat_device.h"
 
 #include <tinyxml.h>
-
+#include <vector>
 #include <iomanip>
 
 bool et1x00_error_counters::isGreaterThan(unsigned value) const
@@ -187,12 +187,12 @@ void EthercatDeviceDiagnostics::collect(EthercatCom *com, EtherCAT_SlaveHandler 
     // Use positional read to re-count number of devices on chain
     unsigned char buf[1];
     uint16_t address = 0x0000;
-    APRD_Telegram aprd_telegram(logic->get_idx(), // Index
-                                0, // Slave position on ethercat chain (auto increment address) (
-                                address, // ESC physical memory address (start address)
-                                logic->get_wkc(), // Working counter
-                                sizeof (buf), // Data Length,
-                                buf); // Buffer to put read result into
+    APRD_Telegram aprd_telegram(logic->get_idx(),  // Index
+                                0,  // Slave position on ethercat chain (auto increment address) (
+                                address,  // ESC physical memory address (start address)
+                                logic->get_wkc(),  // Working counter
+                                sizeof (buf),  // Data Length,
+                                buf);  // Buffer to put read result into
 
 
 
@@ -373,7 +373,7 @@ EthercatDevice::EthercatDevice() : use_ros_(true)
   if (error != 0)
   {
     ROS_FATAL("Initializing indexLock failed : %s", strerror(error));
-    sleep(1); // wait for ros to flush rosconsole output
+    sleep(1);  // wait for ros to flush rosconsole output
     exit(EXIT_FAILURE);
   }
 
@@ -381,7 +381,7 @@ EthercatDevice::EthercatDevice() : use_ros_(true)
   if (error != 0)
   {
     ROS_FATAL("Initializing diagnositcsLock failed : %s", strerror(error));
-    sleep(1); // wait for ros to flush rosconsole output
+    sleep(1);  // wait for ros to flush rosconsole output
     exit(EXIT_FAILURE);
   }
 }
@@ -414,7 +414,8 @@ void EthercatDevice::collectDiagnostics(EthercatCom *com)
   pthread_mutex_unlock(&diagnosticsLock_);
 }
 
-int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
+int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address,
+                                  void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *) buffer;
   EC_Logic *logic = sh->m_logic_instance;
@@ -426,12 +427,12 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, u
                               length,
                               p);
 
-  APRW_Telegram aprw_telegram(logic->get_idx(), // Index
-                              -sh->get_ring_position(), // Slave position on ethercat chain (auto increment address) (
-                              address, // ESC physical memory address (start address)
-                              logic->get_wkc(), // Working counter
-                              length, // Data Length,
-                              p); // Buffer to put read result into
+  APRW_Telegram aprw_telegram(logic->get_idx(),  // Index
+                              -sh->get_ring_position(),  // Slave position on ethercat chain (auto increment address) (
+                              address,  // ESC physical memory address (start address)
+                              logic->get_wkc(),  // Working counter
+                              length,  // Data Length,
+                              p);  // Buffer to put read result into
 
   // Put read telegram in ros_ethercat_eml/ethernet frame
   EC_Telegram * telegram = NULL;
@@ -467,7 +468,8 @@ int EthercatDevice::readWriteData(EthercatCom *com, EtherCAT_SlaveHandler *sh, u
   return 0;
 }
 
-int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void* buffer, uint16_t length, AddrMode addrMode)
+int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address,
+                             void* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char *p = (unsigned char *) buffer;
   EC_Logic *logic = sh->m_logic_instance;
@@ -479,12 +481,12 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16
                               length,
                               p);
 
-  APRD_Telegram aprd_telegram(logic->get_idx(), // Index
-                              -sh->get_ring_position(), // Slave position on ethercat chain (auto increment address) (
-                              address, // ESC physical memory address (start address)
-                              logic->get_wkc(), // Working counter
-                              length, // Data Length,
-                              p); // Buffer to put read result into
+  APRD_Telegram aprd_telegram(logic->get_idx(),  // Index
+                              -sh->get_ring_position(),  // Slave position on ethercat chain (auto increment address) (
+                              address,  // ESC physical memory address (start address)
+                              logic->get_wkc(),  // Working counter
+                              length,  // Data Length,
+                              p);  // Buffer to put read result into
 
   // Put read telegram in ros_ethercat_eml/ethernet frame
   EC_Telegram * telegram = NULL;
@@ -520,7 +522,8 @@ int EthercatDevice::readData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16
   return 0;
 }
 
-int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address, void const* buffer, uint16_t length, AddrMode addrMode)
+int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint16_t address,
+                              void const* buffer, uint16_t length, AddrMode addrMode)
 {
   unsigned char const *p = (unsigned char const*) buffer;
   EC_Logic *logic = sh->m_logic_instance;
@@ -532,12 +535,12 @@ int EthercatDevice::writeData(EthercatCom *com, EtherCAT_SlaveHandler *sh, uint1
                               length,
                               p);
 
-  APWR_Telegram apwr_telegram(logic->get_idx(), // Index
-                              -sh->get_ring_position(), // Slave position on ethercat chain (auto increment address) (
-                              address, // ESC physical memory address (start address)
-                              logic->get_wkc(), // Working counter
-                              length, // Data Length,
-                              p); // Buffer to put read result into
+  APWR_Telegram apwr_telegram(logic->get_idx(),  // Index
+                              -sh->get_ring_position(),  // Slave position on ethercat chain (auto increment address) (
+                              address,  // ESC physical memory address (start address)
+                              logic->get_wkc(),  // Working counter
+                              length,  // Data Length,
+                              p);  // Buffer to put read result into
 
   // Put read telegram in ros_ethercat_eml/ethernet frame
   EC_Telegram * telegram = NULL;
@@ -609,7 +612,7 @@ void EthercatDevice::diagnostics(diagnostic_updater::DiagnosticStatusWrapper &d,
   d.addf("Serial", "%08x", sh_->get_serial());
   d.addf("Revision", "%08x", sh_->get_revision());
 
-  this->ethercatDiagnostics(d, 4); //assume unknown device has 4 ports
+  this->ethercatDiagnostics(d, 4);  // assume unknown device has 4 ports
 }
 
 void EthercatDevice::multiDiagnostics(vector<diagnostic_msgs::DiagnosticStatus> &vec, unsigned char *buffer)

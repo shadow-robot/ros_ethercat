@@ -1,9 +1,44 @@
+/*********************************************************************
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2008, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the Willow Garage nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
+
 #include "ros_ethercat_hardware/ethernet_interface_info.h"
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <string>
 
 EthtoolStats::EthtoolStats() :
   rx_errors_(0),
@@ -11,7 +46,7 @@ EthtoolStats::EthtoolStats() :
   rx_frame_errors_(0),
   rx_align_errors_(0)
 {
-  //empty
+  // empty
 }
 
 EthtoolStats& EthtoolStats::operator-=(const EthtoolStats& right)
@@ -81,7 +116,7 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
   unsigned strings_len = sizeof (ethtool_gstrings) + n_stats_ * ETH_GSTRING_LEN;
   char *strings_buf = new char[strings_len];
   memset(strings_buf, 0, strings_len);
-  ethtool_gstrings* strings = (ethtool_gstrings*) strings_buf;
+  ethtool_gstrings* strings = (ethtool_gstrings*) strings_buf;  // NOLINT
 
   strings->cmd = ETHTOOL_GSTRINGS;
   strings->string_set = ETH_SS_STATS;
@@ -150,8 +185,8 @@ bool EthernetInterfaceInfo::getInterfaceState(InterfaceState &state)
     return false;
   }
 
-  state.up_ = bool(ifr.ifr_flags & IFF_UP);
-  state.running_ = bool(ifr.ifr_flags & IFF_RUNNING);
+  state.up_ = static_cast<bool>(ifr.ifr_flags & IFF_UP);
+  state.running_ = static_cast<bool>(ifr.ifr_flags & IFF_RUNNING);
   return true;
 }
 
@@ -198,7 +233,7 @@ void EthernetInterfaceInfo::publishDiagnostics(diagnostic_updater::DiagnosticSta
 {
   d.add("Interface", interface_);
 
-  // TODO : collect and publish information on whether interface is up/running
+  // TODO(maintainer): collect and publish information on whether interface is up/running
   InterfaceState state;
   if (getInterfaceState(state))
   {
@@ -228,7 +263,7 @@ void EthernetInterfaceInfo::publishDiagnostics(diagnostic_updater::DiagnosticSta
 
   EthtoolStats stats;
   bool have_stats = getEthtoolStats(stats);
-  stats -= orig_stats_; //subtract off orignal counter values
+  stats -= orig_stats_;  // subtract off orignal counter values
 
   if (have_stats && (rx_error_index_ >= 0))
     d.addf("RX Errors", "%llu", stats.rx_errors_);
@@ -249,5 +284,4 @@ void EthernetInterfaceInfo::publishDiagnostics(diagnostic_updater::DiagnosticSta
     d.addf("RX Align Errors", "%llu", stats.rx_align_errors_);
   else
     d.add("RX Align Errors", "N/A");
-
 }
