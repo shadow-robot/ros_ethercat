@@ -22,7 +22,6 @@ trunks:
           toolset:
             modules:
               - code_style_check
-              - check_license
       - name: install_check
         settings:
           toolset:
