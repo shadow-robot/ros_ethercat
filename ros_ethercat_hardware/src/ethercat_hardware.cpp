@@ -612,7 +612,7 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
     double rx_late_pkt_rtt_us_avg = 0.0;
     if (c->rx_late_pkt > 0)
     {
-      rx_late_pkt_rtt_us_avg = ((static_cast<double>) c->rx_late_pkt_rtt_us_sum) / ((static_cast<double>) c->rx_late_pkt);  //NOLINT
+      rx_late_pkt_rtt_us_avg = ((double) c->rx_late_pkt_rtt_us_sum) / ((double) c->rx_late_pkt);  //NOLINT
     }
     status_.addf("RX Late Packet Avg RTT", "%f", rx_late_pkt_rtt_us_avg);
 
@@ -1107,7 +1107,7 @@ bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, u
 bool EthercatHardware::publishTrace(int position, const string &reason, unsigned level,
                                     unsigned delay)
 {
-  if (position >= (static_cast<int>) slaves_.size())
+  if (position >= (int) slaves_.size())  //NOLINT
   {
     ROS_WARN("Invalid device position %d.  Use 0-%d, or -1.", position, static_cast<int>(slaves_.size()) - 1);
     return false;
