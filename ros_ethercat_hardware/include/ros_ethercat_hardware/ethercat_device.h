@@ -53,7 +53,7 @@
 
 #include <pluginlib/class_list_macros.h>
 
-using namespace std; // no-warning
+using namespace std;  // NOLINT
 
 struct et1x00_error_counters
 {
@@ -264,4 +264,4 @@ public:
   diagnostic_updater::DiagnosticStatusWrapper diagnostic_status_;
 };
 
-#endif // ROS_ETHERCAT_HARDWARE_ETHERCAT_DEVICE_H
+#endif  // ROS_ETHERCAT_HARDWARE_ETHERCAT_DEVICE_H

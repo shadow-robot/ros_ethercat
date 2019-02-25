@@ -39,6 +39,8 @@
 #include <kdl/jntarrayacc.hpp>
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
+#include <string>
+#include <vector>
 
 namespace ros_ethercat_model
 {

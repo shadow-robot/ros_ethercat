@@ -64,7 +64,7 @@
 #include <string>
 #include <boost/regex.hpp>
 
-using namespace boost::accumulators;  // no-warning
+using namespace boost::accumulators;  // NOLINT
 
 struct EthercatHardwareDiagnostics
 {
@@ -322,4 +322,4 @@ private:
   int start_address_;
 };
 
-#endif // ROS_ETHERCAT_HARDWARE_ETHERCAT_HARDWARE_H
+#endif  // ROS_ETHERCAT_HARDWARE_ETHERCAT_HARDWARE_H

@@ -99,4 +99,4 @@ protected:
   unsigned line_;
 };
 
-#endif // ROS_ETHERCAT_HARDWARE_ETHERCAT_COM_H
+#endif  // ROS_ETHERCAT_HARDWARE_ETHERCAT_COM_H

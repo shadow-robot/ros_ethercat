@@ -612,7 +612,7 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
     double rx_late_pkt_rtt_us_avg = 0.0;
     if (c->rx_late_pkt > 0)
     {
-      rx_late_pkt_rtt_us_avg = ((static_cast<double>) c->rx_late_pkt_rtt_us_sum) / ((static_cast<double>) c->rx_late_pkt);
+      rx_late_pkt_rtt_us_avg = ((static_cast<double>) c->rx_late_pkt_rtt_us_sum) / ((static_cast<double>) c->rx_late_pkt);  //NOLINT
     }
     status_.addf("RX Late Packet Avg RTT", "%f", rx_late_pkt_rtt_us_avg);
 

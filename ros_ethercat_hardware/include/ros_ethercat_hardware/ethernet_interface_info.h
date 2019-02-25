@@ -106,4 +106,4 @@ protected:
   InterfaceState last_state_;
 };
 
-#endif // ROS_ETHERCAT_HARDWARE_ETHERNET_INTERFACE_INFO_H
+#endif  // ROS_ETHERCAT_HARDWARE_ETHERNET_INTERFACE_INFO_H

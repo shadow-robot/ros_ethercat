@@ -70,7 +70,7 @@ public:
     data_.linear_acceleration = linear_acceleration_;
     data_.linear_acceleration_covariance = linear_acceleration_covariance_;
   };
-  ImuState(){};
+  ImuState(){}
 };
 };  // namespace ros_ethercat_model
 
