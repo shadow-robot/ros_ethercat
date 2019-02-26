@@ -72,7 +72,7 @@ static struct
 }
 g_options;
 
-string g_robot_desc;  // NOLINT
+string g_robot_desc;  // NOLINT(runtime/string)
 
 void Usage(const string &msg = "")
 {
@@ -264,10 +264,10 @@ static void* terminate_control(RealtimePublisher<diagnostic_msgs::DiagnosticArra
   publisher->stop();
   delete rtpublisher;
   ros::shutdown();
-  return (void*) - 1;  // NOLINT
+  return (void*) - 1;  // NOLINT(readability/casting)
 }
 
-void *controlLoop(void *)  // NOLINT
+void *controlLoop(void *)  // NOLINT(readability/casting)
 {
   double last_published, last_loop_start;
   int policy;
@@ -661,7 +661,7 @@ int main(int argc, char *argv[])
   }
 
   ros::spin();
-  pthread_join(controlThread, (void **) &rv);  // NOLINT
+  pthread_join(controlThread, (void **) &rv);  // NOLINT(readability/casting)
 
   // Cleanup pid files
   cleanupPidFile(NULL);
