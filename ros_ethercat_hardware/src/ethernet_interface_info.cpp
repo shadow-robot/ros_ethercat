@@ -116,7 +116,7 @@ void EthernetInterfaceInfo::initialize(const std::string &interface)
   unsigned strings_len = sizeof (ethtool_gstrings) + n_stats_ * ETH_GSTRING_LEN;
   char *strings_buf = new char[strings_len];
   memset(strings_buf, 0, strings_len);
-  ethtool_gstrings* strings = (ethtool_gstrings*) strings_buf;  // NOLINT
+  ethtool_gstrings* strings = (ethtool_gstrings*) strings_buf;  // NOLINT(readability/casting)
 
   strings->cmd = ETHTOOL_GSTRINGS;
   strings->string_set = ETH_SS_STATS;
