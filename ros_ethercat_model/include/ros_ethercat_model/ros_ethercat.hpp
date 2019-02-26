@@ -115,7 +115,7 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(readability/nolint)
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(whitespace/line_length)
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
@@ -141,9 +141,9 @@ public:
       joint_state_interface_.registerHandle(jsh);
 
       joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_position_));  // NOLINT(readability/nolint)
+                                                                                       & it->second->commanded_position_));  // NOLINT(whitespace/line_length)
       joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_velocity_));  // NOLINT(readability/nolint)
+                                                                                       & it->second->commanded_velocity_));  // NOLINT(whitespace/line_length)
       joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
                                                                                      & it->second->commanded_effort_));
     }
@@ -207,7 +207,7 @@ public:
     {
       if (!root_nh.getParam(robot_description_param, robot_description))
       {
-        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());  // NOLINT(readability/nolint)
+        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());  // NOLINT(whitespace/line_length)
         return false;
       }
       xml.Parse(robot_description.c_str());
@@ -248,7 +248,7 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(readability/nolint)
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(whitespace/line_length)
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);

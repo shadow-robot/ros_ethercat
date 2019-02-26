@@ -80,7 +80,7 @@ void Usage(const string &msg = "")
   fprintf(stderr, "  Available options\n");
   fprintf(stderr, "    -i, --interface <interface> Connect to EtherCAT devices on this interface\n");
   fprintf(stderr, "    -p, --period                RT loop period in msec\n");
-  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/realtime\" in seconds\n");  // NOLINT(readability/nolint)
+  fprintf(stderr, "    -s, --stats                 Publish statistics on the RT loop jitter on \"ros_ros_ethercat_eml/realtime\" in seconds\n");  // NOLINT(whitespace/line_length)
   fprintf(stderr, "    -r, --rosparam <param>      Load the robot description from this parameter name\n");
   fprintf(stderr, "    -u, --allow_unprogrammed    Allow control loop to run with unprogrammed devices\n");
   fprintf(stderr, "    -h, --help                  Print this message and exit\n");
@@ -246,7 +246,7 @@ public:
 
   double average() const
   {
-    return accumulate(history_.begin(), history_.end(), 0.0) / (double) length_;  // NOLINT(runtime/int)
+    return accumulate(history_.begin(), history_.end(), 0.0) / (double) length_;  // NOLINT(whitespace/line_length)
   }
 
 protected:
@@ -403,7 +403,7 @@ void *controlLoop(void *)  // NOLINT
 
     struct timespec before;
     clock_gettime(CLOCK_REALTIME, &before);
-    if ((before.tv_sec + static_cast<double>(before.tv_nsec) / SEC_2_NSEC) > (tick.tv_sec + static_cast<double>(tick.tv_nsec) / SEC_2_NSEC))  // NOLINT(readability/nolint)
+    if ((before.tv_sec + static_cast<double>(before.tv_nsec) / SEC_2_NSEC) > (tick.tv_sec + static_cast<double>(tick.tv_nsec) / SEC_2_NSEC))  // NOLINT(whitespace/line_length)
     {
       // Total amount of time the loop took to run
       g_stats.overrun_loop_sec = (before.tv_sec + static_cast<double>(before.tv_nsec) / SEC_2_NSEC) -
