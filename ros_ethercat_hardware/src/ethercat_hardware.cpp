@@ -589,30 +589,30 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   { // Publish ethercat network interface counters
     const struct netif_counters *c = &diagnostics_.counters_;
     status_.add("Input Thread", (diagnostics_.input_thread_is_stopped_ ? "Stopped" : "Running"));
-    status_.addf("Sent Packets", "%llu", (unsigned long long) c->sent);  // NOLINT
-    status_.addf("Received Packets", "%llu", (unsigned long long) c->received);  // NOLINT
-    status_.addf("Collected Packets", "%llu", (unsigned long long) c->collected);  // NOLINT
-    status_.addf("Dropped Packets", "%llu", (unsigned long long) c->dropped);  // NOLINT
-    status_.addf("TX Errors", "%llu", (unsigned long long) c->tx_error);  // NOLINT
-    status_.addf("TX Network Down", "%llu", (unsigned long long) c->tx_net_down);  // NOLINT
-    status_.addf("TX Would Block", "%llu", (unsigned long long) c->tx_would_block);  // NOLINT
-    status_.addf("TX No Buffers", "%llu", (unsigned long long) c->tx_no_bufs);  // NOLINT
-    status_.addf("TX Queue Full", "%llu", (unsigned long long) c->tx_full);  // NOLINT
-    status_.addf("RX Runt Packet", "%llu", (unsigned long long) c->rx_runt_pkt);  // NOLINT
-    status_.addf("RX Not EtherCAT", "%llu", (unsigned long long) c->rx_not_ecat);  // NOLINT
-    status_.addf("RX Other EML", "%llu", (unsigned long long) c->rx_other_eml);  // NOLINT
-    status_.addf("RX Bad Index", "%llu", (unsigned long long) c->rx_bad_index);  // NOLINT
-    status_.addf("RX Bad Sequence", "%llu", (unsigned long long) c->rx_bad_seqnum);  // NOLINT
-    status_.addf("RX Duplicate Sequence", "%llu", (unsigned long long) c->rx_dup_seqnum);  // NOLINT
-    status_.addf("RX Duplicate Packet", "%llu", (unsigned long long) c->rx_dup_pkt);  // NOLINT
-    status_.addf("RX Bad Order", "%llu", (unsigned long long) c->rx_bad_order);  // NOLINT
-    status_.addf("RX Late Packet", "%llu", (unsigned long long) c->rx_late_pkt);  // NOLINT
-    status_.addf("RX Late Packet RTT", "%llu", (unsigned long long) c->rx_late_pkt_rtt_us);  // NOLINT
+    status_.addf("Sent Packets", "%llu", (unsigned long long) c->sent);  // NOLINT(runtime/int)
+    status_.addf("Received Packets", "%llu", (unsigned long long) c->received);  // NOLINT(runtime/int)
+    status_.addf("Collected Packets", "%llu", (unsigned long long) c->collected);  // NOLINT(runtime/int)
+    status_.addf("Dropped Packets", "%llu", (unsigned long long) c->dropped);  // NOLINT(runtime/int)
+    status_.addf("TX Errors", "%llu", (unsigned long long) c->tx_error);  // NOLINT(runtime/int)
+    status_.addf("TX Network Down", "%llu", (unsigned long long) c->tx_net_down);  // NOLINT(runtime/int)
+    status_.addf("TX Would Block", "%llu", (unsigned long long) c->tx_would_block);  // NOLINT(runtime/int)
+    status_.addf("TX No Buffers", "%llu", (unsigned long long) c->tx_no_bufs);  // NOLINT(runtime/int)
+    status_.addf("TX Queue Full", "%llu", (unsigned long long) c->tx_full);  // NOLINT(runtime/int)
+    status_.addf("RX Runt Packet", "%llu", (unsigned long long) c->rx_runt_pkt);  // NOLINT(runtime/int)
+    status_.addf("RX Not EtherCAT", "%llu", (unsigned long long) c->rx_not_ecat);  // NOLINT(runtime/int)
+    status_.addf("RX Other EML", "%llu", (unsigned long long) c->rx_other_eml);  // NOLINT(runtime/int)
+    status_.addf("RX Bad Index", "%llu", (unsigned long long) c->rx_bad_index);  // NOLINT(runtime/int)
+    status_.addf("RX Bad Sequence", "%llu", (unsigned long long) c->rx_bad_seqnum);  // NOLINT(runtime/int)
+    status_.addf("RX Duplicate Sequence", "%llu", (unsigned long long) c->rx_dup_seqnum);  // NOLINT(runtime/int)
+    status_.addf("RX Duplicate Packet", "%llu", (unsigned long long) c->rx_dup_pkt);  // NOLINT(runtime/int)
+    status_.addf("RX Bad Order", "%llu", (unsigned long long) c->rx_bad_order);  // NOLINT(runtime/int)
+    status_.addf("RX Late Packet", "%llu", (unsigned long long) c->rx_late_pkt);  // NOLINT(runtime/int)
+    status_.addf("RX Late Packet RTT", "%llu", (unsigned long long) c->rx_late_pkt_rtt_us);  // NOLINT(runtime/int)
 
     double rx_late_pkt_rtt_us_avg = 0.0;
     if (c->rx_late_pkt > 0)
     {
-      rx_late_pkt_rtt_us_avg = ((double) c->rx_late_pkt_rtt_us_sum) / ((double) c->rx_late_pkt);  //NOLINT
+      rx_late_pkt_rtt_us_avg = ((double) c->rx_late_pkt_rtt_us_sum) / ((double) c->rx_late_pkt);  // NOLINT(runtime/int)
     }
     status_.addf("RX Late Packet Avg RTT", "%f", rx_late_pkt_rtt_us_avg);
 
@@ -1107,7 +1107,7 @@ bool EthercatHardware::txandrx_PD(unsigned buffer_size, unsigned char* buffer, u
 bool EthercatHardware::publishTrace(int position, const string &reason, unsigned level,
                                     unsigned delay)
 {
-  if (position >= (int) slaves_.size())  //NOLINT
+  if (position >= (int) slaves_.size())  // NOLINT(runtime/int)
   {
     ROS_WARN("Invalid device position %d.  Use 0-%d, or -1.", position, static_cast<int>(slaves_.size()) - 1);
     return false;

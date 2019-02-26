@@ -88,7 +88,7 @@ using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
 using ros_ethercat_model::CustomHW;
 
-static const string name = "ros_ethercat";  //NOLINT
+static const string name = "ros_ethercat";  // NOLINT
 
 class RosEthercat : public hardware_interface::RobotHW
 {
@@ -115,7 +115,7 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  //NOLINT
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(readability/nolint)
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
@@ -141,9 +141,9 @@ public:
       joint_state_interface_.registerHandle(jsh);
 
       joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_position_));  //NOLINT
+                                                                                       & it->second->commanded_position_));  // NOLINT(readability/nolint)
       joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_velocity_));  //NOLINT
+                                                                                       & it->second->commanded_velocity_));  // NOLINT(readability/nolint)
       joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
                                                                                      & it->second->commanded_effort_));
     }
@@ -207,7 +207,7 @@ public:
     {
       if (!root_nh.getParam(robot_description_param, robot_description))
       {
-        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());  //NOLINT
+        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());  // NOLINT(readability/nolint)
         return false;
       }
       xml.Parse(robot_description.c_str());
@@ -248,7 +248,7 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  //NOLINT
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(readability/nolint)
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
@@ -489,7 +489,7 @@ protected:
 
     /* We do NOT close fd, since we want to keep the lock. */
     fflush(fp);
-    fcntl(fd, F_SETFD, (long) 1);  //NOLINT
+    fcntl(fd, F_SETFD, (long) 1);  // NOLINT(runtime/int)
 
     return 0;
   }
@@ -534,6 +534,6 @@ protected:
   std::string robot_state_name_;
 };
 
-const string RosEthercat::pid_dir = "/var/tmp/run/";  //NOLINT
+const string RosEthercat::pid_dir = "/var/tmp/run/";  // NOLINT
 
 #endif

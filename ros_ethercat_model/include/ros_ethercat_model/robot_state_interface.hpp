@@ -62,7 +62,7 @@ public:
   {
     if (!state)
     {
-      throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + name + "'. RobtState data pointer is null.");  // NOLINT
+      throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + name + "'. RobtState data pointer is null.");  // NOLINT(readability/nolint)
     }
   }
 
