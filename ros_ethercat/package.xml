@@ -5,7 +5,6 @@
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>BSD</license>
-  <license>GPL</license>
   
   <url type="website">http://ros.org/wiki/ros_ethercat</url>
   <url type="repository">https://github.com/shadow-robot/ros_ethercat</url>
