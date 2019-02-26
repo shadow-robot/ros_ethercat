@@ -88,7 +88,7 @@ using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
 using ros_ethercat_model::CustomHW;
 
-static const string name = "ros_ethercat";  // NOLINT(readability/casting)
+static const string name = "ros_ethercat";  // NOLINT(runtime/string)
 
 class RosEthercat : public hardware_interface::RobotHW
 {
@@ -534,6 +534,6 @@ protected:
   std::string robot_state_name_;
 };
 
-const string RosEthercat::pid_dir = "/var/tmp/run/";  // NOLINT(readability/casting)
+const string RosEthercat::pid_dir = "/var/tmp/run/";  // NOLINT(runtime/string)
 
 #endif
