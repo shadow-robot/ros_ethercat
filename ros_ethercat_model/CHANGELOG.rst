@@ -2,6 +2,10 @@
 Changelog for package ros_ethercat_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.1 (2019-02-26)
+------------------
+* ros_ethercat_eml moved out of this repository
+
 0.3.0 (2015-07-20)
 ------------------
 * checking type as an element as well as attribute, for new transmission style
