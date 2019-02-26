@@ -54,7 +54,7 @@
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
-using namespace boost::accumulators;  // NOLINT
+using namespace boost::accumulators;  // NOLINT(build/namespaces)
 using boost::ptr_vector;
 using std::string;
 using std::vector;
