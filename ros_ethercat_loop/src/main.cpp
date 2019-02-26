@@ -246,7 +246,7 @@ public:
 
   double average() const
   {
-    return accumulate(history_.begin(), history_.end(), 0.0) / (double) length_;  // NOLINT(whitespace/line_length)
+    return accumulate(history_.begin(), history_.end(), 0.0) / (double) length_;  // NOLINT(readability/casting)
   }
 
 protected:
