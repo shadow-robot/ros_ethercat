@@ -32,8 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ETHERCAT_COM_H
-#define ETHERCAT_COM_H
+#ifndef ROS_ETHERCAT_HARDWARE_ETHERCAT_COM_H
+#define ROS_ETHERCAT_HARDWARE_ETHERCAT_COM_H
 
 #include <ros_ethercat_eml/ethercat_AL.h>
 #include <ros_ethercat_eml/ethercat_master.h>
@@ -59,7 +59,7 @@ public:
 class EthercatDirectCom : public EthercatCom
 {
 public:
-  EthercatDirectCom(EtherCAT_DataLinkLayer *dll) : dll_(dll)
+  explicit EthercatDirectCom(EtherCAT_DataLinkLayer *dll) : dll_(dll)
   {
   }
 
@@ -73,7 +73,7 @@ protected:
 class EthercatOobCom : public EthercatCom
 {
 public:
-  EthercatOobCom(struct netif *ni);
+  explicit EthercatOobCom(struct netif *ni);
 
   bool txandrx(struct EtherCAT_Frame * frame);
   bool txandrx_once(struct EtherCAT_Frame * frame);
@@ -92,10 +92,11 @@ protected:
   enum
   {
     IDLE = 0, READY_TO_SEND = 1, WAITING_TO_RECV = 2
-  } state_;
+  }
+  state_;
   EtherCAT_Frame *frame_;
   int handle_;
   unsigned line_;
 };
 
-#endif /* ETHERCAT_COM_H */
+#endif  // ROS_ETHERCAT_HARDWARE_ETHERCAT_COM_H

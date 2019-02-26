@@ -46,6 +46,9 @@
 #include <kdl/jntarrayvel.hpp>
 #include "ros_ethercat_model/robot_state.hpp"
 #include <kdl_parser/kdl_parser.hpp>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace ros_ethercat_model
 {
@@ -118,7 +121,7 @@ public:
       ROS_DEBUG("joints_[%d]: joint_.name = %s", i, joints_[i]->joint_->name.c_str());
     }
 
-    ROS_INFO("Added %i joints", int(joints_.size()));
+    ROS_INFO("Added %i joints", static_cast<int>(joints_.size()));
 
     return true;
   }
@@ -135,7 +138,7 @@ public:
   template<class Vec>
   void getPositions(Vec &v) const
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       v[i] = joints_[i]->position_;
   }
@@ -156,7 +159,7 @@ public:
   template<class Vec>
   void getVelocities(Vec &v) const
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       v[i] = joints_[i]->velocity_;
   }
@@ -173,7 +176,7 @@ public:
   template<class Vec>
   void getEfforts(Vec &v) const
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       v[i] = joints_[i]->effort_;
   }
@@ -190,7 +193,7 @@ public:
   template<class Vec>
   void setEfforts(const Vec &v)
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       joints_[i]->commanded_effort_ = v[i];
   }
@@ -207,7 +210,7 @@ public:
   template<class Vec>
   void addEfforts(const Vec &v)
   {
-    assert((int) v.size() == (int) joints_.size());
+    assert((static_cast<int>) v.size() == (static_cast<int>) joints_.size());
     for (size_t i = 0; i < joints_.size(); ++i)
       joints_[i]->commanded_effort_ += v[i];
   }
@@ -248,6 +251,6 @@ private:
   std::vector<JointState*> joints_;
 };
 
-} // namespace
+}  // namespace ros_ethercat_model
 
 #endif /* ros_ethercat_model_TREE_H */

@@ -32,8 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef ETHERCAT_HARDWARE_H
-#define ETHERCAT_HARDWARE_H
+#ifndef ROS_ETHERCAT_HARDWARE_ETHERCAT_HARDWARE_H
+#define ROS_ETHERCAT_HARDWARE_ETHERCAT_HARDWARE_H
 
 #include <hardware_interface/hardware_interface.h>
 
@@ -59,21 +59,25 @@
 #include <boost/thread/condition_variable.hpp>
 
 #include <pluginlib/class_loader.h>
-
+#include <vector>
 #include <std_msgs/Bool.h>
-
+#include <string>
 #include <boost/regex.hpp>
 
-using namespace boost::accumulators;
+using namespace boost::accumulators;  // NOLINT(build/namespaces)
 
 struct EthercatHardwareDiagnostics
 {
   EthercatHardwareDiagnostics();
   void resetMaxTiming();
-  accumulator_set<double, stats<tag::max, tag::mean> > pack_command_acc_; //!< time taken by all devices packCommand functions
-  accumulator_set<double, stats<tag::max, tag::mean> > txandrx_acc_; //!< time taken by to transmit and recieve process data
-  accumulator_set<double, stats<tag::max, tag::mean> > unpack_state_acc_; //!< time taken by all devices updateState functions
-  accumulator_set<double, stats<tag::max, tag::mean> > publish_acc_; //!< time taken by any publishing step in main loop
+  //!< time taken by all devices packCommand functions
+  accumulator_set<double, stats<tag::max, tag::mean> > pack_command_acc_;
+  //!< time taken by to transmit and recieve process data
+  accumulator_set<double, stats<tag::max, tag::mean> > txandrx_acc_;
+  //!< time taken by all devices updateState functions
+  accumulator_set<double, stats<tag::max, tag::mean> > unpack_state_acc_;
+  //!< time taken by any publishing step in main loop
+  accumulator_set<double, stats<tag::max, tag::mean> > publish_acc_;
   double max_pack_command_;
   double max_txandrx_;
   double max_unpack_state_;
@@ -81,14 +85,14 @@ struct EthercatHardwareDiagnostics
   int txandrx_errors_;
   unsigned device_count_;
   bool pd_error_;
-  bool halt_after_reset_; //!< True if motor halt soon after motor reset
-  unsigned reset_motors_service_count_; //!< Number of times reset_motor service has been used
-  unsigned halt_motors_service_count_; //!< Number of time halt_motor service call is used
-  unsigned halt_motors_error_count_; //!< Number of transitions into halt state due to device error
+  bool halt_after_reset_;  //!< True if motor halt soon after motor reset
+  unsigned reset_motors_service_count_;  //!< Number of times reset_motor service has been used
+  unsigned halt_motors_service_count_;  //!< Number of time halt_motor service call is used
+  unsigned halt_motors_error_count_;  //!< Number of transitions into halt state due to device error
   struct netif_counters counters_;
   bool input_thread_is_stopped_;
-  bool motors_halted_; //!< True if motors are halted
-  const char* motors_halted_reason_; //!< reason that motors first halted
+  bool motors_halted_;  //!< True if motors are halted
+  const char* motors_halted_reason_;  //!< reason that motors first halted
 
   static const bool collect_extra_timing_ = true;
 };
@@ -109,8 +113,7 @@ struct EthercatHardwareDiagnostics
 class EthercatHardwareDiagnosticsPublisher
 {
 public:
-
-  EthercatHardwareDiagnosticsPublisher(ros::NodeHandle &node);
+  explicit EthercatHardwareDiagnosticsPublisher(ros::NodeHandle &node);
   ~EthercatHardwareDiagnosticsPublisher();
 
   /*!
@@ -139,7 +142,6 @@ public:
   void stop();
 
 private:
-
   /*!
    * \brief Publishes diagnostics
    *
@@ -166,14 +168,14 @@ private:
 
   ros::NodeHandle node_;
 
-  boost::mutex diagnostics_mutex_; //!< mutex protects all class data and cond variable
+  boost::mutex diagnostics_mutex_;  //!< mutex protects all class data and cond variable
   boost::condition_variable diagnostics_cond_;
   bool diagnostics_ready_;
   boost::thread diagnostics_thread_;
 
   ros::Publisher publisher_;
 
-  EthercatHardwareDiagnostics diagnostics_; //!< Diagnostics information use by publish function
+  EthercatHardwareDiagnostics diagnostics_;  //!< Diagnostics information use by publish function
   unsigned char *diagnostics_buffer_;
   unsigned int buffer_size_;
   std::vector<boost::shared_ptr<EthercatDevice> > slaves_;
@@ -190,7 +192,7 @@ private:
   //! Time last packet was dropped 0 otherwise.  Used for warning about dropped packets.
   ros::Time last_dropped_packet_time_;
   //! Number of seconds since late dropped packet to keep warning
-  static const unsigned dropped_packet_warning_hold_time_ = 10; //keep warning up for 10 seconds
+  static const unsigned dropped_packet_warning_hold_time_ = 10;  // keep warning up for 10 seconds
 
   diagnostic_msgs::DiagnosticArray diagnostic_array_;
   //! Information about Ethernet interface used for EtherCAT communication
@@ -271,7 +273,7 @@ private:
 
   void haltMotors(bool error, const char* reason);
 
-  void publishDiagnostics(); //!< Collects raw diagnostics data and passes it to diagnostics_publisher
+  void publishDiagnostics();  //!< Collects raw diagnostics data and passes it to diagnostics_publisher
   static void updateAccMax(double &max, const accumulator_set<double, stats<tag::max, tag::mean> > &acc);
   boost::shared_ptr<EthercatDevice> configSlave(EtherCAT_SlaveHandler *sh);
   bool setRouterToSlaveHandlers();
@@ -280,7 +282,7 @@ private:
 
   struct netif *ni_;
 
-  string interface_; //!< The socket interface that is connected to the EtherCAT devices (e.g., eth0)
+  string interface_;  //!< The socket interface that is connected to the EtherCAT devices (e.g., eth0)
 
   EtherCAT_DataLinkLayer m_dll_instance_;
   EC_Logic m_logic_instance_;
@@ -300,8 +302,8 @@ private:
   bool halt_motors_;
   unsigned int reset_state_;
 
-  unsigned timeout_; //!< Timeout (in microseconds) to used for sending/recieving packets once in realtime mode.
-  unsigned max_pd_retries_; //!< Max number of times to retry sending process data before halting motors
+  unsigned timeout_;  //!< Timeout (in microseconds) to used for sending/recieving packets once in realtime mode.
+  unsigned max_pd_retries_;  //!< Max number of times to retry sending process data before halting motors
 
   EthercatHardwareDiagnostics diagnostics_;
   EthercatHardwareDiagnosticsPublisher diagnostics_publisher_;
@@ -314,9 +316,10 @@ private:
 
   pluginlib::ClassLoader<EthercatDevice> device_loader_;
 
-  bool allow_unprogrammed_; //!< if the driver should treat the discovery of unprogrammed boards as a fatal error. Set to 'true' during board configuration, and set to 'false' otherwise.
+  bool allow_unprogrammed_;  //!< if the driver should treat the discovery of unprogrammed boards as a fatal error.
+  // Set to 'true' during board configuration, and set to 'false' otherwise.
 
   int start_address_;
 };
 
-#endif /* ETHERCAT_HARDWARE_H */
+#endif  // ROS_ETHERCAT_HARDWARE_ETHERCAT_HARDWARE_H

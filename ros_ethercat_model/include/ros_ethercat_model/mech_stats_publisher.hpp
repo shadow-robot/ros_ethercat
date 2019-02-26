@@ -45,6 +45,8 @@
 #include <sr_robot_msgs/JointStatistics.h>
 #include <sr_robot_msgs/ActuatorStatistics.h>
 #include <realtime_tools/realtime_publisher.h>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
