@@ -64,7 +64,7 @@
 #include <string>
 #include <boost/regex.hpp>
 
-using namespace boost::accumulators;  // NOLINT
+using namespace boost::accumulators;  // NOLINT(build/namespaces)
 
 struct EthercatHardwareDiagnostics
 {
