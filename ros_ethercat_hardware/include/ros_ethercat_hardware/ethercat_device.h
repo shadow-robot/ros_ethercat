@@ -53,7 +53,7 @@
 
 #include <pluginlib/class_list_macros.h>
 
-using namespace std;  // NOLINT
+using namespace std;  // NOLINT(build/namespaces)
 
 struct et1x00_error_counters
 {
