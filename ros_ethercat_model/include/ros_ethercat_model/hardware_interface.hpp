@@ -62,22 +62,22 @@ public:
   {
   }
 
-  int device_id_; //!< Position in EtherCAT chain
+  int device_id_;  //!< Position in EtherCAT chain
 
-  double position_; //!< The position of the motor (in radians)
-  double velocity_; //!< The velocity in radians per second
-  double effort_; // !< Measured effort in Nm
+  double position_;  //!< The position of the motor (in radians)
+  double velocity_;  //!< The velocity in radians per second
+  double effort_;  // !< Measured effort in Nm
   double commanded_effort_;
 
-  double last_commanded_current_; //!< Current computed based on effort specified in ActuatorCommand (in amps)
-  double last_measured_current_; //!< The measured current (in amps)
+  double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
+  double last_measured_current_;  //!< The measured current (in amps)
 
-  double last_commanded_effort_; //!< The torque requested in the previous ActuatorCommand (in Nm)
-  double last_measured_effort_; //!< The measured torque (in Nm)
+  double last_commanded_effort_;  //!< The torque requested in the previous ActuatorCommand (in Nm)
+  double last_measured_effort_;  //!< The measured torque (in Nm)
 
-  double max_effort_; //!< Absolute torque limit for actuator (derived from motor current limit). (in Nm)
+  double max_effort_;  //!< Absolute torque limit for actuator (derived from motor current limit). (in Nm)
 
-  double motor_voltage_; //!< Motor voltage (in volts)
+  double motor_voltage_;  //!< Motor voltage (in volts)
 };
 
 class ActuatorCommand
@@ -89,8 +89,8 @@ public:
   {
   }
 
-  bool enable_; //!< Enable this actuator
-  double effort_; //!< Force to apply (in Nm)
+  bool enable_;  //!< Enable this actuator
+  double effort_;  //!< Force to apply (in Nm)
 };
 
 /*!
