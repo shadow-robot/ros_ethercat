@@ -48,32 +48,30 @@ using std::string;
 namespace ros_ethercat_model
 {
 
-  class ImuState
+class ImuState
+{
+public:
+  double orientation_[4];
+  double angular_velocity_[3];
+  double linear_acceleration_[3];
+  double orientation_covariance_[9];
+  double angular_velocity_covariance_[9];
+  double linear_acceleration_covariance_[9];
+  hardware_interface::ImuSensorHandle::Data data_;
+
+  ImuState(string name, string frame_id)
   {
-  public:
-    double orientation_[4];
-    double angular_velocity_[3];
-    double linear_acceleration_[3];
-    double orientation_covariance_[9];
-    double angular_velocity_covariance_[9];
-    double linear_acceleration_covariance_[9];
-    hardware_interface::ImuSensorHandle::Data data_;
-
-    ImuState(string name, string frame_id)
-    {
-      data_.name = name;
-      data_.frame_id = frame_id;
-      data_.orientation = orientation_;
-      data_.orientation_covariance = orientation_covariance_;
-      data_.angular_velocity = angular_velocity_;
-      data_.angular_velocity_covariance = angular_velocity_covariance_;
-      data_.linear_acceleration = linear_acceleration_;
-      data_.linear_acceleration_covariance = linear_acceleration_covariance_;
-
-    };
-    ImuState(){};
-
+    data_.name = name;
+    data_.frame_id = frame_id;
+    data_.orientation = orientation_;
+    data_.orientation_covariance = orientation_covariance_;
+    data_.angular_velocity = angular_velocity_;
+    data_.angular_velocity_covariance = angular_velocity_covariance_;
+    data_.linear_acceleration = linear_acceleration_;
+    data_.linear_acceleration_covariance = linear_acceleration_covariance_;
   };
+  ImuState(){}
 };
+};  // namespace ros_ethercat_model
 
-#endif // ROS_ETHERCAT_MODEL_IMU_STATE_HPP_
+#endif  // ROS_ETHERCAT_MODEL_IMU_STATE_HPP_

@@ -41,6 +41,7 @@
 #include <algorithm>
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
+#include <string>
 
 namespace ros_ethercat_model
 {
@@ -50,7 +51,6 @@ class RobotState;
 class Transmission
 {
 public:
-
   /// Destructor
   virtual ~Transmission()
   {
@@ -88,6 +88,6 @@ public:
   Actuator *actuator_;
 };
 
-} // namespace ros_ethercat_model
+}  // namespace ros_ethercat_model
 
 #endif

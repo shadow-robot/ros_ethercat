@@ -2,6 +2,10 @@
 Changelog for package ros_ethercat_loop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.1 (2019-02-26)
+------------------
+* ros_ethercat_eml moved out of this repository
+
 0.2.0 (2015-04-07)
 ------------------
 * Check if a port has been defined before starting EtherCAT
