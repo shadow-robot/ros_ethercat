@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 #include <cfloat>
+#include <algorithm>
+#include <limits>
 #include <tinyxml.h>
 #include <urdf_model/joint.h>
 
@@ -205,6 +207,6 @@ inline void JointStatistics::update(JointState *jnt)
   old_position_ = jnt->position_;
 }
 
-}
+}  // namespace ros_ethercat_model
 
 #endif /* JOINT_H */

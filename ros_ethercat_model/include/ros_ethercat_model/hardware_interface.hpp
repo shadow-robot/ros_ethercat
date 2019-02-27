@@ -127,6 +127,6 @@ public:
   virtual void write(const ros::Time &time) {}
 };
 
-}
+}  // namespace ros_ethercat_model
 
 #endif

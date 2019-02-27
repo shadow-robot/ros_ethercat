@@ -76,6 +76,9 @@
  * initXml, read and write should be called inside main.cpp
  */
 
+#include <vector>
+#include <string>
+
 using std::string;
 using std::vector;
 using boost::ptr_unordered_map;
@@ -85,7 +88,7 @@ using ros_ethercat_model::Actuator;
 using ros_ethercat_model::Transmission;
 using ros_ethercat_model::CustomHW;
 
-static const string name = "ros_ethercat";
+static const string name = "ros_ethercat";  // NOLINT(runtime/string)
 
 class RosEthercat : public hardware_interface::RobotHW
 {
@@ -95,7 +98,6 @@ public:
     collect_diagnostics_running_(false),
     run_diagnostics_(false)
   {
-
   }
 
   RosEthercat(ros::NodeHandle &nh, const string &eth, bool allow, TiXmlElement* config) :
@@ -113,7 +115,7 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(whitespace/line_length)
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
@@ -139,9 +141,9 @@ public:
       joint_state_interface_.registerHandle(jsh);
 
       joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_position_));
+                                                                                       & it->second->commanded_position_));  // NOLINT(whitespace/line_length)
       joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-                                                                                       & it->second->commanded_velocity_));
+                                                                                       & it->second->commanded_velocity_));  // NOLINT(whitespace/line_length)
       joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
                                                                                      & it->second->commanded_effort_));
     }
@@ -157,7 +159,6 @@ public:
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
     registerInterface(&imu_sensor_interface_);
-
   }
 
   virtual ~RosEthercat()
@@ -189,7 +190,7 @@ public:
     std::string robot_description_param;
     bool allow;
 
-    robot_state_name_ = robot_hw_nh.getNamespace().substr(1); // remove the leading slash of the namespace
+    robot_state_name_ = robot_hw_nh.getNamespace().substr(1);  // remove the leading slash of the namespace
     ROS_INFO_STREAM("Robot State Name: " << robot_state_name_);
 
     if (!robot_hw_nh.getParam("robot_description_param", robot_description_param))
@@ -206,7 +207,7 @@ public:
     {
       if (!root_nh.getParam(robot_description_param, robot_description))
       {
-        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());
+        ROS_ERROR("Robot description: %s not found (namespace: %s)", robot_description_param.c_str(), root_nh.getNamespace().c_str());  // NOLINT(whitespace/line_length)
         return false;
       }
       xml.Parse(robot_description.c_str());
@@ -214,7 +215,7 @@ public:
       root = xml.FirstChildElement("robot");
       if (!root || !root_element)
       {
-        ROS_ERROR("Robot description %s has no root",robot_description_param.c_str());
+        ROS_ERROR("Robot description %s has no root", robot_description_param.c_str());
         return false;
       }
     }
@@ -247,7 +248,7 @@ public:
       if (!port_name->empty())
       {
         ethercat_hardware_.push_back(new EthercatHardware(name,
-                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),
+                                                          static_cast<hardware_interface::HardwareInterface*> (model_.get()),  // NOLINT(whitespace/line_length)
                                                           *port_name,
                                                           allow));
         ROS_INFO_STREAM("Added Ethernet port " << *port_name);
@@ -269,17 +270,17 @@ public:
       // joints have already had filter applied in initialisation of robot model
       ROS_INFO_STREAM("Joint state interface for hand joint " << it->first);
       hardware_interface::JointStateHandle jsh(it->first,
-					       &it->second->position_,
-					       &it->second->velocity_,
-					       &it->second->effort_);
+                 &it->second->position_,
+                 &it->second->velocity_,
+                 &it->second->effort_);
       joint_state_interface_.registerHandle(jsh);
 
       joint_position_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-										       &it->second->commanded_position_));
+                           &it->second->commanded_position_));
       joint_velocity_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-										       &it->second->commanded_velocity_));
+                           &it->second->commanded_velocity_));
       joint_effort_command_interface_.registerHandle(hardware_interface::JointHandle(jsh,
-										     &it->second->commanded_effort_));
+                         &it->second->commanded_effort_));
     }
 
     if (!model_->joint_states_.empty())
@@ -488,7 +489,7 @@ protected:
 
     /* We do NOT close fd, since we want to keep the lock. */
     fflush(fp);
-    fcntl(fd, F_SETFD, (long) 1);
+    fcntl(fd, F_SETFD, (long) 1);  // NOLINT(runtime/int)
 
     return 0;
   }
@@ -503,7 +504,7 @@ protected:
   {
     run_diagnostics_ = true;
     collect_diagnostics_running_ = true;
-    ros::Rate diag_rate(1.0); // Send diagnostics at 1Hz
+    ros::Rate diag_rate(1.0);  // Send diagnostics at 1Hz
     while (run_diagnostics_)
     {
       for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin(); eh != ethercat_hardware_.end(); ++eh)
@@ -516,7 +517,6 @@ protected:
   }
 
 protected:
-
   void stop_collect_diagnostics()
   {
     run_diagnostics_ = false;
@@ -534,6 +534,6 @@ protected:
   std::string robot_state_name_;
 };
 
-const string RosEthercat::pid_dir = "/var/tmp/run/";
+const string RosEthercat::pid_dir = "/var/tmp/run/";  // NOLINT(runtime/string)
 
 #endif

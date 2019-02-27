@@ -80,7 +80,8 @@ class Calibrate(object):
         finally:
             for name in launched:
                 try:
-                    resp_stop = self.switch_controller([], [name], controller_manager_srvs.SwitchControllerRequest.STRICT)
+                    resp_stop = self.switch_controller([], [name],
+                                                       controller_manager_srvs.SwitchControllerRequest.STRICT)
                     if (resp_stop == 0):
                         rospy.logerr("Failed to stop controller %s" % name)
                     resp_unload = self.unload_controller(name)

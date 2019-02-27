@@ -1,0 +1,30 @@
+settings:
+  machine_type: small
+  ubuntu:
+    version: xenial
+  ros:
+    release: kinetic
+  docker:
+    image: shadowrobot/build-tools
+    tag: xenial-kinetic
+  template_project_name: template_unit_tests_and_code_coverage
+  toolset:
+    modules:
+      - check_cache
+      - code_coverage
+  
+trunks:
+  - name: kinetic-devel
+    jobs:
+      - name: code_coverage
+      - name: style_check
+        settings:
+          toolset:
+            modules:
+              - code_style_check
+              - check_license
+      - name: install_check
+        settings:
+          toolset:
+            modules:
+              - check_install

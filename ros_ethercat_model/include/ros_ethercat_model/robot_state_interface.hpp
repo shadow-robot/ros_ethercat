@@ -42,7 +42,7 @@
 
 #include <hardware_interface/internal/hardware_resource_manager.h>
 #include "ros_ethercat_model/robot_state.hpp"
-
+#include <string>
 
 namespace ros_ethercat_model
 {
@@ -62,7 +62,7 @@ public:
   {
     if (!state)
     {
-      throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + name + "'. RobtState data pointer is null.");
+      throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + name + "'. RobtState data pointer is null.");  // NOLINT(whitespace/line_length)
     }
   }
 
@@ -81,6 +81,6 @@ private:
  */
 class RobotStateInterface : public hardware_interface::HardwareResourceManager<RobotStateHandle> {};
 
-}
+}  // namespace ros_ethercat_model
 
 #endif
