@@ -64,9 +64,15 @@ public:
 
   int device_id_;  //!< Position in EtherCAT chain
 
+<<<<<<< HEAD
   double position_;  //!< The position of the motor (in radians)
   double velocity_;  //!< The velocity in radians per second
   double effort_;  // !< Measured effort in Nm
+=======
+  double position_; //!< The position of the motor (in radians)
+  double velocity_; //!< The velocity in radians per second
+  double effort_; // !< Measured effort in Nm
+>>>>>>> 3ab6a9624df3bff4c9d3d1a5a0778218c0681f83
   double commanded_effort_;
 
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
