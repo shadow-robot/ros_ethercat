@@ -40,6 +40,7 @@
 
 #include <ros/ros.h>
 
+
 namespace ros_ethercat_model
 {
 
@@ -50,6 +51,8 @@ public:
     device_id_(0),
     position_(0),
     velocity_(0),
+    effort_(0),
+    commanded_effort_(0),
     last_commanded_current_(0.0),
     last_measured_current_(0.0),
     last_commanded_effort_(0.0),
@@ -63,6 +66,8 @@ public:
 
   double position_;  //!< The position of the motor (in radians)
   double velocity_;  //!< The velocity in radians per second
+  double effort_;  // !< Measured effort in Nm
+  double commanded_effort_;
 
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
   double last_measured_current_;  //!< The measured current (in amps)

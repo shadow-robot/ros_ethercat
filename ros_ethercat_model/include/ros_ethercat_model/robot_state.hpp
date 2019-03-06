@@ -47,6 +47,7 @@
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/imu_state.hpp"
+
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
 #include <map>
@@ -76,13 +77,18 @@ public:
       initXml(root);
   }
 
+  ActuatorState* addActuatorState(string name)
+  {
+    actuator_states_[name] = Actuator().state_;
+    return &actuator_states_[name];
+  }
+
   void initXml(TiXmlElement *root)
   {
     try
     {
       if (!robot_model_.initXml(root))
         throw std::runtime_error("Failed to load robot_model_");
-
       for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::const_iterator it = robot_model_.joints_.begin();
            it != robot_model_.joints_.end();
            ++it)
@@ -173,6 +179,11 @@ public:
     return joint_states_.count(name) ? &joint_states_[name] : NULL;
   }
 
+  ActuatorState* getActuatorState(const std::string &name)
+  {
+    return actuator_states_.count(name) ? &actuator_states_[name] : NULL;
+  }
+
   /// Get a joint state by name or NULL on failure
   ImuState* getImuState(const std::string &name)
   {
@@ -191,6 +202,8 @@ public:
 
   /// The joint states mapped to the joint names
   boost::ptr_unordered_map<std::string, JointState> joint_states_;
+
+  boost::ptr_unordered_map<std::string, ActuatorState> actuator_states_;
 
   boost::ptr_unordered_map<std::string, ImuState> imu_states_;
 
