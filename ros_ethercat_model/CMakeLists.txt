@@ -16,18 +16,18 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
-find_package(TinyXML REQUIRED)
+find_package(TinyXML2 REQUIRED)
 
 catkin_python_setup()
 
 include_directories(include
     ${Boost_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
-    ${TinyXML_INCLUDE_DIRS})
+    ${TinyXML2_INCLUDE_DIRS})
 
 catkin_package(
 DEPENDS
-    tinyxml
+    tinyxml2
     urdfdom
     Boost
 CATKIN_DEPENDS
@@ -49,7 +49,7 @@ add_library(${PROJECT_NAME} src/ros_ethercat.cpp)
 
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES})
 
 
 install(DIRECTORY include/${PROJECT_NAME}/
