@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
     diagnostic_updater
     diagnostic_msgs
     pluginlib
+    rosconsole_bridge
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
@@ -28,8 +29,11 @@ CATKIN_DEPENDS
     diagnostic_updater
     diagnostic_msgs
     pluginlib
+    rosconsole_bridge
 )
 
+# needed to circumvent LD_LIBRARY_PATH being emptied through ethercat_grant
+# in addition to not propagating ros_ethercat_loop RUNPATH to dependencies, in contrast to RPATH
 SET(GCC_NEWDTAGS_LINK_FLAGS "-Wl,--disable-new-dtags")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_NEWDTAGS_LINK_FLAGS}")
 
