@@ -89,7 +89,7 @@ public:
     {
       if (!robot_model_.initXml(root))
         throw std::runtime_error("Failed to load robot_model_");
-      for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::const_iterator it = robot_model_.joints_.begin();
+      for (std::map<std::string, urdf::JointSharedPtr>::const_iterator it = robot_model_.joints_.begin();
            it != robot_model_.joints_.end();
            ++it)
       {
