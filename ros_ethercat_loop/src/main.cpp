@@ -53,6 +53,7 @@
 #include <controller_manager/controller_manager.h>
 #include <std_msgs/Float64.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
+#include <rosconsole_bridge/bridge.h>
 
 using namespace boost::accumulators;  // NOLINT(build/namespaces)
 using boost::ptr_vector;
@@ -573,6 +574,8 @@ static void cleanupPidFile(const char* interface)
 
 #define CLOCK_PRIO 0
 #define CONTROL_PRIO 0
+
+REGISTER_ROSCONSOLE_BRIDGE;
 
 static pthread_t controlThread;
 static pthread_attr_t controlThreadAttr;
