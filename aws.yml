@@ -28,3 +28,24 @@ trunks:
           toolset:
             modules:
               - check_install
+  - name: melodic-devel
+    settings:
+      ubuntu:
+        version: bionic
+      ros:
+        release: melodic
+      docker:
+        tag: bionic-melodic
+    jobs:
+      - name: code_coverage
+      - name: style_check
+        settings:
+          toolset:
+            modules:
+              - code_style_check
+              - check_license
+      - name: install_check
+        settings:
+          toolset:
+            modules:
+              - check_install
