@@ -1,11 +1,11 @@
 settings:
   ubuntu:
-    version: trusty
+    version: xenial
   ros:
-    release: indigo
+    release: kinetic
   docker:
     image: shadowrobot/build-tools
-    tag: trusty-indigo
+    tag: xenial-kinetic
   toolset:
     template_job_name: template_unit_tests_and_code_coverage
     modules:
@@ -13,15 +13,7 @@ settings:
       - code_coverage
 
 trunks:
-  - name: indigo-devel
   - name: kinetic-devel
-    settings:
-      ubuntu:
-        version: xenial
-      ros:
-        release: kinetic
-      docker:
-        tag: xenial-kinetic
 
 branch:
   parent: kinetic-devel
