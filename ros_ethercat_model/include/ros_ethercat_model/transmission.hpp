@@ -37,7 +37,7 @@
 #ifndef ROS_ETHERCAT_MODEL_TRANSMISSION_H
 #define ROS_ETHERCAT_MODEL_TRANSMISSION_H
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <algorithm>
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
@@ -58,7 +58,7 @@ public:
   }
 
   /// Initializes the transmission from XML data
-  virtual bool initXml(TiXmlElement *config, RobotState *robot)
+  virtual bool initXml(tinyxml2::XMLElement *config, RobotState *robot)
   {
     const char *name = config->Attribute("name");
     name_ = name ? name : "";
