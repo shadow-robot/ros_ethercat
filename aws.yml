@@ -1,5 +1,5 @@
 settings:
-  machine_type: small
+  machine_type: medium
   ubuntu:
     version: xenial
   ros:
