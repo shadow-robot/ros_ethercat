@@ -90,6 +90,8 @@ using ros_ethercat_model::CustomHW;
 
 static const string name = "ros_ethercat";  // NOLINT(runtime/string)
 
+static const string ethercat_pid_dir = "/var/tmp/run/";  // NOLINT(runtime/string)
+
 class RosEthercat : public hardware_interface::RobotHW
 {
 public:
@@ -374,7 +376,6 @@ public:
     }
   }
 
-  static const string pid_dir;
   string eth_;
   boost::shared_ptr<ros_ethercat_model::RobotState> model_;
   ptr_vector<EthercatHardware> ethercat_hardware_;
@@ -410,7 +411,7 @@ protected:
   static string generatePIDFilename(const char* interface)
   {
     string filename;
-    filename = pid_dir + "EtherCAT_" + string(interface) + ".pid";
+    filename = ethercat_pid_dir + "EtherCAT_" + string(interface) + ".pid";
     return filename;
   }
 
@@ -423,7 +424,7 @@ protected:
     string filename = generatePIDFilename(interface);
 
     umask(0);
-    mkdir(pid_dir.c_str(), 0777);
+    mkdir(ethercat_pid_dir.c_str(), 0777);
     int PID_FLAGS = O_RDWR | O_CREAT | O_EXCL;
     int PID_MODE = S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP | S_IWOTH | S_IROTH;
     fd = open(filename.c_str(), PID_FLAGS, PID_MODE);
@@ -533,7 +534,5 @@ protected:
   boost::thread collect_diagnostics_thread_;
   std::string robot_state_name_;
 };
-
-const string RosEthercat::pid_dir = "/var/tmp/run/";  // NOLINT(runtime/string)
 
 #endif
