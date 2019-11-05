@@ -50,6 +50,7 @@ public:
   ActuatorState() :
     device_id_(0),
     position_(0),
+    clutch_position_(0),
     velocity_(0),
     effort_(0),
     commanded_effort_(0),
@@ -58,7 +59,8 @@ public:
     last_commanded_effort_(0.0),
     last_measured_effort_(0.0),
     max_effort_(0.0),
-    motor_voltage_(0.0)
+    motor_voltage_(0.0),
+    flags_(0)
   {
   }
 
@@ -66,8 +68,16 @@ public:
 
   double position_;  //!< The position of the motor (in radians)
   double velocity_;  //!< The velocity in radians per second
-  double effort_;  // !< Measured effort in Nm
+  double effort_;    //!< Measured effort in Nm
+  int effort_raw_;   //!< Raw adc coming from effort sensor;
+  double current_;    //!< Current in Amps
   double commanded_effort_;
+
+  double temperature_;  //!< Measured motor temperature in degrees C
+  unsigned short int flags_; //!< Motor state
+
+  double clutch_position_;  //!< Position of output of actuator, distally to the clutch.
+
 
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
   double last_measured_current_;  //!< The measured current (in amps)
