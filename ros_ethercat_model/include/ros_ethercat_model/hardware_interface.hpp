@@ -61,7 +61,8 @@ public:
     last_measured_effort_(0.0),
     max_effort_(0.0),
     motor_voltage_(0.0),
-    flags_(0)
+    flags_(0),
+    control_mode_(hardware_interface::PWM)
   {
   }
 
