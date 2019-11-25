@@ -37,7 +37,6 @@
 
 #include <string>
 #include <vector>
-#include <hardware_interface/actuator_state_interface.h>
 #include <ros_ethercat_model/actuator_command_interface.h>
 
 #include <ros/ros.h>
