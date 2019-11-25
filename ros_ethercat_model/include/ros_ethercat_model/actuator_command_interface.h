@@ -58,7 +58,7 @@ class ActuatorHandle : public hardware_interface::ActuatorHandle
 public:
   ActuatorHandle() : hardware_interface::ActuatorHandle(), cmd_(0), cmd_type_(0) {}
   ActuatorHandle(const ActuatorStateHandle& as, double* cmd, ActuatorCommandMode* cmd_type = 0)
-    : hardware_interface::ActuatorHandle(as, cmd), cmd_(0), cmd_type_(0) {}
+    : hardware_interface::ActuatorHandle(as, cmd), cmd_(cmd), cmd_type_(cmd_type) {}
 
   void setCommand(double command, ActuatorCommandMode command_type) {assert(cmd_); *cmd_ = command; *cmd_type_ = command_type;}
 
