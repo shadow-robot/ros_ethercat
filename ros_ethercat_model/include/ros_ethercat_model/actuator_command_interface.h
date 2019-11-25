@@ -30,6 +30,8 @@
 #define ROS_ETHERCAT_MODEL_ACTUATOR_COMMAND_INTERFACE_H
 
 #include <hardware_interface/actuator_command_interface.h>
+#include <string>
+#include <vector>
 
 namespace ros_ethercat_model
 {
@@ -60,7 +62,8 @@ public:
   ActuatorHandle(const ActuatorStateHandle& as, double* cmd, ActuatorCommandMode* cmd_type = 0)
     : hardware_interface::ActuatorHandle(as, cmd), cmd_(cmd), cmd_type_(cmd_type) {}
 
-  void setCommand(double command, ActuatorCommandMode command_type) {assert(cmd_); *cmd_ = command; *cmd_type_ = command_type;}
+  void setCommand(double command, ActuatorCommandMode command_type) {assert(cmd_); *cmd_ = command;
+  *cmd_type_ = command_type;}
 
 private:
   double* cmd_;
@@ -79,6 +82,6 @@ class VelocityActuatorInterface : public ActuatorCommandInterface {};
 class PositionActuatorInterface : public ActuatorCommandInterface {};
 
 
-}
+}  // namespace ros_ethercat_model
 
 #endif  // ROS_ETHERCAT_MODEL_ACTUATOR_COMMAND_INTERFACE_H
