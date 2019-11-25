@@ -77,7 +77,7 @@ public:
   double commanded_effort_;
 
   double temperature_;  //!< Measured motor temperature in degrees C
-  unsigned short int flags_; //!< Motor state
+  unsigned int flags_;  //!< Motor state
 
   double clutch_position_;  //!< Position of output of actuator, distally to the clutch.
 
