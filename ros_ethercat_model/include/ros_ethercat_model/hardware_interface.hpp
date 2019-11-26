@@ -37,7 +37,6 @@
 
 #include <string>
 #include <vector>
-#include <hardware_interface/actuator_state_interface.h>
 #include <ros_ethercat_model/actuator_command_interface.h>
 
 #include <ros/ros.h>
@@ -63,7 +62,7 @@ public:
     max_effort_(0.0),
     motor_voltage_(0.0),
     flags_(0),
-    control_mode_(COMMAND_MODE_PWM)
+    command_type_(COMMAND_TYPE_PWM)
   {
   }
 
@@ -90,7 +89,7 @@ public:
   double max_effort_;  //!< Absolute torque limit for actuator (derived from motor current limit). (in Nm)
 
   double motor_voltage_;  //!< Motor voltage (in volts)
-  ActuatorCommandMode control_mode_;  // switch between pwm and effort
+  ActuatorCommandMode command_type_;  // switch between pwm and effort
 };
 
 class ActuatorCommand
