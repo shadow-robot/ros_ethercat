@@ -1,9 +1,9 @@
 - git:
     local-name: sr_common
     uri: https://github.com/shadow-robot/sr_common.git
-    version: kinetic-devel
+    version: melodic-devel
 
 - git:
     local-name: ros_ethercat_eml
     uri: https://github.com/shadow-robot/ros_ethercat_eml.git
-    version: kinetic-devel
+    version: melodic-devel
