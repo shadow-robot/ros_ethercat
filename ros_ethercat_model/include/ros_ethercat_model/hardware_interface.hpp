@@ -1,36 +1,36 @@
-/*********************************************************************
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2008, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of the Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *********************************************************************/
+/********************************************************************
+* Software License Agreement (BSD License)
+*
+*  Copyright (c) 2008, Willow Garage, Inc.
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*   * Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*   * Redistributions in binary form must reproduce the above
+*     copyright notice, this list of conditions and the following
+*     disclaimer in the documentation and/or other materials provided
+*     with the distribution.
+*   * Neither the name of the Willow Garage nor the names of its
+*     contributors may be used to endorse or promote products derived
+*     from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*********************************************************************/
 
 #ifndef ROS_ETHERCAT_MODEL_HARDWARE_INTERFACE_H
 #define ROS_ETHERCAT_MODEL_HARDWARE_INTERFACE_H
@@ -50,6 +50,7 @@ public:
   ActuatorState() :
     device_id_(0),
     position_(0),
+    clutch_position_(0),
     velocity_(0),
     effort_(0),
     commanded_effort_(0),
@@ -58,7 +59,8 @@ public:
     last_commanded_effort_(0.0),
     last_measured_effort_(0.0),
     max_effort_(0.0),
-    motor_voltage_(0.0)
+    motor_voltage_(0.0),
+    flags_(0)
   {
   }
 
@@ -66,8 +68,16 @@ public:
 
   double position_;  //!< The position of the motor (in radians)
   double velocity_;  //!< The velocity in radians per second
-  double effort_;  // !< Measured effort in Nm
+  double effort_;    //!< Measured effort in Nm
+  int effort_raw_;   //!< Raw adc coming from effort sensor;
+  double current_;    //!< Current in Amps
   double commanded_effort_;
+
+  double temperature_;  //!< Measured motor temperature in degrees C
+  unsigned int flags_;  //!< Motor state
+
+  double clutch_position_;  //!< Position of output of actuator, distally to the clutch.
+
 
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
   double last_measured_current_;  //!< The measured current (in amps)
@@ -94,14 +104,14 @@ public:
 };
 
 /*!
- * \class Actuator
- * The Actuator class provides an interface for the motor controller
- *
- * The ActuatorCommand class is used to enable the motor and set the commanded
- * efforts of the motor (in Nm).
- *
- * The ActuatorState class reports back on the state of the motor
- */
+* \class Actuator
+* The Actuator class provides an interface for the motor controller
+*
+* The ActuatorCommand class is used to enable the motor and set the commanded
+* efforts of the motor (in Nm).
+*
+* The ActuatorState class reports back on the state of the motor
+*/
 class Actuator
 {
 public:
@@ -111,14 +121,14 @@ public:
 };
 
 /*!
- * \class CustomHW
- * The CustomHW class provides an easy way to add more hardware to the HardwareInterface.
- * Inherit from that class to add a new type of hardware, containing the data you want.
- * If the hardware doesn't use EtherCAT, constructor and destructor
- * should initialize drivers to communicate with hardware and
- * read and write functions must be implemented accordingly.
- * The read and write functions will be called by RosEthercat functions with same names
- */
+* \class CustomHW
+* The CustomHW class provides an easy way to add more hardware to the HardwareInterface.
+* Inherit from that class to add a new type of hardware, containing the data you want.
+* If the hardware doesn't use EtherCAT, constructor and destructor
+* should initialize drivers to communicate with hardware and
+* read and write functions must be implemented accordingly.
+* The read and write functions will be called by RosEthercat functions with same names
+*/
 class CustomHW
 {
 public:
