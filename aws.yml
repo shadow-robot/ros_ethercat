@@ -1,12 +1,12 @@
 settings:
   machine_type: medium
   ubuntu:
-    version: xenial
+    version: bionic
   ros:
-    release: kinetic
+    release: melodic
   docker:
     image: shadowrobot/build-tools
-    tag: xenial-kinetic
+    tag: bionic-melodic
   template_project_name: template_unit_tests_and_code_coverage
   toolset:
     modules:
@@ -14,7 +14,7 @@ settings:
       - code_coverage
   
 trunks:
-  - name: kinetic-devel
+  - name: melodic-devel
     jobs:
       - name: code_coverage
       - name: style_check
@@ -28,14 +28,15 @@ trunks:
           toolset:
             modules:
               - check_install
-  - name: melodic-devel
+  - name: kinetic-devel
     settings:
       ubuntu:
-        version: bionic
+        version: xenial
       ros:
-        release: melodic
+        release: kinetic
       docker:
-        tag: bionic-melodic
+        image: shadowrobot/build-tools
+        tag: xenial-kinetic
     jobs:
       - name: code_coverage
       - name: style_check
