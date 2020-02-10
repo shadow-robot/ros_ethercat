@@ -61,7 +61,7 @@ class Calibrate(object):
             print("Launched: %s" % ', '.join(launched))
 
             # Starts the launched controllers
-            self.switch_controller(launched, [], controller_manager_srvs.SwitchControllerRequest.BEST_EFFORT)
+            self.switch_controller(launched, [], controller_manager_srvs.SwitchControllerRequest.BEST_EFFORT, False, 0)
 
             # Sets up callbacks for calibration completion
             waiting_for = launched[:]
@@ -80,7 +80,7 @@ class Calibrate(object):
             for name in launched:
                 try:
                     resp_stop = self.switch_controller([], [name],
-                                                       controller_manager_srvs.SwitchControllerRequest.STRICT)
+                                                       controller_manager_srvs.SwitchControllerRequest.STRICT, False, 0)
                     if (resp_stop == 0):
                         rospy.logerr("Failed to stop controller %s" % name)
                     resp_unload = self.unload_controller(name)
