@@ -21,6 +21,7 @@ from time import sleep
 # Loads interface with the robot.
 import rospy
 import controller_manager_msgs.srv as controller_manager_srvs
+from controller_manager_msgs.srv import SwitchControllerRequest
 from std_msgs.msg import Bool, Empty
 
 
@@ -49,6 +50,7 @@ class Calibrate(object):
             controllers = [controllers]
 
         launched = []
+        req = SwitchControllerRequest()
         try:
             # Loads the controllers
             for c in controllers:
@@ -61,7 +63,12 @@ class Calibrate(object):
             print("Launched: %s" % ', '.join(launched))
 
             # Starts the launched controllers
-            self.switch_controller(launched, [], controller_manager_srvs.SwitchControllerRequest.BEST_EFFORT, False, 0)
+            req.start_controllers = launched
+            req.stop_controllers = []
+            req.strictness = SwitchControllerRequest.BEST_EFFORT
+            req.start_asap = False
+            req.timeout =  0.0
+            self.switch_controller.call(req)
 
             # Sets up callbacks for calibration completion
             waiting_for = launched[:]
@@ -79,8 +86,12 @@ class Calibrate(object):
         finally:
             for name in launched:
                 try:
-                    resp_stop = self.switch_controller([], [name],
-                                                       controller_manager_srvs.SwitchControllerRequest.STRICT, False, 0)
+                    req.start_controllers = []
+                    req.stop_controllers = [name]
+                    req.strictness = SwitchControllerRequest.STRICT
+                    req.start_asap = False
+                    req.timeout =  0.0
+                    resp_stop = self.switch_controller.call(req)
                     if (resp_stop == 0):
                         rospy.logerr("Failed to stop controller %s" % name)
                     resp_unload = self.unload_controller(name)
