@@ -149,6 +149,9 @@ public:
   /// The joint position in radians or meters (read-only variable)
   double position_;
 
+  // The raw value coming from the position sensor
+  int position_raw_;
+
   /// The joint velocity in radians/sec or meters/sec (read-only variable)
   double velocity_;
 
@@ -176,6 +179,7 @@ public:
   /// Constructor
   JointState() :
     position_(0.0),
+    position_raw_(0),
     velocity_(0.0),
     effort_(0.0),
     commanded_position_(0.0),
