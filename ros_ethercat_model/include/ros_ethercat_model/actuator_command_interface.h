@@ -33,8 +33,6 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-*/
-
 #ifndef ROS_ETHERCAT_MODEL_ACTUATOR_COMMAND_INTERFACE_H
 #define ROS_ETHERCAT_MODEL_ACTUATOR_COMMAND_INTERFACE_H
 
