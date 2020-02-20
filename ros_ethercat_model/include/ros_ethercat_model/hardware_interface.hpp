@@ -37,6 +37,7 @@
 
 #include <string>
 #include <vector>
+#include <ros_ethercat_model/actuator_command_interface.h>
 
 #include <ros/ros.h>
 
@@ -60,7 +61,8 @@ public:
     last_measured_effort_(0.0),
     max_effort_(0.0),
     motor_voltage_(0.0),
-    flags_(0)
+    flags_(0),
+    command_type_(COMMAND_TYPE_PWM)
   {
   }
 
@@ -78,7 +80,6 @@ public:
 
   double clutch_position_;  //!< Position of output of actuator, distally to the clutch.
 
-
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
   double last_measured_current_;  //!< The measured current (in amps)
 
@@ -88,6 +89,7 @@ public:
   double max_effort_;  //!< Absolute torque limit for actuator (derived from motor current limit). (in Nm)
 
   double motor_voltage_;  //!< Motor voltage (in volts)
+  ActuatorCommandMode command_type_;  // switch between pwm and effort
 };
 
 class ActuatorCommand
