@@ -104,7 +104,6 @@ public:
           jout->velocity = jin->second->velocity_;
           jout->measured_effort = jin->second->effort_;
           jout->commanded_effort = jin->second->commanded_effort_;
-          jout->is_calibrated = jin->second->calibrated_;
           jout->violated_limits = jin->second->joint_statistics_.violated_limits_;
           jout->min_position = jin->second->joint_statistics_.min_position_;
           jout->max_position = jin->second->joint_statistics_.max_position_;

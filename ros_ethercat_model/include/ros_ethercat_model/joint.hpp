@@ -122,7 +122,7 @@ public:
     effort_low = -joint_->limits->effort;
 
     // enforce position bounds on rotary and prismatic joints that are calibrated
-    if (calibrated_ && (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC))
+    if (joint_->type == urdf::Joint::REVOLUTE || joint_->type == urdf::Joint::PRISMATIC)
     {
       // Computes the velocity bounds based on the absolute limit and the
       // proximity to the joint limit.
@@ -167,9 +167,6 @@ public:
   /// The effort the joint should apply in Nm or N (write-to variable)
   double commanded_effort_;
 
-  /// Indicates if the joint has been calibrated or not
-  bool calibrated_;
-
   /// The position of the optical flag that was used to calibrate this joint
   double reference_position_;
 
@@ -181,7 +178,6 @@ public:
     commanded_position_(0.0),
     commanded_velocity_(0.0),
     commanded_effort_(0.0),
-    calibrated_(false),
     reference_position_(0.0)
   {
   }
