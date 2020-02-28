@@ -186,13 +186,13 @@ public:
   }
 
   /// returns true if all the joints in the chain are calibrated
-  bool allCalibrated()
-  {
-    for (unsigned int i = 0; i < joints_.size(); ++i)
-      if (!joints_[i]->calibrated_)
-        return false;
-    return true;
-  }
+  //bool allCalibrated()
+  //{
+  //  for (unsigned int i = 0; i < joints_.size(); ++i)
+  //    if (!joints_[i]->calibrated_)
+  //      return false;
+  //  return true;
+ // }
 
   /// get a kdl chain object that represents the chain from root to tip
   void toKDL(KDL::Chain &chain)
