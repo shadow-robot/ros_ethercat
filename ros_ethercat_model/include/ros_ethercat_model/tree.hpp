@@ -215,15 +215,6 @@ public:
       joints_[i]->commanded_effort_ += v[i];
   }
 
-  /// returns true, if all the joints in the tree are calibrated
-  bool allCalibrated() const
-  {
-    for (unsigned int i = 0; i < joints_.size(); ++i)
-      if (!joints_[i]->calibrated_)
-        return false;
-    return true;
-  }
-
   /// get a KDL::Tree object that represents the tree
   void toKdl(KDL::Tree &tree) const
   {

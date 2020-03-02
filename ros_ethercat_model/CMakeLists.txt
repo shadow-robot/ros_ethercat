@@ -18,8 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(TinyXML2 REQUIRED)
 
-catkin_python_setup()
-
 include_directories(include
     ${Boost_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
@@ -54,10 +52,6 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
-
-install(PROGRAMS scripts/${PROJECT_NAME}/calibrate
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(DIRECTORY launch/
