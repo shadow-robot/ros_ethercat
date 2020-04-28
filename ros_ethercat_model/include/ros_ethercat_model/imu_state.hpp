@@ -43,6 +43,8 @@
 #include <string>
 #include <hardware_interface/imu_sensor_interface.h>
 
+#define INIT_ARRAY(array, x) for (size_t n = 0; n < (sizeof(array) / sizeof(array[0])); ++n) { array[n] =  x; }
+
 using std::string;
 
 namespace ros_ethercat_model
@@ -71,6 +73,17 @@ public:
     data_.linear_acceleration_covariance = linear_acceleration_covariance_;
   };
   ImuState(){}
+  
+  void initialiseToZero(void)
+  {
+    INIT_ARRAY(orientation_, 0.0);
+    INIT_ARRAY(angular_velocity_, 0.0);
+    INIT_ARRAY(linear_acceleration_, 0.0);
+    INIT_ARRAY(orientation_covariance_, 0.0);
+    INIT_ARRAY(angular_velocity_covariance_, 0.0);
+    INIT_ARRAY(linear_acceleration_covariance_, 0.0);
+  }
+  
 };
 };  // namespace ros_ethercat_model
 
