@@ -4,6 +4,8 @@ project(ros_ethercat_model)
 
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
+    tinyxml2
+    urdfdom
     roscpp
     hardware_interface
     pluginlib
