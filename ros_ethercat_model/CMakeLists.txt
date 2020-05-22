@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
     cmake_modules
     realtime_tools
     ros_ethercat_hardware
+    tinyxml2
+    urdfdom
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -57,3 +59,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY launch/
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
+
+install(FILES ethercat_robot_hw_plugin.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
