@@ -13,12 +13,16 @@ find_package(catkin REQUIRED COMPONENTS
     cmake_modules
     realtime_tools
     ros_ethercat_hardware
-    tinyxml2
-    urdfdom
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(TinyXML2 REQUIRED)
+
+set( tinyxml2_INCLUDE_DIRS ${tinyxml2_INCLUDE_DIR} )
+set( tinyxml2_LIBRARIES ${tinyxml2_LIBRARY} )
+
+set( urdfdom_INCLUDE_DIRS ${urdfdom_INCLUDE_DIR} )
+set( urdfdom_LIBRARIES ${urdfdom_LIBRARY} )
 
 include_directories(include
     ${Boost_INCLUDE_DIRS}
