@@ -1,5 +1,12 @@
 ros_ethercat
 ------------
+## CI Statuses
+
+Check | Status
+---|---
+Build|[<img src="https://codebuild.eu-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiYVRrTjBoTWF4MUI5T0Y4QnRpVmpwTGJ4NmJOSEhWZGpDdkU1YytGSEMxWlltcVNhejVGRmtVbTBuWFdRejc0eXRhM3pYUXNrdEIvNEtHUmlIU2E2RDVFPSIsIml2UGFyYW1ldGVyU3BlYyI6IkE4Mk12dTgxWTNuaERjL2IiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=melodic-devel"/>](https://eu-west-2.console.aws.amazon.com/codesuite/codebuild/projects/auto_ros_ethercat_melodic-devel_install_check/)
+Style|[<img src="https://codebuild.eu-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiRUhLcU42YlE0WndPb1dnT3RRUzFqWWo4U2NxNDlZQWtmVGdyNzY4UzF0b3Y4UU1SeERLK0d2OTM2c3U2U1hjZGl2bE1IWGtXMEF6T1d2QktHbHk1T21nPSIsIml2UGFyYW1ldGVyU3BlYyI6InlnSC93ckZDZzVQdU5vSG8iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=melodic-devel"/>](https://eu-west-2.console.aws.amazon.com/codesuite/codebuild/projects/auto_ros_ethercat_melodic-devel_style_check/)
+Code Coverage|[<img src="https://codebuild.eu-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiWEl6RDI5TytpQzRnUG1rRGZZL0Jtb2Z4ZnFHVTYxNjBjNTJ1dEVMcTgzOUJrTk5CTE82VkR6K3ArQUgwczVBZmdQV3dMaXRUY3ZjM2lFVUQ1S1dZRzZnPSIsIml2UGFyYW1ldGVyU3BlYyI6IktzajRabGhMMm9Uc2FUU3YiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=melodic-devel"/>](https://eu-west-2.console.aws.amazon.com/codesuite/codebuild/projects/auto_ros_ethercat_melodic-devel_code_coverage/)
 
 ## Overview
 
