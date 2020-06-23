@@ -37,29 +37,14 @@
 #define ROS_ETHERCAT_MODEL_ACTUATOR_COMMAND_INTERFACE_H
 
 #include <hardware_interface/actuator_command_interface.h>
+#include <ros_ethercat_model/hardware_interface.hpp>
+
 #include <string>
 #include <vector>
 
+
 namespace ros_ethercat_model
 {
-
-typedef enum ActuatorCommandMode
-{
-  COMMAND_TYPE_PWM = 0,
-  COMMAND_TYPE_EFFORT = 1
-}
-ActuatorCommandMode;
-
-inline std::vector<std::string> command_types_to_string()
-{
-  std::vector<std::string> command_type_strings;
-
-  command_type_strings.push_back("pwm");
-  command_type_strings.push_back("effort");
-
-  return command_type_strings;
-}
-
 
 /** \brief A handle used to read and command a single actuator. */
 class ActuatorHandle : public hardware_interface::ActuatorHandle
@@ -69,13 +54,26 @@ public:
   ActuatorHandle(const ActuatorStateHandle& as, double* cmd, ActuatorCommandMode* cmd_type = 0)
     : hardware_interface::ActuatorHandle(as, cmd), cmd_(cmd), cmd_type_(cmd_type) {}
 
+
   void setCommand(double command, ActuatorCommandMode command_type)
   {
     assert(cmd_); *cmd_ = command;
     *cmd_type_ = command_type;
   }
 
+  void setState(ActuatorState* as)
+  {
+    a_ = as;
+  }
+
+  ActuatorState * getState(void)
+  {
+    assert(a_);
+    return a_;
+  }
+
 private:
+  ActuatorState *a_;
   double* cmd_;
   ActuatorCommandMode* cmd_type_;
 };

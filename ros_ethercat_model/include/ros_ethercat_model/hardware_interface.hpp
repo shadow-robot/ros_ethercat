@@ -37,13 +37,32 @@
 
 #include <string>
 #include <vector>
-#include <ros_ethercat_model/actuator_command_interface.h>
+//#include <ros_ethercat_model/actuator_command_interface.h>
 
 #include <ros/ros.h>
 
 
 namespace ros_ethercat_model
 {
+
+typedef enum ActuatorCommandMode
+{
+  COMMAND_TYPE_PWM = 0,
+  COMMAND_TYPE_EFFORT = 1
+}
+ActuatorCommandMode;
+
+inline std::vector<std::string> command_types_to_string()
+{
+  std::vector<std::string> command_type_strings;
+
+  command_type_strings.push_back("pwm");
+  command_type_strings.push_back("effort");
+
+  return command_type_strings;
+}
+
+
 
 class ActuatorState
 {
