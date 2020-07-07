@@ -81,6 +81,7 @@ public:
     max_effort_(0.0),
     motor_voltage_(0.0),
     flags_(0),
+    pwm_(0),
     command_type_(COMMAND_TYPE_PWM)
   {
   }
@@ -95,8 +96,8 @@ public:
   double commanded_effort_;
 
   double temperature_;  //!< Measured motor temperature in degrees C
-  unsigned int flags_;  //!< Motor state
-
+  unsigned int flags_;  //!< Motor info glags
+  signed int pwm_;      //!< PWM currently applied to motor
   double clutch_position_;  //!< Position of output of actuator, distally to the clutch.
 
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
