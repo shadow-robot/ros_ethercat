@@ -62,6 +62,11 @@ inline std::vector<std::string> command_types_to_string()
   return command_type_strings;
 }
 
+typedef struct __attribute__((__packed__)) ActuatorOdometry
+{
+    volatile uint32_t odo_1;
+    volatile uint32_t odo_2;
+} ActuatorOdometry;
 
 
 class ActuatorState
@@ -82,7 +87,9 @@ public:
     motor_voltage_(0.0),
     flags_(0),
     pwm_(0),
+
     command_type_(COMMAND_TYPE_PWM)
+
   {
   }
 
@@ -110,6 +117,7 @@ public:
 
   double motor_voltage_;  //!< Motor voltage (in volts)
   ActuatorCommandMode command_type_;  // switch between pwm and effort
+  ActuatorOdometry odometry_;
 };
 
 class ActuatorCommand
