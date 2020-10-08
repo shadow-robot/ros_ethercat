@@ -66,6 +66,8 @@ typedef struct __attribute__((__packed__)) ActuatorOdometry
 {
     volatile uint32_t odo_1;
     volatile uint32_t odo_2;
+    volatile uint32_t odo_3;
+    volatile uint32_t odo_4;
 } ActuatorOdometry;
 
 

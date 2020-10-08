@@ -207,6 +207,7 @@ void *diagnosticLoop(void *args)
   ptr_vector<EthercatHardware>* ec = (ptr_vector<EthercatHardware>*) args;
   struct timespec tick;
   clock_gettime(CLOCK_MONOTONIC, &tick);
+  ROS_WARN_STREAM("dl");
   while (!g_quit)
   {
     for (ptr_vector<EthercatHardware>::iterator eh = ec->begin(); eh != ec->end(); ++eh)
@@ -672,4 +673,3 @@ int main(int argc, char *argv[])
 
   return rv;
 }
-
