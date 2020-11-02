@@ -1030,6 +1030,7 @@ void EthercatHardware::loadNonEthercatDevices()
 
 void EthercatHardware::collectDiagnostics()
 {
+  ROS_WARN_STREAM("collect diagnostics");
   if (NULL == oob_com_)
     return;
 
@@ -1051,6 +1052,7 @@ void EthercatHardware::collectDiagnostics()
 
     // Worry about locking for single value?
     diagnostics_.device_count_ = status.get_adp();
+
   }
 
   for (unsigned i = 0; i < slaves_.size(); ++i)
