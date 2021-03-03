@@ -5,4 +5,7 @@
   <param name="joint_state_controller/publish_rate" value="$(arg publish_rate)"/>
   <!-- spawn controller -->
   <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller" respawn="true"/>
+
+  <!-- Publish underactuation error -->
+  <node name="error_reporter" pkg="sr_error_reporter" type="error_reporter" output="screen"/>
 </launch>
