@@ -3,12 +3,12 @@ jobs:
   build:
     working_directory: /tmp/repository
     docker:
-      - image: shadowrobot/build-tools:bionic-melodic
+      - image: public.ecr.aws/shadowrobot/build-tools:focal-noetic
         environment:
-          toolset_branch: master
+          toolset_branch: python3
           server_type: circle
-          ros_release_name: melodic
-          ubuntu_version_name: bionic
+          ros_release_name: noetic
+          ubuntu_version_name: focal
           used_modules: check_cache,code_style_check
     steps:
       - checkout
