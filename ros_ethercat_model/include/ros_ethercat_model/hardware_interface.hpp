@@ -81,6 +81,7 @@ public:
     velocity_(0),
     effort_(0),
     commanded_effort_(0),
+
     last_commanded_current_(0.0),
     last_measured_current_(0.0),
     last_commanded_effort_(0.0),
@@ -118,6 +119,9 @@ public:
   double max_effort_;  //!< Absolute torque limit for actuator (derived from motor current limit). (in Nm)
 
   int clutch_slip_;
+
+  ros::Time last_command_time_;
+  ros::Duration command_timeout_;
 
   double motor_voltage_;  //!< Motor voltage (in volts)
   ActuatorCommandMode command_type_;  // switch between pwm and effort
