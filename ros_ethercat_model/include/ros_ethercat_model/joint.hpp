@@ -43,6 +43,7 @@
 #include <limits>
 #include <tinyxml.h>
 #include <urdf_model/joint.h>
+#include <sr_robot_msgs/ControlType.h>
 
 namespace ros_ethercat_model
 {
@@ -167,6 +168,9 @@ public:
   /// The effort the joint should apply in Nm or N (write-to variable)
   double commanded_effort_;
 
+  /// Indicates if commanded_effort_ is torque or PWM
+  sr_robot_msgs::ControlType::_control_type_type actuator_command_type_;
+
   /// The position of the optical flag that was used to calibrate this joint
   double reference_position_;
 
@@ -178,6 +182,8 @@ public:
     commanded_position_(0.0),
     commanded_velocity_(0.0),
     commanded_effort_(0.0),
+    // Initial value is neither FORCE not PWM to indicate that controller didn't set it yet
+    actuator_command_type_(sr_robot_msgs::ControlType::QUERY),
     reference_position_(0.0)
   {
   }

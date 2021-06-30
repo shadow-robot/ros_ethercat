@@ -39,7 +39,7 @@
 #include <vector>
 
 #include <ros/ros.h>
-
+#include <sr_robot_msgs/ControlType.h>
 
 namespace ros_ethercat_model
 {
@@ -95,12 +95,17 @@ class ActuatorCommand
 public:
   ActuatorCommand() :
     enable_(0),
-    effort_(0)
+    effort_(0),
+    // Initial value is neither FORCE not PWM to indicate that controller didn't set it yet
+    type_(sr_robot_msgs::ControlType::QUERY)
   {
   }
 
   bool enable_;  //!< Enable this actuator
-  double effort_;  //!< Force to apply (in Nm)
+  double effort_;  //!< Torque to apply (in Nm) or PWM value
+
+  /// Indicates if effort_ is torque or PWM
+  sr_robot_msgs::ControlType::_control_type_type type_;
 };
 
 /*!
