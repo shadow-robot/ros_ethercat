@@ -102,7 +102,7 @@ public:
   }
 
   bool enable_;  //!< Enable this actuator
-  double effort_;  //!< Effor to apply, unit depends on effort_command_type_ field
+  double effort_;  //!< Effort to apply, unit depends on effort_command_type_ field
   EffortCommandType effort_command_type_;  //!< Type of effort in effort_ field
 
   void set_effort_command(double effort, EffortCommandType effort_command_type)
