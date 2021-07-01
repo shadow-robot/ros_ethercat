@@ -45,6 +45,6 @@ enum class EffortCommandType
   PWM
 };
 
-}  // ros_ethercat_model
+}  // namespace ros_ethercat_model
 
 #endif  // ROS_ETHERCAT_MODEL_COMMAND_H
