@@ -1,2 +1,2 @@
 joint_state_controller:
-  type: controller/JointStateController
+  type: sr_mechanism_controllers/JointStateController
