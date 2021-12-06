@@ -91,7 +91,8 @@ public:
     flags_(0),
     pwm_(0),
     clutch_slip_(0),
-    command_type_(COMMAND_TYPE_PWM)
+    command_type_(COMMAND_TYPE_PWM),
+    last_command_time_(ros::Time::now())
 
   {
   }
