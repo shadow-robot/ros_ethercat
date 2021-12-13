@@ -18,11 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(TinyXML2 REQUIRED)
 
-set( tinyxml2_INCLUDE_DIRS ${tinyxml2_INCLUDE_DIR} )
-set( tinyxml2_LIBRARIES ${tinyxml2_LIBRARY} )
-
-set( urdfdom_INCLUDE_DIRS ${urdfdom_INCLUDE_DIR} )
-set( urdfdom_LIBRARIES ${urdfdom_LIBRARY} )
+set( TinyXML2_INCLUDE_DIRS ${TinyXML2_INCLUDE_DIR} )
+set( TinyXML2_LIBRARIES ${TinyXML2_LIBRARY} )
 
 include_directories(include
     ${Boost_INCLUDE_DIRS}
@@ -31,8 +28,7 @@ include_directories(include
 
 catkin_package(
 DEPENDS
-    tinyxml2
-    urdfdom
+    TinyXML2
     Boost
 CATKIN_DEPENDS
     roscpp
@@ -45,6 +41,8 @@ CATKIN_DEPENDS
     ros_ethercat_hardware
 INCLUDE_DIRS
     include
+LIBRARIES
+    ${PROJECT_NAME}
 CFG_EXTRAS
     ${PROJECT_NAME}-extras.cmake
 )
@@ -66,3 +64,8 @@ install(DIRECTORY launch/
 
 install(FILES ethercat_robot_hw_plugin.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
