@@ -42,6 +42,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <memory>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/thread/thread.hpp>
@@ -379,7 +380,7 @@ public:
   string eth_;
   boost::shared_ptr<ros_ethercat_model::RobotState> model_;
   ptr_vector<EthercatHardware> ethercat_hardware_;
-  boost::scoped_ptr<MechStatsPublisher> mech_stats_publisher_;
+  std::unique_ptr<MechStatsPublisher> mech_stats_publisher_;
 
   // robot state interface
   ros_ethercat_model::RobotStateInterface robot_state_interface_;

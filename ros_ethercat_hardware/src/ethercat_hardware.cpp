@@ -42,6 +42,7 @@
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 #include <string>
+#include <memory>
 
 EthercatHardwareDiagnostics::EthercatHardwareDiagnostics() :
   txandrx_errors_(0),
@@ -188,8 +189,8 @@ std::vector<EtherCAT_SlaveHandler> EthercatHardware::scanPort(const std::string&
   EC_Logic logic_instance;
   EtherCAT_DataLinkLayer dll_instance;
   EtherCAT_PD_Buffer pd_buffer(&logic_instance, &dll_instance);
-  boost::scoped_ptr<EtherCAT_AL> application_layer;
-  boost::scoped_ptr<EtherCAT_Router> router;
+  std::unique_ptr<EtherCAT_AL> application_layer;
+  std::unique_ptr<EtherCAT_Router> router;
 
   dll_instance.attach(ni);
   application_layer.reset(new EtherCAT_AL(&dll_instance, &logic_instance, &pd_buffer));
