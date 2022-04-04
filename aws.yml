@@ -9,7 +9,7 @@ settings:
     tag: focal-noetic
   template_project_name: template_unit_tests_and_code_coverage
   toolset:
-    branch: python3
+    branch: master
     modules:
       - check_cache
       - code_coverage
