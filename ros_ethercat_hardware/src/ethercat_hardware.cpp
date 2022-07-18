@@ -873,7 +873,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   if (matching_class_name.size() != 0)
   {
-    ROS_WARN("Using device '%s' with product code %d",
+    ROS_INFO("Using device '%s' with product code %d",
              device_loader_.getClassDescription(matching_class_name).c_str(),
              product_code);
     try
