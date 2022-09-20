@@ -44,6 +44,8 @@
 #include <tinyxml.h>
 #include <urdf_model/joint.h>
 
+#include "ros_ethercat_model/command.hpp"
+
 namespace ros_ethercat_model
 {
 
@@ -170,6 +172,9 @@ public:
   /// The position of the optical flag that was used to calibrate this joint
   double reference_position_;
 
+  /// Type of effort in commanded_effort_ field
+  EffortCommandType effort_command_type_;
+
   /// Constructor
   JointState() :
     position_(0.0),
@@ -178,8 +183,15 @@ public:
     commanded_position_(0.0),
     commanded_velocity_(0.0),
     commanded_effort_(0.0),
-    reference_position_(0.0)
+    reference_position_(0.0),
+    effort_command_type_(EffortCommandType::UNSPECIFIED)
   {
+  }
+
+  void set_effort_command(double commanded_effort, EffortCommandType effort_command_type)
+  {
+    commanded_effort_ = commanded_effort;
+    effort_command_type_ = effort_command_type;
   }
 };
 inline void JointStatistics::update(JointState *jnt)
