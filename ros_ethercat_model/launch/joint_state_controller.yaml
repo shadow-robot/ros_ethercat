@@ -24,4 +24,4 @@
 # software, even if advised of the possibility of such damage.
 
 joint_state_controller:
-  type: joint_state_controller/JointStateController
+  type: sr_mechanism_controllers/JointStateController
