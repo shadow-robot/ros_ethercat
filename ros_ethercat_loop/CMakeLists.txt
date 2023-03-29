@@ -14,7 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
     pluginlib
     rosconsole_bridge
 )
-
+find_package(Boost REQUIRED
+  COMPONENTS
+  filesystem thread
+)
 include_directories(${catkin_INCLUDE_DIRS})
 
 catkin_package(
@@ -38,7 +41,7 @@ SET(GCC_NEWDTAGS_LINK_FLAGS "-Wl,--disable-new-dtags")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_NEWDTAGS_LINK_FLAGS}")
 
 add_executable(${PROJECT_NAME} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} rt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} rt ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 ros_enable_rpath(${PROJECT_NAME})
 
