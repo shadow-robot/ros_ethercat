@@ -37,12 +37,39 @@
 
 #include <string>
 #include <vector>
+//#include <ros_ethercat_model/actuator_command_interface.h>
 
 #include <ros/ros.h>
 
 
 namespace ros_ethercat_model
 {
+
+typedef enum ActuatorCommandMode
+{
+  COMMAND_TYPE_PWM = 0,
+  COMMAND_TYPE_EFFORT = 1
+}
+ActuatorCommandMode;
+
+inline std::vector<std::string> command_types_to_string()
+{
+  std::vector<std::string> command_type_strings;
+
+  command_type_strings.push_back("pwm");
+  command_type_strings.push_back("effort");
+
+  return command_type_strings;
+}
+
+typedef struct __attribute__((__packed__)) ActuatorOdometry
+{
+    volatile uint32_t odo_1;
+    volatile uint32_t odo_2;
+    volatile uint32_t odo_3;
+    volatile uint32_t odo_4;
+} ActuatorOdometry;
+
 
 class ActuatorState
 {
@@ -54,13 +81,19 @@ public:
     velocity_(0),
     effort_(0),
     commanded_effort_(0),
+
     last_commanded_current_(0.0),
     last_measured_current_(0.0),
     last_commanded_effort_(0.0),
     last_measured_effort_(0.0),
     max_effort_(0.0),
     motor_voltage_(0.0),
-    flags_(0)
+    flags_(0),
+    pwm_(0),
+    clutch_slip_(0),
+    command_type_(COMMAND_TYPE_PWM),
+    last_command_time_(ros::Time::now())
+
   {
   }
 
@@ -74,10 +107,9 @@ public:
   double commanded_effort_;
 
   double temperature_;  //!< Measured motor temperature in degrees C
-  unsigned int flags_;  //!< Motor state
-
+  unsigned int flags_;  //!< Motor info glags
+  signed int pwm_;      //!< PWM currently applied to motor
   double clutch_position_;  //!< Position of output of actuator, distally to the clutch.
-
 
   double last_commanded_current_;  //!< Current computed based on effort specified in ActuatorCommand (in amps)
   double last_measured_current_;  //!< The measured current (in amps)
@@ -87,7 +119,15 @@ public:
 
   double max_effort_;  //!< Absolute torque limit for actuator (derived from motor current limit). (in Nm)
 
+  int clutch_slip_;
+
+  ros::Time last_command_time_;
+  ros::Duration command_timeout_;
+
   double motor_voltage_;  //!< Motor voltage (in volts)
+  ActuatorCommandMode command_type_;  // switch between pwm and effort
+  ActuatorOdometry odometry_;
+
 };
 
 class ActuatorCommand

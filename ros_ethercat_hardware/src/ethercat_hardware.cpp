@@ -556,7 +556,7 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
 
   // status_.add("Motors halted", diagnostics_.motors_halted_ ? "true" : "false");
   status_.addf("EtherCAT devices (expected)", "%d", num_ethercat_devices_);
-  status_.addf("EtherCAT devices (current)", "%d", diagnostics_.device_count_);
+  status_.addf("EtherCAT devices (current)", "%d", slaves_.size());
   ethernet_interface_info_.publishDiagnostics(status_);
   // status_.addf("Reset state", "%d", reset_state_);
 
@@ -564,7 +564,8 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   status_.addf("Max PD Retries", "%d", max_pd_retries_);
 
   // Produce warning if number of devices changed after device initialization
-  if (num_ethercat_devices_ != diagnostics_.device_count_)
+
+  if (num_ethercat_devices_ != slaves_.size())
   {
     status_.mergeSummary(status_.WARN, "Number of EtherCAT devices changed");
   }
@@ -874,7 +875,7 @@ EthercatHardware::configSlave(EtherCAT_SlaveHandler *sh)
 
   if (matching_class_name.size() != 0)
   {
-    ROS_WARN("Using device '%s' with product code %d",
+    ROS_INFO("Using device '%s' with product code %d",
              device_loader_.getClassDescription(matching_class_name).c_str(),
              product_code);
     try
@@ -1031,6 +1032,8 @@ void EthercatHardware::loadNonEthercatDevices()
 
 void EthercatHardware::collectDiagnostics()
 {
+  ROS_WARN_STREAM("collect diagnostics");
+
   if (NULL == oob_com_)
     return;
 
@@ -1051,11 +1054,13 @@ void EthercatHardware::collectDiagnostics()
     oob_com_->txandrx(&frame);
 
     // Worry about locking for single value?
-    diagnostics_.device_count_ = status.get_adp();
+    //diagnostics_.device_count_ = status.get_adp();
+
   }
 
   for (unsigned i = 0; i < slaves_.size(); ++i)
   {
+
     boost::shared_ptr<EthercatDevice> d(slaves_[i]);
     d->collectDiagnostics(oob_com_);
   }

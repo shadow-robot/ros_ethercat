@@ -27,8 +27,11 @@
 <launch>
   <!-- load configuration -->
   <arg name="publish_rate" default='100'/>
+  <arg name="wait_for_calibrated" default="false" />
+
   <rosparam command="load" file="$(find ros_ethercat_model)/launch/joint_state_controller.yaml" />
   <param name="joint_state_controller/publish_rate" value="$(arg publish_rate)"/>
   <!-- spawn controller -->
-  <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller" respawn="true"/>
+  <node if="$(arg wait_for_calibrated)" name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="--wait-for=calibrated joint_state_controller" respawn="true" />
+  <node unless="$(arg wait_for_calibrated)" name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller" respawn="true" />
 </launch>
