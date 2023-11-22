@@ -164,6 +164,52 @@ public:
   /// The position the joint should move to in radians or meters (write-to variable)
   double commanded_position_;
 
+  // Duplicates of command fields, specifically for reporting in finger states.
+  // This is due to other command fields being used/modified outside of DEX code.
+  double state_commanded_effort_;
+  double state_commanded_position_;
+  double state_commanded_velocity_;
+  double state_commanded_feedforward_effort_;
+  double state_commanded_position_effort_;
+
+  // Set functions for above commanded state variables.
+  void setCommandedEffort(double effort)
+  {
+    state_commanded_effort_ = effort;
+    state_commanded_position_ = 0;
+    state_commanded_velocity_ = 0;
+    state_commanded_feedforward_effort_ = 0;
+    state_commanded_position_effort_ = 0;
+  };
+
+  void setCommandedPosition(double position, double effort)
+  {
+    state_commanded_effort_ = effort;
+    state_commanded_position_ = position;
+    state_commanded_velocity_ = 0;
+    state_commanded_feedforward_effort_ = 0;
+    state_commanded_position_effort_ = effort;
+  };
+
+  void setCommandedVelocity(double position, double effort, double velocity)
+  {
+    state_commanded_effort_ = effort;
+    state_commanded_position_ = position;
+    state_commanded_velocity_ = velocity;
+    state_commanded_feedforward_effort_ = 0;
+    state_commanded_position_effort_ = 0;
+  };
+
+  void setCommandedForcePosition(double position, double effort, double feed_forward, double pid_output)
+  {
+    state_commanded_effort_ = effort;
+    state_commanded_position_ = position;
+    state_commanded_velocity_ = 0;
+    state_commanded_feedforward_effort_ = feed_forward;
+    state_commanded_position_effort_ = pid_output;
+  };
+
+
   /// The velocity the joint should move with in radians/sec or meters/sec (write-to variable)
   double commanded_velocity_;
 
@@ -185,6 +231,11 @@ public:
     commanded_position_(0.0),
     commanded_velocity_(0.0),
     commanded_effort_(0.0),
+    state_commanded_effort_(0.0),
+    state_commanded_position_(0.0),
+    state_commanded_velocity_(0.0),
+    state_commanded_feedforward_effort_(0.0),
+    state_commanded_position_effort_(0.0),
     calibrated_(false),
     reference_position_(0.0)
   {
