@@ -178,7 +178,7 @@ public:
     state_commanded_effort_ = effort;
     state_commanded_position_ = 0;
     state_commanded_velocity_ = 0;
-    state_commanded_feedforward_effort_ = 0;
+    state_commanded_feedforward_effort_ = effort;
     state_commanded_position_effort_ = 0;
   };
 
@@ -197,7 +197,7 @@ public:
     state_commanded_position_ = position;
     state_commanded_velocity_ = velocity;
     state_commanded_feedforward_effort_ = 0;
-    state_commanded_position_effort_ = 0;
+    state_commanded_position_effort_ = effort;
   };
 
   void setCommandedForcePosition(double position, double effort, double feed_forward, double pid_output)
