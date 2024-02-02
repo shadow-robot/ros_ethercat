@@ -338,12 +338,12 @@ void *controlLoop(void *)  // NOLINT(readability/casting)
   pthread_setschedparam(pthread_self(), policy, &thread_param);
 
   struct timespec tick;
-  clock_gettime(CLOCK_REALTIME, &tick);
+  clock_gettime(CLOCK_MONOTONIC, &tick);
   ros::Duration durp(g_options.period / 1e+9);
 
   // Snap to the nearest second
   tick.tv_nsec = (tick.tv_nsec / g_options.period + 1) * g_options.period;
-  clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tick, NULL);
+  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tick, NULL);
 
   last_published = now();
   last_rt_monitor_time = now();
@@ -403,7 +403,7 @@ void *controlLoop(void *)  // NOLINT(readability/casting)
     timespecInc(tick, g_options.period);
 
     struct timespec before;
-    clock_gettime(CLOCK_REALTIME, &before);
+    clock_gettime(CLOCK_MONOTONIC, &before);
     if ((before.tv_sec + static_cast<double>(before.tv_nsec) / SEC_2_NSEC) > (tick.tv_sec + static_cast<double>(tick.tv_nsec) / SEC_2_NSEC))  // NOLINT(whitespace/line_length)
     {
       // Total amount of time the loop took to run
@@ -433,11 +433,11 @@ void *controlLoop(void *)  // NOLINT(readability/casting)
     }
 
     // Sleep until end of g_options.period
-    clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &tick, NULL);
+    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tick, NULL);
 
     // Calculate RT loop jitter
     struct timespec after;
-    clock_gettime(CLOCK_REALTIME, &after);
+    clock_gettime(CLOCK_MONOTONIC, &after);
     double jitter = (after.tv_sec - tick.tv_sec + static_cast<double>(after.tv_nsec - tick.tv_nsec) / SEC_2_NSEC);
 
     g_stats.jitter_acc(jitter);
