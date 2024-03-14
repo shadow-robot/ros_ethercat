@@ -532,7 +532,7 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   status_.clearSummary();
   status_.clear();
 
-  status_.name = "EtherCAT Master";
+  status_.name = "EtherCAT Port " + interface_;
 //  if (diagnostics_.motors_halted_)
 //  {
 //    std::ostringstream desc;

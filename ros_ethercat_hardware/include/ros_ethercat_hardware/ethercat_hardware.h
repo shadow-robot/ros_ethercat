@@ -259,6 +259,12 @@ public:
 
   hardware_interface::HardwareInterface *hw_;
 
+  boost::mutex update_mutex;  //!< mutex that protects all class data updates
+  boost::condition_variable start_of_work_condition_eth_hw_read;
+  boost::condition_variable end_of_work_condition_eth_hw_read;
+  std::atomic<bool> can_run_eth_hw_read_;
+  std::atomic<bool> eth_hw_read_done_;
+
   const std::vector<boost::shared_ptr<const EthercatDevice> > getSlaves() const
   {
     return std::vector<boost::shared_ptr<const EthercatDevice> >(slaves_.begin(), slaves_.end());
