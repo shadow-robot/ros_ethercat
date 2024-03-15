@@ -182,6 +182,76 @@ public:
     }
   }
 
+  void displayAndChange(boost::thread& daThread)
+  {
+      int retcode;
+      int policy;
+
+      pthread_t threadID = (pthread_t) daThread.native_handle();
+
+      struct sched_param param;
+
+      if ((retcode = pthread_getschedparam(threadID, &policy, &param)) != 0)
+      {
+          errno = retcode;
+          perror("pthread_getschedparam");
+          exit(EXIT_FAILURE);
+      }
+
+      std::cout << "INHERITED: ";
+      std::cout << "policy=" << ((policy == SCHED_FIFO)  ? "SCHED_FIFO" :
+                                (policy == SCHED_RR)    ? "SCHED_RR" :
+                                (policy == SCHED_OTHER) ? "SCHED_OTHER" :
+                                                          "???")
+                << ", priority=" << param.sched_priority << std::endl;
+
+
+      policy = SCHED_FIFO;
+      param.sched_priority = 4;
+
+      if ((retcode = pthread_setschedparam(threadID, policy, &param)) != 0)
+      {
+          errno = retcode;
+          perror("pthread_setschedparam");
+          exit(EXIT_FAILURE);
+      }
+
+      std::cout << "  CHANGED: ";
+      std::cout << "policy=" << ((policy == SCHED_FIFO)  ? "SCHED_FIFO" :
+                                (policy == SCHED_RR)    ? "SCHED_RR" :
+                                (policy == SCHED_OTHER) ? "SCHED_OTHER" :
+                                                            "???")
+                << ", priority=" << param.sched_priority << std::endl;
+  }
+
+
+  void test(EthercatHardware * eh)
+  {
+    while (true)
+    {
+      {
+        boost::unique_lock<boost::mutex> lock(eh->update_mutex);
+
+        while (!eh->can_run_eth_hw_read_.load())
+        {
+          eh->start_of_work_condition_eth_hw_read.wait(lock);
+        }
+      }
+
+      eh->update(false, false);
+
+      {
+        boost::lock_guard<boost::mutex> lock(eh->update_mutex);
+
+        eh->can_run_eth_hw_read_.store(false);
+        eh->eth_hw_read_done_.store(true);
+      }
+      eh->end_of_work_condition_eth_hw_read.notify_one();
+    }
+    return;
+}
+
+
   virtual bool init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh)
   {
     // Load robot description
@@ -302,6 +372,21 @@ public:
     // but until we remove the compatibility mode this will do.
     collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
 
+    hardware_update_thread_.reserve(ethercat_hardware_.size());
+
+    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+         eh != ethercat_hardware_.end();
+         ++eh)
+    {
+      EthercatHardware* current_eth = &(*eh);
+      current_eth->can_run_eth_hw_read_.store(false);
+      current_eth->eth_hw_read_done_.store(false);
+
+      auto functor = boost::bind(&RosEthercat::test, this, current_eth);
+      hardware_update_thread_.push_back(new boost::thread(functor));
+      displayAndChange(*hardware_update_thread_.back());
+    }
+
     return true;
   }
 
@@ -312,7 +397,25 @@ public:
          eh != ethercat_hardware_.end();
          ++eh)
     {
-      eh->update(false, false);
+      {
+        boost::lock_guard<boost::mutex> lock(eh->update_mutex);
+        eh->can_run_eth_hw_read_.store(true);
+        eh->eth_hw_read_done_.store(false);
+      }
+      eh->start_of_work_condition_eth_hw_read.notify_one();
+    }
+
+    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+         eh != ethercat_hardware_.end();
+         ++eh)
+    {
+      {
+        boost::unique_lock<boost::mutex> lock(eh->update_mutex);
+        while(!eh->eth_hw_read_done_.load())
+        {
+          eh->end_of_work_condition_eth_hw_read.wait(lock);
+        }
+      }
     }
 
     model_->current_time_ = time;
@@ -374,6 +477,13 @@ public:
          ++eh)
     {
       eh->update(false, true);
+    }
+
+    for (uint8_t hardware_index = 0;
+      hardware_index < ethercat_hardware_.size();
+      ++hardware_index)
+    {
+      delete hardware_update_thread_[hardware_index];
     }
   }
 
@@ -534,6 +644,7 @@ protected:
   bool collect_diagnostics_running_;
   boost::thread collect_diagnostics_thread_;
   std::string robot_state_name_;
+  std::vector<boost::thread *> hardware_update_thread_;
 };
 
 #endif
