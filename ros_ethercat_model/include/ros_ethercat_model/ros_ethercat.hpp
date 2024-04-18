@@ -350,7 +350,7 @@ public:
     // but until we remove the compatibility mode this will do.
     collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
 
-    // If we are running more than one ethercat hardware, spin up multiple threads 
+    // If we are running more than one ethercat hardware, spin up multiple threads
     if (ethercat_hardware_.size() > 1)
     {
       hardware_update_thread_.reserve(ethercat_hardware_.size());
