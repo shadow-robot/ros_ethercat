@@ -259,7 +259,8 @@ public:
 
   hardware_interface::HardwareInterface *hw_;
 
-  boost::mutex update_mutex;  //!< mutex that protects all class data updates
+  // Attributes required to run multi-threaded calls to HardwareInterface.update (for multiple HardwareInterface's)
+  boost::mutex update_mutex;
   boost::condition_variable start_of_work_condition_eth_hw_read;
   boost::condition_variable end_of_work_condition_eth_hw_read;
   std::atomic<bool> can_run_eth_hw_read_;

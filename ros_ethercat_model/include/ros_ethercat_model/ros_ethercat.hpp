@@ -182,6 +182,7 @@ public:
     }
   }
 
+  /// Update priority of provided thread
   bool updateThreadPriority(boost::thread& a_thread)
   {
     int retcode;
@@ -201,7 +202,7 @@ public:
     return true;
   }
 
-
+  /// Thread that calls EthercatHardware.update 
   void ethercat_update_thread(EthercatHardware * eh)
   {
     while (true)
@@ -349,6 +350,7 @@ public:
     // but until we remove the compatibility mode this will do.
     collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
 
+    // If we are running more than one ethercat hardware, spin up multiple threads 
     if (ethercat_hardware_.size() > 1)
     {
       hardware_update_thread_.reserve(ethercat_hardware_.size());
@@ -380,6 +382,7 @@ public:
     {
       ethercat_hardware_[0].update(false, false);
     }
+    // If we are running multiple Ethercat devices, parallelise calls to EthercatHardware.update
     else
     {
       for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
@@ -400,7 +403,7 @@ public:
       {
         {
           boost::unique_lock<boost::mutex> lock(eh->update_mutex);
-          while(!eh->eth_hw_read_done_.load())
+          while (!eh->eth_hw_read_done_.load())
           {
             eh->end_of_work_condition_eth_hw_read.wait(lock);
           }
