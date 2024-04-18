@@ -6,7 +6,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2014, Shadow Robot Company Ltd.
+*  Copyright (c) 2014, 2024 Shadow Robot Company Ltd.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -182,50 +182,27 @@ public:
     }
   }
 
-  void displayAndChange(boost::thread& daThread)
+  bool updateThreadPriority(boost::thread& a_thread)
   {
-      int retcode;
-      int policy;
+    int retcode;
+    int policy;
+    struct sched_param param;
 
-      pthread_t threadID = (pthread_t) daThread.native_handle();
+    pthread_t threadID = (pthread_t) a_thread.native_handle();
 
-      struct sched_param param;
+    policy = SCHED_FIFO;
+    param.sched_priority = sched_get_priority_max(policy);
 
-      if ((retcode = pthread_getschedparam(threadID, &policy, &param)) != 0)
-      {
-          errno = retcode;
-          perror("pthread_getschedparam");
-          exit(EXIT_FAILURE);
-      }
-
-      std::cout << "INHERITED: ";
-      std::cout << "policy=" << ((policy == SCHED_FIFO)  ? "SCHED_FIFO" :
-                                (policy == SCHED_RR)    ? "SCHED_RR" :
-                                (policy == SCHED_OTHER) ? "SCHED_OTHER" :
-                                                          "???")
-                << ", priority=" << param.sched_priority << std::endl;
-
-
-      policy = SCHED_FIFO;
-      param.sched_priority = 4;
-
-      if ((retcode = pthread_setschedparam(threadID, policy, &param)) != 0)
-      {
-          errno = retcode;
-          perror("pthread_setschedparam");
-          exit(EXIT_FAILURE);
-      }
-
-      std::cout << "  CHANGED: ";
-      std::cout << "policy=" << ((policy == SCHED_FIFO)  ? "SCHED_FIFO" :
-                                (policy == SCHED_RR)    ? "SCHED_RR" :
-                                (policy == SCHED_OTHER) ? "SCHED_OTHER" :
-                                                            "???")
-                << ", priority=" << param.sched_priority << std::endl;
+    if ((retcode = pthread_setschedparam(threadID, policy, &param)) != 0)
+    {
+      ROS_ERROR("Error setting policy/priority of Ethercat hardware threads. Please restart the system");
+      return false;
+    }
+    return true;
   }
 
 
-  void test(EthercatHardware * eh)
+  void ethercat_update_thread(EthercatHardware * eh)
   {
     while (true)
     {
@@ -372,19 +349,25 @@ public:
     // but until we remove the compatibility mode this will do.
     collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
 
-    hardware_update_thread_.reserve(ethercat_hardware_.size());
-
-    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
-         eh != ethercat_hardware_.end();
-         ++eh)
+    if (ethercat_hardware_.size() > 1)
     {
-      EthercatHardware* current_eth = &(*eh);
-      current_eth->can_run_eth_hw_read_.store(false);
-      current_eth->eth_hw_read_done_.store(false);
+      hardware_update_thread_.reserve(ethercat_hardware_.size());
 
-      auto functor = boost::bind(&RosEthercat::test, this, current_eth);
-      hardware_update_thread_.push_back(new boost::thread(functor));
-      displayAndChange(*hardware_update_thread_.back());
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
+      {
+        EthercatHardware* current_eth = &(*eh);
+        current_eth->can_run_eth_hw_read_.store(false);
+        current_eth->eth_hw_read_done_.store(false);
+
+        auto functor = boost::bind(&RosEthercat::ethercat_update_thread, this, current_eth);
+        hardware_update_thread_.push_back(new boost::thread(functor));
+        if (!updateThreadPriority(*hardware_update_thread_.back()))
+        {
+          return false;
+        }
+      }
     }
 
     return true;
@@ -393,27 +376,34 @@ public:
   /// propagate position actuator -> joint and set commands to zero
   void read(const ros::Time &time, const ros::Duration& period)
   {
-    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
-         eh != ethercat_hardware_.end();
-         ++eh)
+    if (ethercat_hardware_.size() == 1)
     {
-      {
-        boost::lock_guard<boost::mutex> lock(eh->update_mutex);
-        eh->can_run_eth_hw_read_.store(true);
-        eh->eth_hw_read_done_.store(false);
-      }
-      eh->start_of_work_condition_eth_hw_read.notify_one();
+      ethercat_hardware_[0].update(false, false);
     }
-
-    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
-         eh != ethercat_hardware_.end();
-         ++eh)
+    else
     {
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
       {
-        boost::unique_lock<boost::mutex> lock(eh->update_mutex);
-        while(!eh->eth_hw_read_done_.load())
         {
-          eh->end_of_work_condition_eth_hw_read.wait(lock);
+          boost::lock_guard<boost::mutex> lock(eh->update_mutex);
+          eh->can_run_eth_hw_read_.store(true);
+          eh->eth_hw_read_done_.store(false);
+        }
+        eh->start_of_work_condition_eth_hw_read.notify_one();
+      }
+
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
+      {
+        {
+          boost::unique_lock<boost::mutex> lock(eh->update_mutex);
+          while(!eh->eth_hw_read_done_.load())
+          {
+            eh->end_of_work_condition_eth_hw_read.wait(lock);
+          }
         }
       }
     }
@@ -479,11 +469,13 @@ public:
       eh->update(false, true);
     }
 
-    for (uint8_t hardware_index = 0;
-      hardware_index < ethercat_hardware_.size();
-      ++hardware_index)
+    if (ethercat_hardware_.size() > 1)
     {
-      delete hardware_update_thread_[hardware_index];
+      for (uint8_t hardware_index = 0; hardware_index < ethercat_hardware_.size();
+        ++hardware_index)
+      {
+        delete hardware_update_thread_[hardware_index];
+      }
     }
   }
 
