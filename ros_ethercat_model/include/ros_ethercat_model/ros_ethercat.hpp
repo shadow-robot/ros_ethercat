@@ -202,7 +202,7 @@ public:
     return true;
   }
 
-  /// Thread that calls EthercatHardware.update 
+  /// Thread that calls EthercatHardware.update
   void ethercat_update_thread(EthercatHardware * eh)
   {
     while (true)
