@@ -162,6 +162,29 @@ public:
     registerInterface(&joint_velocity_command_interface_);
     registerInterface(&joint_effort_command_interface_);
     registerInterface(&imu_sensor_interface_);
+
+    // Start a thread to collect diagnostics. This could actually be inside the EthercatHardware class
+    // but until we remove the compatibility mode this will do.
+    collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
+
+    // If we are running more than one ethercat hardware, spin up multiple threads
+    if (ethercat_hardware_.size() > 1)
+    {
+      hardware_update_thread_.reserve(ethercat_hardware_.size());
+
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
+      {
+        EthercatHardware* current_eth = &(*eh);
+        current_eth->can_run_eth_hw_read_.store(false);
+        current_eth->eth_hw_read_done_.store(false);
+
+        auto functor = boost::bind(&RosEthercat::ethercat_update_thread, this, current_eth);
+        hardware_update_thread_.push_back(new boost::thread(functor));
+        updateThreadPriority(*hardware_update_thread_.back());
+      }
+    }
   }
 
   virtual ~RosEthercat()
@@ -191,7 +214,7 @@ public:
     pthread_t threadID = (pthread_t) a_thread.native_handle();
 
     policy = SCHED_FIFO;
-    param.sched_priority = sched_get_priority_max(policy);
+    param.sched_priority = sched_get_priority_max(policy) - 1;
 
     if (pthread_setschedparam(threadID, policy, &param) != 0)
     {
