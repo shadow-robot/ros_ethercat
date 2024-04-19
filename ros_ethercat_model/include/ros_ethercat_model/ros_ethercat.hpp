@@ -185,7 +185,6 @@ public:
   /// Update priority of provided thread
   bool updateThreadPriority(boost::thread& a_thread)
   {
-    int retcode;
     int policy;
     struct sched_param param;
 
@@ -194,7 +193,7 @@ public:
     policy = SCHED_FIFO;
     param.sched_priority = sched_get_priority_max(policy);
 
-    if ((retcode = pthread_setschedparam(threadID, policy, &param)) != 0)
+    if (pthread_setschedparam(threadID, policy, &param) != 0)
     {
       ROS_ERROR("Error setting policy/priority of Ethercat hardware threads. Please restart the system");
       return false;
