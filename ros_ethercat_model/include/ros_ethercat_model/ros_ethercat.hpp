@@ -182,10 +182,7 @@ public:
 
         auto functor = boost::bind(&RosEthercat::ethercat_update_thread, this, current_eth);
         hardware_update_thread_.push_back(new boost::thread(functor));
-        if (!updateThreadPriority(*hardware_update_thread_.back()))
-        {
-          return false;
-        }
+        updateThreadPriority(*hardware_update_thread_.back());
       }
     }
   }
