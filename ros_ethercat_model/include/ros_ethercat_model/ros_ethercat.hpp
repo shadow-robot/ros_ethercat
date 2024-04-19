@@ -6,7 +6,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2014, Shadow Robot Company Ltd.
+*  Copyright (c) 2014, 2024 Shadow Robot Company Ltd.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -182,6 +182,53 @@ public:
     }
   }
 
+  /// Update priority of provided thread
+  bool updateThreadPriority(boost::thread& a_thread)
+  {
+    int policy;
+    struct sched_param param;
+
+    pthread_t threadID = (pthread_t) a_thread.native_handle();
+
+    policy = SCHED_FIFO;
+    param.sched_priority = sched_get_priority_max(policy);
+
+    if (pthread_setschedparam(threadID, policy, &param) != 0)
+    {
+      ROS_ERROR("Error setting policy/priority of Ethercat hardware threads. Please restart the system");
+      return false;
+    }
+    return true;
+  }
+
+  /// Thread that calls EthercatHardware.update
+  void ethercat_update_thread(EthercatHardware * eh)
+  {
+    while (true)
+    {
+      {
+        boost::unique_lock<boost::mutex> lock(eh->update_mutex);
+
+        while (!eh->can_run_eth_hw_read_.load())
+        {
+          eh->start_of_work_condition_eth_hw_read.wait(lock);
+        }
+      }
+
+      eh->update(false, false);
+
+      {
+        boost::lock_guard<boost::mutex> lock(eh->update_mutex);
+
+        eh->can_run_eth_hw_read_.store(false);
+        eh->eth_hw_read_done_.store(true);
+      }
+      eh->end_of_work_condition_eth_hw_read.notify_one();
+    }
+    return;
+}
+
+
   virtual bool init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh)
   {
     // Load robot description
@@ -302,17 +349,65 @@ public:
     // but until we remove the compatibility mode this will do.
     collect_diagnostics_thread_ = boost::thread(&RosEthercat::collect_diagnostics_loop, this);
 
+    // If we are running more than one ethercat hardware, spin up multiple threads
+    if (ethercat_hardware_.size() > 1)
+    {
+      hardware_update_thread_.reserve(ethercat_hardware_.size());
+
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
+      {
+        EthercatHardware* current_eth = &(*eh);
+        current_eth->can_run_eth_hw_read_.store(false);
+        current_eth->eth_hw_read_done_.store(false);
+
+        auto functor = boost::bind(&RosEthercat::ethercat_update_thread, this, current_eth);
+        hardware_update_thread_.push_back(new boost::thread(functor));
+        if (!updateThreadPriority(*hardware_update_thread_.back()))
+        {
+          return false;
+        }
+      }
+    }
+
     return true;
   }
 
   /// propagate position actuator -> joint and set commands to zero
   void read(const ros::Time &time, const ros::Duration& period)
   {
-    for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
-         eh != ethercat_hardware_.end();
-         ++eh)
+    if (ethercat_hardware_.size() == 1)
     {
-      eh->update(false, false);
+      ethercat_hardware_[0].update(false, false);
+    }
+    // If we are running multiple Ethercat devices, parallelise calls to EthercatHardware.update
+    else
+    {
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
+      {
+        {
+          boost::lock_guard<boost::mutex> lock(eh->update_mutex);
+          eh->can_run_eth_hw_read_.store(true);
+          eh->eth_hw_read_done_.store(false);
+        }
+        eh->start_of_work_condition_eth_hw_read.notify_one();
+      }
+
+      for (ptr_vector<EthercatHardware>::iterator eh = ethercat_hardware_.begin();
+          eh != ethercat_hardware_.end();
+          ++eh)
+      {
+        {
+          boost::unique_lock<boost::mutex> lock(eh->update_mutex);
+          while (!eh->eth_hw_read_done_.load())
+          {
+            eh->end_of_work_condition_eth_hw_read.wait(lock);
+          }
+        }
+      }
     }
 
     model_->current_time_ = time;
@@ -374,6 +469,15 @@ public:
          ++eh)
     {
       eh->update(false, true);
+    }
+
+    if (ethercat_hardware_.size() > 1)
+    {
+      for (uint8_t hardware_index = 0; hardware_index < ethercat_hardware_.size();
+        ++hardware_index)
+      {
+        delete hardware_update_thread_[hardware_index];
+      }
     }
   }
 
@@ -534,6 +638,7 @@ protected:
   bool collect_diagnostics_running_;
   boost::thread collect_diagnostics_thread_;
   std::string robot_state_name_;
+  std::vector<boost::thread *> hardware_update_thread_;
 };
 
 #endif
