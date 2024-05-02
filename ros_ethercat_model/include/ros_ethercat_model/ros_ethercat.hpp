@@ -214,7 +214,7 @@ public:
     pthread_t threadID = (pthread_t) a_thread.native_handle();
 
     policy = SCHED_FIFO;
-    param.sched_priority = sched_get_priority_max(policy) - 1;
+    param.sched_priority = sched_get_priority_max(policy);
 
     if (pthread_setschedparam(threadID, policy, &param) != 0)
     {
