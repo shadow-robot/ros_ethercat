@@ -40,6 +40,7 @@
 
 #include <ros/ros.h>
 
+#include "ros_ethercat_model/command.hpp"
 
 namespace ros_ethercat_model
 {
@@ -95,12 +96,20 @@ class ActuatorCommand
 public:
   ActuatorCommand() :
     enable_(0),
-    effort_(0)
+    effort_(0),
+    effort_command_type_(EffortCommandType::UNSPECIFIED)
   {
   }
 
   bool enable_;  //!< Enable this actuator
-  double effort_;  //!< Force to apply (in Nm)
+  double effort_;  //!< Effort to apply, unit depends on effort_command_type_ field
+  EffortCommandType effort_command_type_;  //!< Type of effort in effort_ field
+
+  void set_effort_command(double effort, EffortCommandType effort_command_type)
+  {
+    effort_ = effort;
+    effort_command_type_ = effort_command_type;
+  }
 };
 
 /*!
