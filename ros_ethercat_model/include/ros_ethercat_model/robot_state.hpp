@@ -140,7 +140,7 @@ public:
     }
     catch (const std::runtime_error &ex)
     {
-      ROS_FATAL_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
+      ROS_WARN_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
     }
   }
 
