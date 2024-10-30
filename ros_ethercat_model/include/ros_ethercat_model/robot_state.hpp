@@ -122,6 +122,14 @@ public:
     type = std::string(xit->FirstChildElement("type")->GetText());
   }
 
+  // Real Dex-EE does not use transmissions, so we declare a dummy transmission type to skip the
+  // instantiation of the transmission.
+  // However, DEX-EE Gazebo simulation requires the 'joint' elements from the transmission, which is
+  // why we keep the transmissions in the urdf.
+  if (type == "UnusedTransmission")
+  {
+    continue;
+  }
   joint_name = string(xit->FirstChildElement("joint")->Attribute("name"));
   if (joint_name.empty())
   {
@@ -140,7 +148,7 @@ public:
     }
     catch (const std::runtime_error &ex)
     {
-      ROS_WARN_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
+      ROS_FATAL_STREAM("ros_ethercat_model failed to parse the URDF xml into a robot model\n" << ex.what());
     }
   }
 
