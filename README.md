@@ -58,3 +58,4 @@ instead of<br>`class MyController : public pr2_controller_interface::Controller`
  2. There is a helper bash script called ethercat_grant. This will grant to the ros_ethercat_loop executable the ability to be ran from a normal user without root privileges. E.g. of use<br>`rosrun ros_ethercat_loop ethercat_grant`
  
  
+ 
