@@ -199,6 +199,9 @@ private:
   EthernetInterfaceInfo ethernet_interface_info_;
   vector<diagnostic_msgs::KeyValue> values_;
   diagnostic_updater::DiagnosticStatusWrapper status_;
+
+  // Prefix to add to the status.name for diagnostics
+  string diagnostics_name_prefix_;
 };
 
 class EthercatHardware
