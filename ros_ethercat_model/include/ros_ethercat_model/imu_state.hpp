@@ -72,8 +72,8 @@ public:
     data_.linear_acceleration = linear_acceleration_;
     data_.linear_acceleration_covariance = linear_acceleration_covariance_;
   };
-  ImuState(){}
-  
+  ImuState() {}
+
   void initialiseToZero(void)
   {
     INIT_ARRAY(orientation_, 0.0);
@@ -83,7 +83,6 @@ public:
     INIT_ARRAY(angular_velocity_covariance_, 0.0);
     INIT_ARRAY(linear_acceleration_covariance_, 0.0);
   }
-  
 };
 };  // namespace ros_ethercat_model
 

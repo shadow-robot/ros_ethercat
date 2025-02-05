@@ -1068,13 +1068,11 @@ void EthercatHardware::collectDiagnostics()
     oob_com_->txandrx(&frame);
 
     // Worry about locking for single value?
-    //diagnostics_.device_count_ = status.get_adp();
-
+    // diagnostics_.device_count_ = status.get_adp();
   }
 
   for (unsigned i = 0; i < slaves_.size(); ++i)
   {
-
     boost::shared_ptr<EthercatDevice> d(slaves_[i]);
     d->collectDiagnostics(oob_com_);
   }

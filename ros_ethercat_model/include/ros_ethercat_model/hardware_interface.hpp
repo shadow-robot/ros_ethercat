@@ -37,7 +37,7 @@
 
 #include <string>
 #include <vector>
-//#include <ros_ethercat_model/actuator_command_interface.h>
+// #include <ros_ethercat_model/actuator_command_interface.h>
 
 #include <ros/ros.h>
 
@@ -68,7 +68,8 @@ typedef struct __attribute__((__packed__)) ActuatorOdometry
     volatile uint32_t odo_2;
     volatile uint32_t odo_3;
     volatile uint32_t odo_4;
-} ActuatorOdometry;
+}
+ActuatorOdometry;
 
 
 class ActuatorState
@@ -127,7 +128,6 @@ public:
   double motor_voltage_;  //!< Motor voltage (in volts)
   ActuatorCommandMode command_type_;  // switch between pwm and effort
   ActuatorOdometry odometry_;
-
 };
 
 class ActuatorCommand
