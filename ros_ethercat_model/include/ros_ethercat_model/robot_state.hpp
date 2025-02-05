@@ -6,7 +6,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2014, Shadow Robot Company Ltd.
+*  Copyright (c) 2014-2019, 2024-2025 Shadow Robot Company Ltd.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
