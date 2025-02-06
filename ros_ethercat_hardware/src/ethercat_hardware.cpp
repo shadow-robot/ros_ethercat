@@ -2,6 +2,7 @@
 * Software License Agreement (BSD License)
 *
 *  Copyright (c) 2008, Willow Garage, Inc.
+*  Copyright (c) 2025 Shadow Robot Company Ltd.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -438,6 +439,19 @@ EthercatHardwareDiagnosticsPublisher::EthercatHardwareDiagnosticsPublisher(ros::
   last_dropped_packet_count_(0),
   last_dropped_packet_time_(0)
 {
+  ros::NodeHandle n;
+  string node_namespace = n.getNamespace();
+  // Remove leading slash if not empty. This will leave the variable empty if the namespace is "/"
+  // (i.e. node not namespaced).
+  if (!node_namespace.empty() && node_namespace[0] == '/')
+  {
+    node_namespace.erase(0, 1);
+  }
+
+  if (!node_namespace.empty())
+  {
+    diagnostics_name_prefix_ = node_namespace + " ";
+  }
 }
 
 EthercatHardwareDiagnosticsPublisher::~EthercatHardwareDiagnosticsPublisher()
@@ -532,7 +546,7 @@ void EthercatHardwareDiagnosticsPublisher::publishDiagnostics()
   status_.clearSummary();
   status_.clear();
 
-  status_.name = "EtherCAT Master";
+  status_.name = diagnostics_name_prefix_ + "EtherCAT Master";
 //  if (diagnostics_.motors_halted_)
 //  {
 //    std::ostringstream desc;
@@ -1054,13 +1068,11 @@ void EthercatHardware::collectDiagnostics()
     oob_com_->txandrx(&frame);
 
     // Worry about locking for single value?
-    //diagnostics_.device_count_ = status.get_adp();
-
+    // diagnostics_.device_count_ = status.get_adp();
   }
 
   for (unsigned i = 0; i < slaves_.size(); ++i)
   {
-
     boost::shared_ptr<EthercatDevice> d(slaves_[i]);
     d->collectDiagnostics(oob_com_);
   }

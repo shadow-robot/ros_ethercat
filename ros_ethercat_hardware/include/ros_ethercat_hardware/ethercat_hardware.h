@@ -2,6 +2,7 @@
 * Software License Agreement (BSD License)
 *
 *  Copyright (c) 2008, Willow Garage, Inc.
+*  Copyright (c) 2025 Shadow Robot Company Ltd.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -199,6 +200,9 @@ private:
   EthernetInterfaceInfo ethernet_interface_info_;
   vector<diagnostic_msgs::KeyValue> values_;
   diagnostic_updater::DiagnosticStatusWrapper status_;
+
+  // Prefix to add to the status.name for diagnostics
+  string diagnostics_name_prefix_;
 };
 
 class EthercatHardware
