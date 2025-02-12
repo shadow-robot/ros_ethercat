@@ -39,8 +39,11 @@
 #include <vector>
 // #include <ros_ethercat_model/actuator_command_interface.h>
 
+#define FORBIDDEN_ODO_VALUE (0xffffffff)
+
 #include <ros/ros.h>
 
+#define FORBIDDEN_VALUE std::pow(2,64)
 
 namespace ros_ethercat_model
 {
@@ -93,7 +96,11 @@ public:
     pwm_(0),
     clutch_slip_(0),
     command_type_(COMMAND_TYPE_PWM),
-    last_command_time_(ros::Time::now())
+    last_command_time_(ros::Time::now()),
+    odometry_({FORBIDDEN_ODO_VALUE,
+	       FORBIDDEN_ODO_VALUE,
+	       FORBIDDEN_ODO_VALUE,
+	       FORBIDDEN_ODO_VALUE})
 
   {
   }
