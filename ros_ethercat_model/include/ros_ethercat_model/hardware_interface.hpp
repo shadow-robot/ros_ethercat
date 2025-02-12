@@ -98,9 +98,9 @@ public:
     odometry_(
               {
                FORBIDDEN_ODO_VALUE,
-	       FORBIDDEN_ODO_VALUE,
-	       FORBIDDEN_ODO_VALUE,
-	       FORBIDDEN_ODO_VALUE
+               FORBIDDEN_ODO_VALUE,
+               FORBIDDEN_ODO_VALUE,
+               FORBIDDEN_ODO_VALUE
       }
       )
   {
