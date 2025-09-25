@@ -47,6 +47,7 @@
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/imu_state.hpp"
+#include "ros_ethercat_model/temperature_sensor_state.hpp"
 
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
@@ -81,6 +82,12 @@ public:
   {
     actuator_states_[name] = Actuator().state_;
     return &actuator_states_[name];
+  }
+
+  TempSensorState* addTempSensorState(string name)
+  {
+    temp_sensor_states_[name] = TempSensorState(name);
+    return &temp_sensor_states_[name];
   }
 
   void initXml(tinyxml2::XMLElement *root)
@@ -198,6 +205,10 @@ public:
     return imu_states_.count(name) ? & imu_states_[name] : NULL;
   }
 
+  TempSensorState* getTempSensorState(string name)
+  {
+    return temp_sensor_states_.count(name) ? &temp_sensor_states_[name] : NULL;
+  }
 
   /// return the current time of the control loop
   ros::Time getTime()
@@ -214,6 +225,8 @@ public:
   boost::ptr_unordered_map<std::string, ActuatorState> actuator_states_;
 
   boost::ptr_unordered_map<std::string, ImuState> imu_states_;
+
+  boost::ptr_unordered_map<std::string, TempSensorState> temp_sensor_states_;
 
   /// Custom hardware structures mapped to their names
   boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;
