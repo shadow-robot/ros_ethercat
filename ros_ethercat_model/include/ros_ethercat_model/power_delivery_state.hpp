@@ -105,7 +105,8 @@ public:
   {
     if (!state)
     {
-      throw HardwareInterfaceException("Cannot create handle '" + name + "'. PowerDeliveryState state data pointer is null.");
+      throw HardwareInterfaceException("Cannot create handle '" + name + 
+        "'. PowerDeliveryState state data pointer is null.");
     }
   }
   string getName() const {return name_;}
