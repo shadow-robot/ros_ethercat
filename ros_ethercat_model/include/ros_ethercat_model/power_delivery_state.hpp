@@ -105,7 +105,7 @@ public:
   {
     if (!state)
     {
-      throw HardwareInterfaceException("Cannot create handle '" + name + 
+      throw HardwareInterfaceException("Cannot create handle '" + name +
         "'. PowerDeliveryState state data pointer is null.");
     }
   }
