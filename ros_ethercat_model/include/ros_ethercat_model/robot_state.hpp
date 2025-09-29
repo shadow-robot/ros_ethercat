@@ -48,6 +48,7 @@
 #include "ros_ethercat_model/joint.hpp"
 #include "ros_ethercat_model/imu_state.hpp"
 #include "ros_ethercat_model/temperature_sensor_state.hpp"
+#include "ros_ethercat_model/power_delivery_state.hpp"
 
 #include "ros_ethercat_model/transmission.hpp"
 #include "ros_ethercat_model/hardware_interface.hpp"
@@ -88,6 +89,12 @@ public:
   {
     temp_sensor_states_[name] = TempSensorState(name);
     return &temp_sensor_states_[name];
+  }
+
+  PowerDeliveryState* addPowerDeliveryState(string name)
+  {
+    power_delivery_states_[name] = PowerDeliveryState(name);
+    return &power_delivery_states_[name];
   }
 
   void initXml(tinyxml2::XMLElement *root)
@@ -210,6 +217,11 @@ public:
     return temp_sensor_states_.count(name) ? &temp_sensor_states_[name] : NULL;
   }
 
+  PowerDeliveryState* getPowerDeliveryState(string name)
+  {
+    return power_delivery_states_.count(name) ? &power_delivery_states_[name] : NULL;
+  }
+
   /// return the current time of the control loop
   ros::Time getTime()
   {
@@ -227,6 +239,8 @@ public:
   boost::ptr_unordered_map<std::string, ImuState> imu_states_;
 
   boost::ptr_unordered_map<std::string, TempSensorState> temp_sensor_states_;
+
+  boost::ptr_unordered_map<std::string, PowerDeliveryState> power_delivery_states_;
 
   /// Custom hardware structures mapped to their names
   boost::ptr_unordered_map<std::string, CustomHW> custom_hws_;

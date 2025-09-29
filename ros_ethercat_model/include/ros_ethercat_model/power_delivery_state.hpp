@@ -1,12 +1,12 @@
 /*
-* temperature_sensor_state.hpp
+* power_delivery_state.hpp
 *
-*  Created on: 25 Sept 2025
+*  Created on: 26 Sept 2025
 *      Author: Chris White
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2014, 2016, 2017, 2019, 2022, 2025 Shadow Robot Company Ltd.
+*  Copyright (c) 2025 Shadow Robot Company Ltd.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -38,13 +38,13 @@
 *********************************************************************/
 
 /*
-* @file   temperature_sensor_state.h
+* @file   power_delivery_state.h
 * @author Chris White <chris@shadowrobot.com>
-* @brief  Hardware interface for temperature sensor
+* @brief  Hardware interface for power delivery monitoring
 */
 
-#ifndef ROS_ETHERCAT_MODEL_TEMPERATURESENSORSTATE_HPP
-#define ROS_ETHERCAT_MODEL_TEMPERATURESENSORSTATE_HPP
+#ifndef ROS_ETHERCAT_MODEL_POWERDELIVERYSTATE_HPP
+#define ROS_ETHERCAT_MODEL_POWERDELIVERYSTATE_HPP
 
 #include <hardware_interface/hardware_interface.h>
 #include "ros_ethercat_model/hardware_interface.hpp"
@@ -61,14 +61,14 @@ using std::string;
 namespace ros_ethercat_model
 {
 
-class TempSensorState : public hardware_interface::HardwareInterface
+class PowerDeliveryState : public hardware_interface::HardwareInterface
 {
 public:
-  TempSensorState() : name_(), dimensions_(0)
+  PowerDeliveryState() : name_(), dimensions_(0)
   {
   }
 
-  explicit TempSensorState(string name) : name_(name), dimensions_(0)
+  explicit PowerDeliveryState(string name) : name_(name), dimensions_(0)
   {
   }
 
@@ -80,8 +80,12 @@ public:
 
   string getName() const { return name_; }
 
-  uint16_t temperature_raw_;
-  double temperature_;
+  double v_4v;
+  double i_4v;
+  double v_5v5;
+  double i_5v5;
+  double v_24v;
+  double i_24v;
 
 private:
   string name_;
@@ -93,29 +97,30 @@ private:
 namespace hardware_interface
 {
 
-class TempSensorStateHandle
+class PowerDeliveryStateHandle
 {
 public:
-  TempSensorStateHandle() : name_(), state_(0) {}
-  TempSensorStateHandle(string name, ros_ethercat_model::TempSensorState* state) : name_(name), state_(state)
+  PowerDeliveryStateHandle() : name_(), state_(0) {}
+  PowerDeliveryStateHandle(string name, ros_ethercat_model::PowerDeliveryState* state) : name_(name), state_(state)
   {
     if (!state)
     {
-      throw HardwareInterfaceException("Cannot create handle '" + name + "'. TempSensor state data pointer is null.");
+      throw HardwareInterfaceException("Cannot create handle '" + name +
+        "'. PowerDeliveryState state data pointer is null.");
     }
   }
   string getName() const {return name_;}
-  ros_ethercat_model::TempSensorState* getState() const
+  ros_ethercat_model::PowerDeliveryState* getState() const
   {
     assert(state_);
     return state_;
   }
 private:
   string name_;
-  ros_ethercat_model::TempSensorState* state_;
+  ros_ethercat_model::PowerDeliveryState* state_;
 };
 
-class TempSensorStateInterface : public HardwareResourceManager<hardware_interface::TempSensorStateHandle>
+class PowerDeliveryStateInterface : public HardwareResourceManager<hardware_interface::PowerDeliveryStateHandle>
 {
 };
 
@@ -124,4 +129,4 @@ class TempSensorStateInterface : public HardwareResourceManager<hardware_interfa
 }  // namespace hardware_interface
 
 
-#endif  // ROS_ETHERCAT_MODEL_TEMPERATURESENSORSTATE_HPP
+#endif  // ROS_ETHERCAT_MODEL_POWERDELIVERYSTATE_HPP
