@@ -81,7 +81,7 @@ public:
   string getName() const { return name_; }
 
   uint16_t temperature_raw_;
-  uint16_t temperature_;
+  double temperature_;
 
 private:
   string name_;

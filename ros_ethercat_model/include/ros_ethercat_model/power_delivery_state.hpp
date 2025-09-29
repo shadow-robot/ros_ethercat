@@ -80,12 +80,12 @@ public:
 
   string getName() const { return name_; }
 
-  uint16_t v_4v;
-  uint16_t i_4v;
-  uint16_t v_5v5;
-  uint16_t i_5v5;
-  uint16_t v_24v;
-  uint16_t i_24v;
+  double v_4v;
+  double i_4v;
+  double v_5v5;
+  double i_5v5;
+  double v_24v;
+  double i_24v;
 
 private:
   string name_;
